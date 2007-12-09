@@ -104,59 +104,6 @@ Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
-Obsoletes:	arts-kde
-Obsoletes:	kde-theme-keramik
-Obsoletes:	kdelibs-kabc
-Obsoletes:	kdelibs-sound
-Obsoletes:	kdelibs2
-Obsoletes:	kdelibs2-sound
-Obsoletes:	kdesupport
-Obsoletes:	kdesupport-devel
-Obsoletes:	kdesupport-mimelib
-Obsoletes:	kdesupport-mimelib-devel
-Obsoletes:	kdesupport-mimelib-static
-Obsoletes:	kdesupport-static
-Obsoletes:	kimproxy
-# No longer supported/existing
-Obsoletes:	arts-message
-Obsoletes:	kde-sdscreen-KDEGirl
-Obsoletes:	kde-sdscreen-default
-Obsoletes:	kde-splash-KDEGirl < 03-5
-Obsoletes:	kde-splash-default
-Obsoletes:	kde-splash-keramik
-Obsoletes:	kdeadmin-kwuftpd
-Obsoletes:	kdeadmin-kxconfig
-Obsoletes:	kdebase-kwmtheme
-Obsoletes:	kdebase-mailnews
-Obsoletes:	kdeedu-kgeo
-Obsoletes:	kdegames-megami
-Obsoletes:	kdenetwork-kmail
-Obsoletes:	kdenetwork-knode
-Obsoletes:	kdenetwork-kxmlrpcd
-Obsoletes:	kdepim-commonlibs
-Obsoletes:	kdepim-kaplan
-Obsoletes:	kdesdk
-Obsoletes:	kdesdk-devel
-# More
-Obsoletes:	kde-style-plastik
-Obsoletes:	kdepim-kaddressbook < 3:3.1.91.030918-1
-Obsoletes:	kdepim-kmail < 3:3.1.91.030918-1
-Obsoletes:	kdepim-kontact < 3:3.1.91.030918-1
-Obsoletes:	kdepim-korganizer < 3:3.1.91.030918-1
-Obsoletes:	kdepim-libkcal < 3:3.1.91.030918-1
-Obsoletes:	kdepim-libkdenetwork < 3:3.1.91.030918-1
-Obsoletes:	kdepim-libkdepim < 3:3.2.90
-Obsoletes:	kdetoys-kaphorism < 9:3.2.0
-Obsoletes:	openoffice-mimelinks
-Conflicts:	kaffeine <= 0.5-1
-Conflicts:	kdeaddons-konqueror < 1:3.4.0
-Conflicts:	kdebase-core < 9:3.4.0
-Conflicts:	kdenetwork-kit < 10:3.3.0
-Conflicts:	kdepim-devel < 3:3.2.90
-Conflicts:	kmplayer <= 2:0.8.4-1
-Conflicts:	kplayer < 0.5.1-5
-Conflicts:	pixieplus < 0.3-4
-Conflicts:	sim < 0.9.3-4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_noautoreq	libtool(.*)

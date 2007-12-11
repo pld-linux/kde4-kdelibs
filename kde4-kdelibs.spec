@@ -20,13 +20,13 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kdelibs4
-Version:	3.96.2
+Version:	3.97.0
 Release:	0.1
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	f8dc1a0a7ae5b580b6d85938995789cc
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	0c1a52a6f67aa92bf40f3f4d94365691
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -58,9 +58,11 @@ BuildRequires:	docbook-style-xsl
 BuildRequires:	docbook-utils
 %{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	ed
+BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 %{?with_hidden_visibility:BuildRequires:	gcc-c++ >= 5:4.1.0-0.20051206r108118.1}
 BuildRequires:	gettext-devel
+BuildRequires:	giflib-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
@@ -88,8 +90,10 @@ BuildRequires:	qt4-build >= 4.3.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
 BuildRequires:	qt4-qmake >= 4.3.0
 BuildRequires:	rpmbuild(macros) >= 1.129
-BuildRequires:	soprano-devel >= 1.97.1
+#BuildRequires:	soprano-devel >= 1.97.1
 BuildRequires:	strigi-devel >= 0.5.4
+BuildRequires:	sysstat
+BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 %if %{with autoreqdep}
 BuildConflicts:	kdebase-core < 9:3.4.0
@@ -276,6 +280,7 @@ cd build
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
 	-DLIB_INSTALL_DIR=%{_libdir} \
+	-DSYSCONF_INSTALL_DIR=/etc \
 	../
 
 %{__make} -j1
@@ -340,7 +345,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/preparetips
 
-%dir /usr/etc
+#%dir /usr/etc
 
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
@@ -390,7 +395,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_iconsdir}/oxygen
 %{_iconsdir}/hicolor/*x*/actions/*.png
 
-
 %dir %{_datadir}/applnk
 %dir %{_datadir}/applnk/.hidden
 %dir %{_datadir}/apps/profiles
@@ -405,10 +409,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services
 
-%dir %{_prefix}%{_sysconfdir}/xdg
-%dir %{_prefix}%{_sysconfdir}/xdg/menus
-%{_prefix}%{_sysconfdir}/xdg/menus/applications.menu
-
+%dir %{_sysconfdir}/xdg
+%dir %{_sysconfdir}/xdg/menus
+%{_sysconfdir}/xdg/menus/applications.menu
+      
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
 

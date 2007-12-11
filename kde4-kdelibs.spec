@@ -90,7 +90,7 @@ BuildRequires:	qt4-build >= 4.3.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
 BuildRequires:	qt4-qmake >= 4.3.0
 BuildRequires:	rpmbuild(macros) >= 1.129
-#BuildRequires:	soprano-devel >= 1.97.1
+BuildRequires:	soprano-devel >= 1.97.1
 BuildRequires:	strigi-devel >= 0.5.4
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -345,8 +345,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/preparetips
 
-#%dir /usr/etc
-
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_libdir}/libnepomuk.so.4.0.0
@@ -409,8 +407,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services
 
-%dir %{_sysconfdir}/xdg
-%dir %{_sysconfdir}/xdg/menus
 %{_sysconfdir}/xdg/menus/applications.menu
       
 %dir %{_datadir}/dbus-1/interfaces

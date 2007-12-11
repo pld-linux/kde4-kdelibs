@@ -283,7 +283,7 @@ cd build
 	-DSYSCONF_INSTALL_DIR=/etc \
 	../
 
-%{__make} -j1
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT

@@ -90,6 +90,7 @@ BuildRequires:	qt4-build >= 4.3.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
 BuildRequires:	qt4-qmake >= 4.3.0
 BuildRequires:	rpmbuild(macros) >= 1.129
+BuildRequires:	shared-mime-info
 BuildRequires:	soprano-devel >= 1.97.1
 BuildRequires:	strigi-devel >= 0.5.4
 BuildRequires:	sysstat
@@ -167,7 +168,7 @@ aplicativo KDE.
 
 %package libs
 Summary:	KDE libraries
-Summary(pl.UTF-8):   Biblioteki KDE
+Summary(pl.UTF-8):	Biblioteki KDE
 Group:		Libraries
 
 %description libs
@@ -221,7 +222,7 @@ KDE.
 
 %package apidocs
 Summary:	API documentation
-Summary(pl.UTF-8):   Dokumentacja API
+Summary(pl.UTF-8):	Dokumentacja API
 Group:		Documentation
 Requires:	%{name} = %{epoch}:%{version}-%{release}
 Obsoletes:	kttsd-apidocs
@@ -408,7 +409,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services
 
 %{_sysconfdir}/xdg/menus/applications.menu
-      
+
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
 

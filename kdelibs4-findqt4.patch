@@ -4,7 +4,7 @@
  INCLUDE(CheckSymbolExists)
  INCLUDE(MacroAddFileDependencies)
  
-+SET(QT_QMAKE_EXECUTABLE /usr/bin/qt4-qmake)
++SET(QT_QMAKE_EXECUTABLE /usr/bin/qmake-qt4)
 +SET(QT_DBUSXML2CPP_EXECUTABLE /usr/bin/qdbusxml2cpp)
 +SET(QT_DBUSCPP2XML_EXECUTABLE /usr/bin/qdbuscpp2xml)
 +

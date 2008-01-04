@@ -86,9 +86,9 @@ BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	pkgconfig
-BuildRequires:	qt4-build >= 4.3.0
+BuildRequires:	qt4-build >= 4.3.3-3
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
-BuildRequires:	qt4-qmake >= 4.3.0
+BuildRequires:	qt4-qmake >= 4.3.3-3
 BuildRequires:	rpmbuild(macros) >= 1.129
 BuildRequires:	shared-mime-info
 BuildRequires:	soprano-devel >= 1.97.1

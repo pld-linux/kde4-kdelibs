@@ -9,7 +9,7 @@
 					# & '--fvisibility-inlines-hidden'
 					# to g++
 #
-%define		_state		unstable
+%define		_state		stable
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -20,13 +20,13 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kdelibs4
-Version:	3.97.0
+Version:	4.0.0
 Release:	0.1
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	0c1a52a6f67aa92bf40f3f4d94365691
+# Source0-md5:	79d0f83ca81fc4a135663943340c0b8f
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -384,6 +384,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/kcm_phonon
+%{_datadir}/apps/knewstuff
 
 %dir %{_datadir}/apps/phonon
 %{_datadir}/apps/phonon/phonon.notifyrc

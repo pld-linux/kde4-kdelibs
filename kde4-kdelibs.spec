@@ -1,3 +1,5 @@
+# TODO
+# - make possible to install with kde3
 #
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support
@@ -110,6 +112,12 @@ Requires:	hicolor-icon-theme
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
+
+%define		_kde_prefix		%{_prefix}
+%define		_kde_libdir		%{_libdir}
+%define		_kde_share_dir	%{_datadir}
+%define		_kde_html_dir	%{_kdedocdir}
+%define		_kde_config_dir	%{_datadir}/config
 
 %define		_noautoreq	libtool(.*)
 
@@ -279,9 +287,17 @@ export QTDIR=%{_prefix}
 install -d build
 cd build
 %cmake \
-	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
-	-DLIB_INSTALL_DIR=%{_libdir} \
+	-DCMAKE_INSTALL_PREFIX=%{_kde_prefix} \
+	-DCMAKE_BUILD_TYPE=%{_kde_build_type} \
+	-DLIB_INSTALL_DIR=%{_kde_libdir} \
+	-DCONFIG_INSTALL_DIR=%{_kde_config_dir} \
 	-DSYSCONF_INSTALL_DIR=/etc \
+	-DDATA_INSTALL_DIR=%{_kde_share_dir}/apps \
+	-DKCFG_INSTALL_DIR=%{_kde_share_dir}/config.kcfg \
+	-DMIME_INSTALL_DIR=/nogo \
+	-DTEMPLATES_INSTALL_DIR=%{_kde_share_dir}/templates \
+	-DHTML_INSTALL_DIR=%{_kde_html_dir} \
+	-DLIB_SUFFIX=$(lib=%{_lib}; echo ${lib#lib}) \
 	../
 
 %{__make}
@@ -290,9 +306,7 @@ cd build
 rm -rf $RPM_BUILD_ROOT
 cd build
 %{__make} install \
-	DESTDIR=$RPM_BUILD_ROOT \
-	kde_htmldir=%{_kdedocdir} \
-	kde_libs_htmldir=%{_kdedocdir}
+	DESTDIR=$RPM_BUILD_ROOT
 
 install -d \
 	$RPM_BUILD_ROOT/etc/security \
@@ -322,9 +336,9 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%dir %{_docdir}/HTML
-%dir %{_docdir}/HTML/en
-%lang(en) %{_docdir}/HTML/en/common
+%dir %{_kdedocdir}
+%dir %{_kdedocdir}/en
+%lang(en) %{_kdedocdir}/en/common
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/checkXML
@@ -354,7 +368,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/nepomuk/ontologies
 %dir %{_datadir}/apps/nepomuk/pics
 %{_datadir}/apps/nepomuk/pics/rating.png
-%{_docdir}/HTML/en/sonnet
+%{_kdedocdir}/en/sonnet
 %{_mandir}/man1/checkXML.1*
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man7/kdeoptions.7*
@@ -445,6 +459,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkrossui.so.*
 %attr(755,root,root) %{_libdir}/libphonon.so.*
 %attr(755,root,root) %{_libdir}/libphononexperimental.so.*
+%attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
+%attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
+%attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
+%attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
+%attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
 
 %dir %{_libdir}/kde4
 %attr(755,root,root) %{_libdir}/kde4/*.so
@@ -465,11 +484,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
 %{_datadir}/apps/cmake
-%attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
-%attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
-%attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
-%attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
-%attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so

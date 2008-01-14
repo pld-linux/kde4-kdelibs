@@ -104,7 +104,6 @@ BuildConflicts:	kdepim-korganizer-libs
 BuildConflicts:	kdepim-libkdepim < 3:3.3.0
 %endif
 Requires:	QtCore >= 4.2.0
-Requires:	arts >= %{artsver}
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
@@ -336,6 +335,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
+%dir %{_docdir}/kde
 %dir %{_kdedocdir}
 %dir %{_kdedocdir}/en
 %lang(en) %{_kdedocdir}/en/common
@@ -423,7 +423,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services
 
-%{_sysconfdir}/xdg/menus/applications.menu
+# conflicts with applnk
+#%{_sysconfdir}/xdg/menus/applications.menu
 
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml

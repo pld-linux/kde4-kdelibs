@@ -23,7 +23,7 @@ Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kdelibs4
 Version:	4.0.0
-Release:	0.1
+Release:	0.2
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
@@ -310,6 +310,7 @@ cd build
 install -d \
 	$RPM_BUILD_ROOT/etc/security \
 	$RPM_BUILD_ROOT%{_libdir}/kconf_update_bin \
+	$RPM_BUILD_ROOT%{_datadir}/autostart \
 	$RPM_BUILD_ROOT%{_datadir}/applnk/.hidden \
 	$RPM_BUILD_ROOT%{_datadir}/apps/khtml/kpartplugins \
 	$RPM_BUILD_ROOT%{_datadir}/apps/profiles \
@@ -376,6 +377,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/kbuildsycoca4.8*
 ##### nepomuk ???
 
+%dir %{_datadir}/autostart
 %dir %{_datadir}/apps
 %dir %{_datadir}/apps/kconf_update
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl

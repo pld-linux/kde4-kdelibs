@@ -4,6 +4,7 @@
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support
 %bcond_without	apidocs		# don't prepare API documentation
+%bcond_without	kerberos5	# disable kerberos
 %bcond_with	verbose		# verbose build
 #
 %define		_state		stable
@@ -57,7 +58,6 @@ BuildRequires:	docbook-utils
 BuildRequires:	ed
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
-%{?with_hidden_visibility:BuildRequires:	gcc-c++ >= 5:4.1.0-0.20051206r108118.1}
 BuildRequires:	gettext-devel
 BuildRequires:	giflib-devel
 %{?with_apidocs:BuildRequires:	graphviz}

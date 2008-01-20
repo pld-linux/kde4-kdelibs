@@ -519,4 +519,3 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/config
 %dir %{_datadir}/config/ui
 %dir %{_datadir}/apps/kconf_update
-%dir %{_datadir}/config.kcfg

@@ -99,6 +99,7 @@ Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
+Requires:	kdelibs-shared = %{epoch}:%{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -237,33 +238,13 @@ Zawiera:
 - listy klas i ich składników
 - listę przestrzeni nazw (namespace)
 
-#%package kgrantpty
-#Summary:	Helper program to fix terminal permissions
-#Summary(pl.UTF-8):   Program pomocniczy do ustawiania uprawnień terminala
-#Group:		Applications/Terminal
-#Requires:	%{name} = %{epoch}:%{version}-%{release}
+%package -n kdelibs-shared
+Summary:	KDE3 and KDE4 shared files
+Group:		X11/Libraries
+Provides:	kdelibs-shared
 
-#%description kgrantpty
-#This suid root program fixes the permissions of pseudo-terminal device
-#files so that they cannot be eavesdropped by other local users.
-#Systems that support /dev/pts (typical PLD installations do) don't
-#require an extra program to do it, in that case this package is
-#useless.
-
-#Install this package if you're running a custom system that lacks
-#Unix98 pts support and privacy from other local users is a concern for
-#you.
-
-#%description kgrantpty -l pl.UTF-8
-#Ten program, działający z uprawnieniami roota, poprawia uprawnienia
-#plików pseudo-terminali, żeby uniknąć ich podsłuchiwania przez innych
-#lokalnych użytkowników. Systemy obsługujące /dev/pts (typowe
-#instalacje PLD go obsługują) nie wymagają do tego dodatkowego
-#programu, w tym przypadku ten pakiet jest bezużyteczny.
-
-#Zainstaluj ten pakiet jeżeli korzystasz z nietypowej konfiguracji
-#nieobsługującej pts-ów typu Unix98 i obawiasz się inwigilacji ze
-#strony innych użytkowników lokalnych.
+%description -n kdelibs-shared
+KDE3 and KDE4 shared files
 
 %prep
 %setup -q -n %{orgname}-%{version}
@@ -330,10 +311,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}/kde
 %dir %{_kdedocdir}
 %dir %{_kdedocdir}/en
-%lang(en) %{_kdedocdir}/en/common
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kde4automoc
-%attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
@@ -346,9 +325,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjsconsole
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
-%attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/kwrapper4
-%attr(755,root,root) %{_bindir}/makekdewidgets
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/preparetips
 
@@ -368,21 +345,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_datadir}/autostart
 %dir %{_datadir}/apps
-%dir %{_datadir}/apps/kconf_update
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
-%attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
 %{_datadir}/apps/kconf_update/*.upd
 
 %{_datadir}/apps/LICENSES
-%{_datadir}/apps/katepart
 %{_datadir}/apps/kcertpart
-%{_datadir}/apps/kcm_componentchooser
-%{_datadir}/apps/kdeui
-%{_datadir}/apps/kdewidgets
-%{_datadir}/apps/khtml
-%{_datadir}/apps/kjava
-%{_datadir}/apps/ksgmltools2
-%{_datadir}/apps/kssl
+%{_datadir}/apps/khtml/css/presentational.css
+%{_datadir}/apps/khtml/domain_info
+%{_datadir}/apps/khtml/icons
+%{_datadir}/apps/khtml/khtml.rc
+%{_datadir}/apps/khtml/kpartplugins
+%{_datadir}/apps/kjava/kjava.policy
+%{_datadir}/apps/kjava/pluginsinfo
 %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
@@ -404,11 +378,12 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/applnk/.hidden
 %dir %{_datadir}/apps/profiles
 %dir %{_datadir}/apps/remotes
-%dir %{_datadir}/config.kcfg
 %dir %{_datadir}/services/kconfiguredialog
-
-%{_datadir}/config
-%{_datadir}/locale/all_languages
+%{_datadir}/config/accept-languages.codes
+%{_datadir}/config/colors
+%{_datadir}/config/kdxspreviewrc
+%{_datadir}/config/ksslcalist
+%{_datadir}/config/magic
 %{_datadir}/mime/packages
 %dir %{_datadir}/kde4
 %{_datadir}/kde4/servicetypes
@@ -515,3 +490,31 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 #%{_kdedocdir}/en/%{name}*-apidocs
 %endif
+
+%files -n kdelibs-shared
+%defattr(644,root,root,755)
+%attr(755,root,root) %{_bindir}/checkXML
+%attr(755,root,root) %{_bindir}/kunittestmodrunner
+%attr(755,root,root) %{_bindir}/makekdewidgets
+%{_datadir}/apps/katepart
+%{_datadir}/apps/kcm_componentchooser
+%attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
+%{_datadir}/apps/kdeui
+%{_datadir}/apps/kdewidgets
+%{_datadir}/apps/khtml/css/html4.css
+%{_datadir}/apps/khtml/css/quirks.css
+%{_datadir}/apps/khtml/khtml_browser.rc
+%{_datadir}/apps/kjava/kjava.jar
+%{_datadir}/apps/ksgmltools2
+%{_datadir}/apps/kssl
+%{_datadir}/config/ui/ui_standards.rc
+%{_datadir}/config/kdebug.areas
+%{_datadir}/config/kdebugrc
+%lang(en) %{_kdedocdir}/en/common
+%{_datadir}/locale/all_languages
+%dir %{_datadir}/apps/khtml
+%dir %{_datadir}/apps/khtml/css
+%dir %{_datadir}/apps/kjava
+%dir %{_datadir}/config
+%dir %{_datadir}/config/ui
+%dir %{_datadir}/apps/kconf_update

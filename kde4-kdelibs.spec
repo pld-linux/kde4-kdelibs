@@ -102,6 +102,7 @@ Requires:	hicolor-icon-theme
 Requires:	kdelibs-shared = %{epoch}:%{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
+Conflicts:	kdelibs < 9:3.5.8-11
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_kde_prefix		%{_prefix}
@@ -316,7 +317,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
-%attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_bindir}/kded4
 %attr(755,root,root) %{_bindir}/kdeinit4
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
@@ -452,6 +452,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
+%attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so

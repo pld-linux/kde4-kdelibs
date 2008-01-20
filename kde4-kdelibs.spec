@@ -313,7 +313,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_kdedocdir}
 %dir %{_kdedocdir}/en
 %ghost /etc/security/fileshare.conf
-%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
@@ -452,6 +451,7 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
+%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so

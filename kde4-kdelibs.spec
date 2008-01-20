@@ -19,7 +19,7 @@ Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kdelibs4
 Version:	4.0.0
-Release:	0.2
+Release:	0.3
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
@@ -519,3 +519,4 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/config
 %dir %{_datadir}/config/ui
 %dir %{_datadir}/apps/kconf_update
+%dir %{_datadir}/config.kcfg

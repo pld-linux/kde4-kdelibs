@@ -87,7 +87,7 @@ BuildRequires:	qt4-build >= 4.3.3-3
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
 BuildRequires:	qt4-qmake >= 4.3.3-3
 BuildRequires:	rpmbuild(macros) >= 1.293
-BuildRequires:	shared-mime-info
+BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 1.97.1
 BuildRequires:	strigi-devel >= 0.5.4
 BuildRequires:	sysstat

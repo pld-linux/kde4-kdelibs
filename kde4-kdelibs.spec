@@ -19,7 +19,7 @@ Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kdelibs4
 Version:	4.0.0
-Release:	0.3
+Release:	0.4
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
@@ -99,6 +99,7 @@ Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
+Requires:	kde-common-dirs
 Requires:	kdelibs-shared = %{epoch}:%{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth

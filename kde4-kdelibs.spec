@@ -317,6 +317,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
+%attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_bindir}/kded4
 %attr(755,root,root) %{_bindir}/kdeinit4
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
@@ -453,7 +454,6 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
 %attr(755,root,root) %{_bindir}/kde4automoc
-%attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so

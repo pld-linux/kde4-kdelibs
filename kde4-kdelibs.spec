@@ -19,7 +19,7 @@ Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kde4-kdelibs
 Version:	4.0.0
-Release:	0.4
+Release:	0.1
 Epoch:		9
 License:	LGPL
 Group:		X11/Libraries
@@ -28,7 +28,7 @@ Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.ta
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
-Patch0:		%{name}-findqt4.patch
+Patch0:		%{orgname}4-findqt4.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= 4.3.0

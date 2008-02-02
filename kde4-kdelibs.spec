@@ -17,7 +17,7 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
-Name:		kdelibs4
+Name:		kde4-kdelibs
 Version:	4.0.0
 Release:	0.4
 Epoch:		9
@@ -103,6 +103,8 @@ Requires:	kde-common-dirs
 Requires:	kdelibs-shared = %{epoch}:%{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
+Obsoletes:	kdelibs4
+Conflicts:	kdelibs4
 Conflicts:	kdelibs < 9:3.5.8-11
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 

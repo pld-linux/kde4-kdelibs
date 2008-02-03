@@ -173,6 +173,7 @@ aplicativo KDE.
 Summary:	KDE libraries
 Summary(pl.UTF-8):	Biblioteki KDE
 Group:		Libraries
+Requires:	%{name} = %{epoch}:%{version}-%{release}
 
 %description libs
 KDE libraries.

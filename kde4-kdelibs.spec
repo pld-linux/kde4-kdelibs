@@ -244,12 +244,12 @@ Zawiera:
 - listy klas i ich składników
 - listę przestrzeni nazw (namespace)
 
-%package -n kdelibs-shared
+%package shared
 Summary:	KDE3 and KDE4 shared files
 Group:		X11/Libraries
 Provides:	kdelibs-shared
 
-%description -n kdelibs-shared
+%description shared
 KDE3 and KDE4 shared files
 
 %prep
@@ -497,7 +497,7 @@ rm -rf $RPM_BUILD_ROOT
 #%{_kdedocdir}/en/%{name}*-apidocs
 %endif
 
-%files -n kdelibs-shared
+%files shared
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner

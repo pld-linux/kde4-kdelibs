@@ -46,6 +46,7 @@ BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
 BuildRequires:	autoconf >= 2.52
 BuildRequires:	automake >= 1.6.1
+BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake
 BuildRequires:	cups-devel

@@ -36,6 +36,7 @@ BuildRequires:	QtCore-devel >= 4.3.0
 BuildRequires:	QtDBus-devel >= 4.3.0
 BuildRequires:	QtDesigner-devel >= 4.3.0
 BuildRequires:	QtGui-devel >= 4.3.0
+BuildRequires:	QtScript-devel >= 4.3.0
 BuildRequires:	QtSvg-devel >= 4.3.0
 BuildRequires:	QtTest-devel >= 4.3.0
 BuildRequires:	QtUiTools-devel >= 4.3.0

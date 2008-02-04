@@ -173,8 +173,7 @@ aplicativo KDE.
 %package libs
 Summary:	KDE libraries
 Summary(pl.UTF-8):	Biblioteki KDE
-Group:		Libraries
-Requires:	%{name} = %{version}-%{release}
+Group:		X11/Libraries
 
 %description libs
 KDE libraries.

@@ -7,7 +7,7 @@
 %bcond_without	kerberos5	# disable kerberos
 %bcond_with	verbose		# verbose build
 #
-%define		_state		stable
+%define		_state		unstable
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -18,13 +18,13 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 %define	orgname	kdelibs
 Name:		kde4-kdelibs
-Version:	4.0.0
+Version:	4.0.60
 Release:	0.1
 Epoch:		0
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	79d0f83ca81fc4a135663943340c0b8f
+# Source0-md5:	d292550acccb1c10b5f66f31a63c56f3
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop

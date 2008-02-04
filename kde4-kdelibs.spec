@@ -429,7 +429,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkfile.so.*
 %attr(755,root,root) %{_libdir}/libkrosscore.so.*
 %attr(755,root,root) %{_libdir}/libkrossui.so.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.4.0.0
+%attr(755,root,root) %{_libdir}/libnepomuk.so.4.1.0
 %attr(755,root,root) %{_libdir}/libnepomuk.so.4
 %attr(755,root,root) %{_libdir}/libphonon.so.*
 %attr(755,root,root) %{_libdir}/libphononexperimental.so.*
@@ -448,6 +448,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
 %dir %{_libdir}/kde4/plugins/phonon_platform
 %attr(755,root,root) %{_libdir}/kde4/plugins/phonon_platform/kde.so
+%dir %{_libdir}/kde4/plugins/script
+%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4.1.0
+%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4
+%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so
 %dir %{_libdir}/kconf_update_bin
 %dir %{_libdir}/kde4/libexec
 %attr(755,root,root) %{_libdir}/kde4/libexec/*

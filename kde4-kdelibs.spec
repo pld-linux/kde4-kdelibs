@@ -327,7 +327,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
 %attr(755,root,root) %{_bindir}/kjscmd
-%attr(755,root,root) %{_bindir}/kjsconsole
+#%attr(755,root,root) %{_bindir}/kjsconsole
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4

@@ -20,7 +20,6 @@ Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.60
 Release:	0.1
-Epoch:		0
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
@@ -95,14 +94,14 @@ BuildRequires:	strigi-devel >= 0.5.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
-Requires:	%{name}-libs = %{epoch}:%{version}-%{release}
+Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= 4.2.0
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs
-Requires:	kdelibs-shared = %{epoch}:%{version}-%{release}
+Requires:	kdelibs-shared = %{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 Obsoletes:	kdelibs4
@@ -175,7 +174,7 @@ aplicativo KDE.
 Summary:	KDE libraries
 Summary(pl.UTF-8):	Biblioteki KDE
 Group:		Libraries
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Requires:	%{name} = %{version}-%{release}
 
 %description libs
 KDE libraries.
@@ -190,7 +189,7 @@ Summary(pt_BR.UTF-8):	Arquivos de inclusão e documentação para compilar aplic
 Summary(ru.UTF-8):	Хедеры и документация для компилляции программ KDE
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
-Requires:	%{name}-libs = %{epoch}:%{version}-%{release}
+Requires:	%{name}-libs = %{version}-%{release}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel
@@ -230,7 +229,7 @@ KDE.
 Summary:	API documentation
 Summary(pl.UTF-8):	Dokumentacja API
 Group:		Documentation
-Requires:	%{name} = %{epoch}:%{version}-%{release}
+Requires:	%{name} = %{version}-%{release}
 Obsoletes:	kttsd-apidocs
 
 %description apidocs

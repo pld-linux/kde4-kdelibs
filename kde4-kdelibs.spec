@@ -109,6 +109,8 @@ Conflicts:	kdelibs < 9:3.5.8-11
 Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
+%define		_defaultdocdir	%{_prefix}/share/doc
+%define		_iconsdir	%{_prefix}/share/icons
 %define		_kde_prefix	%{_prefix}
 %define		_kde_libdir	%{_libdir}
 %define		_kde_share_dir	%{_datadir}

@@ -9,6 +9,7 @@
 #
 %define		_state		unstable
 
+%define	orgname	kdelibs
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
 Summary(ko.UTF-8):	KDE - 라이브러리
@@ -16,7 +17,6 @@ Summary(pl.UTF-8):	K Desktop Environment - biblioteki
 Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
-%define	orgname	kdelibs
 Name:		kde4-kdelibs
 Version:	4.0.60
 Release:	0.1
@@ -105,8 +105,8 @@ Requires:	kdelibs-shared = %{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 Obsoletes:	kdelibs4
-Conflicts:	kdelibs4
 Conflicts:	kdelibs < 9:3.5.8-11
+Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_kde_prefix		%{_prefix}
@@ -136,7 +136,8 @@ Bibliotecas para KDE.
 
 %description -l pl.UTF-8
 Ten pakiet zawiera biblioteki potrzebne do rozwijania i uruchamiania
-aplikacji KDE, różną dokumentację oraz moduły z motywami wyglądu KDE.
+aplikacji KDE, różną dokumentację oraz moduły z motywami wyglądu
+KDE.
 
 Pakiet ten zawiera między innymi:
 - kdecore - podstawową bibliotekę KDE,
@@ -214,15 +215,17 @@ Pakiet ten zawiera pliki nagłówkowe i dokumentację potrzebną przy
 pisaniu własnych programów wykorzystujących kdelibs.
 
 %description devel -l pt_BR.UTF-8
-Este pacote contém os arquivos de inclusão que são necessários para
-compilar aplicativos KDE.
+Este pacote contém os arquivos de inclusão que são necessários
+para compilar aplicativos KDE.
 
 %description devel -l ru.UTF-8
-Этот пакет содержит хедеры, необходимые для компиляции программ для
-KDE.
+Этот пакет содержит хедеры,
+необходимые для компиляции программ
+для KDE.
 
 %description devel -l uk.UTF-8
-Цей пакет містить хедери, необхідні для компіляції програм для KDE.
+Цей пакет містить хедери, необхідні
+для компіляції програм для KDE.
 
 %package apidocs
 Summary:	API documentation
@@ -267,7 +270,7 @@ cd build
 	-DCMAKE_BUILD_TYPE=%{_kde_build_type} \
 	-DLIB_INSTALL_DIR=%{_kde_libdir} \
 	-DCONFIG_INSTALL_DIR=%{_kde_config_dir} \
-	-DSYSCONF_INSTALL_DIR=/etc \
+	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 	-DDATA_INSTALL_DIR=%{_kde_share_dir}/apps \
 	-DKCFG_INSTALL_DIR=%{_kde_share_dir}/config.kcfg \
 	-DMIME_INSTALL_DIR=/nogo \

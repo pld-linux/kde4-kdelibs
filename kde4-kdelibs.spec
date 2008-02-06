@@ -95,13 +95,13 @@ BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 Requires:	%{name}-libs = %{version}-%{release}
+Requires:	%{name}-shared = %{version}-%{release}
 Requires:	QtCore >= 4.2.0
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs
-Requires:	kde4-kdelibs-shared = %{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 Obsoletes:	kdelibs4
@@ -109,8 +109,8 @@ Conflicts:	kdelibs < 9:3.5.8-11
 Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_kde_prefix		%{_prefix}
-%define		_kde_libdir		%{_libdir}
+%define		_kde_prefix	%{_prefix}
+%define		_kde_libdir	%{_libdir}
 %define		_kde_share_dir	%{_datadir}
 %define		_kde_html_dir	%{_kdedocdir}
 %define		_kde_config_dir	%{_datadir}/config
@@ -209,17 +209,15 @@ Pakiet ten zawiera pliki nagłówkowe i dokumentację potrzebną przy
 pisaniu własnych programów wykorzystujących kdelibs.
 
 %description devel -l pt_BR.UTF-8
-Este pacote contém os arquivos de inclusão que são necessários
-para compilar aplicativos KDE.
+Este pacote contém os arquivos de inclusão que são necessários para
+compilar aplicativos KDE.
 
 %description devel -l ru.UTF-8
-Этот пакет содержит хедеры,
-необходимые для компиляции программ
-для KDE.
+Этот пакет содержит хедеры, необходимые для компиляции программ для
+KDE.
 
 %description devel -l uk.UTF-8
-Цей пакет містить хедери, необхідні
-для компіляції програм для KDE.
+Цей пакет містить хедери, необхідні для компіляції програм для KDE.
 
 %package apidocs
 Summary:	API documentation
@@ -241,13 +239,17 @@ Zawiera:
 - listę przestrzeni nazw (namespace)
 
 %package shared
-Summary:	KDE3 and KDE4 shared files
+Summary:	KDE 3 and KDE 4 shared files
+Summary(pl.UTF-8):	Pliki współdzielone między KDE 3 i KDE 4
 Group:		X11/Libraries
 Provides:	kdelibs-shared
 Obsoletes:	kdelibs-shared
 
 %description shared
-KDE3 and KDE4 shared files
+KDE 3 and KDE 4 shared files.
+
+%description shared -l pl.UTF-8
+Pliki współdzielone między KDE 3 i KDE 4.
 
 %prep
 %setup -q -n %{orgname}-%{version}
@@ -278,8 +280,8 @@ cd build
 
 %install
 rm -rf $RPM_BUILD_ROOT
-cd build
-%{__make} install \
+
+%{__make} -C build install \
 	DESTDIR=$RPM_BUILD_ROOT
 
 install -d \
@@ -338,7 +340,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/apps/nepomuk/pics
 %{_datadir}/apps/nepomuk/pics/rating.png
 %{_kdedocdir}/en/sonnet
-%{_mandir}/man1/checkXML.1*
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
@@ -493,8 +494,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/cmake
 
 %if %{with apidocs}
-%files apidocs
-%defattr(644,root,root,755)
+#%files apidocs
+#%defattr(644,root,root,755)
 #%{_kdedocdir}/en/%{name}*-apidocs
 %endif
 
@@ -505,23 +506,24 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/makekdewidgets
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
+%dir %{_datadir}/apps/kconf_update
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
+%dir %{_datadir}/apps/khtml
+%dir %{_datadir}/apps/khtml/css
 %{_datadir}/apps/khtml/css/html4.css
 %{_datadir}/apps/khtml/css/quirks.css
 %{_datadir}/apps/khtml/khtml_browser.rc
+%dir %{_datadir}/apps/kjava
 %{_datadir}/apps/kjava/kjava.jar
 %{_datadir}/apps/ksgmltools2
 %{_datadir}/apps/kssl
+%dir %{_datadir}/config
+%dir %{_datadir}/config/ui
 %{_datadir}/config/ui/ui_standards.rc
 %{_datadir}/config/kdebug.areas
 %{_datadir}/config/kdebugrc
-%lang(en) %{_kdedocdir}/en/common
 %{_datadir}/locale/all_languages
-%dir %{_datadir}/apps/khtml
-%dir %{_datadir}/apps/khtml/css
-%dir %{_datadir}/apps/kjava
-%dir %{_datadir}/config
-%dir %{_datadir}/config/ui
-%dir %{_datadir}/apps/kconf_update
+%{_mandir}/man1/checkXML.1*
+%lang(en) %{_kdedocdir}/en/common

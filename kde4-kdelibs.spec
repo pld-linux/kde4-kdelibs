@@ -19,7 +19,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.60
-Release:	0.1
+Release:	0.2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/latest/src/%{orgname}-%{version}.tar.bz2
@@ -101,7 +101,7 @@ Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs
-Requires:	kdelibs-shared = %{version}-%{release}
+Requires:	kde4-kdelibs-shared = %{version}-%{release}
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
 Obsoletes:	kdelibs4
@@ -198,12 +198,6 @@ Requires:	mdns-bonjour-devel
 Requires:	pcre-devel
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
-Obsoletes:	arts-kde-devel
-Obsoletes:	kdelibs-sound-devel
-Obsoletes:	kdelibs-static
-Obsoletes:	kdelibs2-devel
-Obsoletes:	kdelibs2-sound-devel
-Obsoletes:	kttsd-devel
 Conflicts:	kdebase-devel <= 9:3.1.90
 
 %description devel
@@ -246,12 +240,13 @@ Zawiera:
 - listy klas i ich składników
 - listę przestrzeni nazw (namespace)
 
-%package -n kdelibs-shared
+%package shared
 Summary:	KDE3 and KDE4 shared files
 Group:		X11/Libraries
 Provides:	kdelibs-shared
+Obsoletes:	kdelibs-shared
 
-%description -n kdelibs-shared
+%description shared
 KDE3 and KDE4 shared files
 
 %prep
@@ -503,7 +498,7 @@ rm -rf $RPM_BUILD_ROOT
 #%{_kdedocdir}/en/%{name}*-apidocs
 %endif
 
-%files -n kdelibs-shared
+%files shared
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner

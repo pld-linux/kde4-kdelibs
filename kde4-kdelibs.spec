@@ -18,12 +18,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.61
+Version:	4.0.62
 Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	fccc955a0f310616326b88a13f88df4a
+# Source0-md5:	c3ec7e91897cb16dfd8b4c43110c2715
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop

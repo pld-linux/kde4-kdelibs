@@ -8,8 +8,7 @@
 %bcond_with	verbose		# verbose build
 #
 %define		_state		unstable
-
-%define	orgname	kdelibs
+%define		orgname		kdelibs
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
 Summary(ko.UTF-8):	KDE - 라이브러리
@@ -56,7 +55,6 @@ BuildRequires:	docbook-dtd42-xml
 BuildRequires:	docbook-style-xsl
 BuildRequires:	docbook-utils
 %{?with_apidocs:BuildRequires:	doxygen}
-BuildRequires:	ed
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	gettext-devel
@@ -116,8 +114,6 @@ BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 %define		_kde_share_dir	%{_datadir}
 %define		_kde_html_dir	%{_kdedocdir}
 %define		_kde_config_dir	%{_datadir}/config
-
-%define		_noautoreq	libtool(.*)
 
 # confuses OpenEXR detection
 %undefine	configure_cache
@@ -341,12 +337,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/nepomuk/ontologies
 %dir %{_datadir}/apps/nepomuk/pics
 %{_datadir}/apps/nepomuk/pics/rating.png
+##### nepomuk ???
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
-##### nepomuk ???
 
 %dir %{_datadir}/autostart
 %dir %{_datadir}/apps

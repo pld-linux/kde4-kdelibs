@@ -17,28 +17,28 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.62
+Version:	4.0.64
 Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	c3ec7e91897cb16dfd8b4c43110c2715
+# Source0-md5:	0ae1227d5ed55315dfe1117ca14a03b2
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
-BuildRequires:	Qt3Support-devel >= 4.3.0
-BuildRequires:	QtCore-devel >= 4.3.0
-BuildRequires:	QtDBus-devel >= 4.3.0
-BuildRequires:	QtDesigner-devel >= 4.3.0
-BuildRequires:	QtGui-devel >= 4.3.0
-BuildRequires:	QtScript-devel >= 4.3.0
-BuildRequires:	QtSvg-devel >= 4.3.0
-BuildRequires:	QtTest-devel >= 4.3.0
-BuildRequires:	QtUiTools-devel >= 4.3.0
-BuildRequires:	QtXml-devel >= 4.3.0
+BuildRequires:	Qt3Support-devel >= 4.4.0
+BuildRequires:	QtCore-devel >= 4.4.0
+BuildRequires:	QtDBus-devel >= 4.4.0
+BuildRequires:	QtDesigner-devel >= 4.4.0
+BuildRequires:	QtGui-devel >= 4.4.0
+BuildRequires:	QtScript-devel >= 4.4.0
+BuildRequires:	QtSvg-devel >= 4.4.0
+BuildRequires:	QtTest-devel >= 4.4.0
+BuildRequires:	QtUiTools-devel >= 4.4.0
+BuildRequires:	QtXml-devel >= 4.4.0
 BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
@@ -82,9 +82,9 @@ BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	pkgconfig
-BuildRequires:	qt4-build >= 4.3.3-3
-%{?with_apidocs:BuildRequires:	qt4-doc >= 4.3.0}
-BuildRequires:	qt4-qmake >= 4.3.3-3
+BuildRequires:	qt4-build >= 4.4.0
+%{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
+BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.0.0
@@ -94,7 +94,7 @@ BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	%{name}-shared = %{version}-%{release}
-Requires:	QtCore >= 4.2.0
+Requires:	QtCore >= 4.4.0
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl

@@ -1,5 +1,8 @@
 # TODO
 # - make possible to install with kde3
+# 	- file /usr/share/apps/kconf_update/move_kio_help_cache.sh from install 
+#	  of kde4-kdelibs-shared-4.0.64-0.1.x86_64 conflicts with file from package kdelibs-3.5.9-5.x86_64
+#
 #
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support

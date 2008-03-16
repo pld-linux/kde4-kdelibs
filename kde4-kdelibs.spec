@@ -292,8 +292,8 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
 	$RPM_BUILD_ROOT%{_datadir}/config.kcfg \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
-	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128}/apps \
-	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128}/apps
+	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
+	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps
 
 # For fileshare
 touch $RPM_BUILD_ROOT/etc/security/fileshare.conf

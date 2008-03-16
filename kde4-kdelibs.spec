@@ -195,7 +195,7 @@ Requires:	mdns-bonjour-devel
 Requires:	pcre-devel
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
-Conflicts:	kdebase-devel <= 9:3.1.90
+Conflicts:	kdebase-devel
 
 %description devel
 This package contains header files and development documentation for

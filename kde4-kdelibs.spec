@@ -1,8 +1,3 @@
-# TODO
-# - make possible to install with kde3
-# 	- file /usr/share/apps/kconf_update/move_kio_help_cache.sh from install 
-#	  of kde4-kdelibs-shared-4.0.64-0.1.x86_64 conflicts with file from package kdelibs-3.5.9-5.x86_64
-#
 #
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support
@@ -20,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.65
+Version:	4.0.66
 Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	2f64926b8c634ba26198940def7b6bed
+# Source0-md5:	9447f45729934dc7a4da1c021cafc445
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -303,6 +298,11 @@ install -d \
 # For fileshare
 touch $RPM_BUILD_ROOT/etc/security/fileshare.conf
 
+# avoid conflict with kde3. Looks like this is only for upgrading
+# directory structure from some old kde version to current kde3/4
+rm $RPM_BUILD_ROOT%{_datadir}/apps/kconf_update/kio_help.upd
+rm $RPM_BUILD_ROOT%{_datadir}/apps/kconf_update/move_kio_help_cache.sh
+
 if [ -d $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-%{version}-apidocs ] ; then
 	mv -f $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-{%{version}-,}apidocs
 fi
@@ -509,7 +509,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %dir %{_datadir}/apps/kconf_update
-%attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
+#%attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
 %dir %{_datadir}/apps/khtml

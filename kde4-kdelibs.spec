@@ -16,7 +16,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.66
-Release:	0.1
+Release:	0.2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -327,7 +327,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
-%attr(755,root,root) %{_bindir}/kjscmd
+#
+# conflict with kde3
+#%attr(755,root,root) %{_bindir}/kjscmd
+#
 #%attr(755,root,root) %{_bindir}/kjsconsole
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4

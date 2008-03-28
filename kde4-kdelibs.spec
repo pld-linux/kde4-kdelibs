@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.66
-Release:	0.2
+Version:	4.0.67
+Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	9447f45729934dc7a4da1c021cafc445
+# Source0-md5:	6dbb8c32adea114999662e035e6cc573
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -85,7 +85,7 @@ BuildRequires:	qt4-build >= 4.4.0
 BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.0.0
+BuildRequires:	soprano-devel >= 2.0.97
 BuildRequires:	strigi-devel >= 0.5.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel

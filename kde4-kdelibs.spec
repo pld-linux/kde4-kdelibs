@@ -329,7 +329,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
 #
 # conflict with kde3
-%attr(755,root,root) %{_bindir}/kjscmd
+#%attr(755,root,root) %{_bindir}/kjscmd
 #
 #%attr(755,root,root) %{_bindir}/kjsconsole
 %attr(755,root,root) %{_bindir}/kross

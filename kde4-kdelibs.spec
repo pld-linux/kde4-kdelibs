@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.69
+Version:	4.0.70
 Release:	0.1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	d88669b3e6eb1d26d5e54ca7da92bc5f
+# Source0-md5:	eb4355df980239a04b0f74779add716c
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -389,7 +389,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/services/kconfiguredialog
 %{_datadir}/config/accept-languages.codes
 %{_datadir}/config/colors
-%{_datadir}/config/kdxspreviewrc
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
 %{_datadir}/mime/packages
@@ -416,6 +415,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkimproxy.so.*
 %attr(755,root,root) %{_libdir}/libkio.so.*
 %attr(755,root,root) %{_libdir}/libkjs.so.*
+%attr(755,root,root) %{_libdir}/libkjsapi.so.*
 %attr(755,root,root) %{_libdir}/libkjsembed.so.*
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so.*
 %attr(755,root,root) %{_libdir}/libknewstuff2.so.*
@@ -476,6 +476,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkimproxy.so
 %attr(755,root,root) %{_libdir}/libkio.so
 %attr(755,root,root) %{_libdir}/libkjs.so
+%attr(755,root,root) %{_libdir}/libkjsapi.so
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so

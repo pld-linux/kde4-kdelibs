@@ -16,7 +16,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.70
-Release:	0.1
+Release:	0.2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -85,7 +85,7 @@ BuildRequires:	qt4-build >= 4.4.0
 BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.0.97
+BuildRequires:	soprano-devel >= 2.0.98
 BuildRequires:	strigi-devel >= 0.5.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel

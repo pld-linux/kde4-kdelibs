@@ -392,7 +392,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/colors
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
-%{_datadir}/mime/packages
+%{_datadir}/mime/packages/*
 %dir %{_datadir}/kde4
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services

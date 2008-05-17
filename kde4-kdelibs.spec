@@ -86,7 +86,7 @@ BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.0.98
-BuildRequires:	strigi-devel >= 0.5.5
+BuildRequires:	strigi-devel >= 0.5.9
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel

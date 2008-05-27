@@ -463,7 +463,6 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
-%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so

@@ -320,6 +320,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
+%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_bindir}/kded4
 %attr(755,root,root) %{_bindir}/kdeinit4

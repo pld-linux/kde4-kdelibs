@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.80
+Version:	4.0.81
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	40aec4dc4167d3df23beb71b470181cd
+# Source0-md5:	0c61e2aa9946c7d9e0c1e1d58c1de059
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -320,7 +320,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
-%attr(755,root,root) %{_bindir}/kde4automoc
+#%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_bindir}/kded4
 %attr(755,root,root) %{_bindir}/kdeinit4
@@ -354,13 +354,12 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/apps
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
-%attr(755,root,root) %{_libdir}/kconf_update_bin/phonon_devicepreference_update
 
 %{_datadir}/apps/LICENSES
 %{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
 %{_datadir}/apps/khtml/domain_info
-%{_datadir}/apps/khtml/icons
+%{_datadir}/apps/khtml/error.html
 %{_datadir}/apps/khtml/khtml.rc
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
@@ -370,11 +369,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/ktexteditor_kdatatool
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
-%{_datadir}/apps/kcm_phonon
 %{_datadir}/apps/knewstuff
-
-%dir %{_datadir}/apps/phonon
-%{_datadir}/apps/phonon/phonon.notifyrc
 
 %dir %{_datadir}/services
 
@@ -428,14 +423,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkwalletbackend.so.*
 %attr(755,root,root) %{_libdir}/libsolid.so.*
 %attr(755,root,root) %{_libdir}/libthreadweaver.so.*
-%attr(755,root,root) %{_libdir}/libkaudiodevicelist.so.*
 %attr(755,root,root) %{_libdir}/libkfile.so.*
 %attr(755,root,root) %{_libdir}/libkrosscore.so.*
 %attr(755,root,root) %{_libdir}/libkrossui.so.*
 %attr(755,root,root) %{_libdir}/libnepomuk.so.4.1.0
 %attr(755,root,root) %{_libdir}/libnepomuk.so.4
-%attr(755,root,root) %{_libdir}/libphonon.so.*
-%attr(755,root,root) %{_libdir}/libphononexperimental.so.*
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
@@ -449,8 +441,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
-%dir %{_libdir}/kde4/plugins/phonon_platform
-%attr(755,root,root) %{_libdir}/kde4/plugins/phonon_platform/kde.so
 %dir %{_libdir}/kde4/plugins/script
 %attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4.1.0
 %attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4
@@ -458,8 +448,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/kconf_update_bin
 %dir %{_libdir}/kde4/libexec
 %attr(755,root,root) %{_libdir}/kde4/libexec/*
-%dir %{_datadir}/apps/libphonon
-%{_datadir}/apps/libphonon/hardwaredatabase
 
 %files devel
 %defattr(644,root,root,755)
@@ -487,14 +475,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkwalletbackend.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
-%attr(755,root,root) %{_libdir}/libkaudiodevicelist.so
 %attr(755,root,root) %{_libdir}/libkfile.so
-%attr(755,root,root) %{_libdir}/libphonon.so
 %attr(755,root,root) %{_libdir}/libknewstuff2.so
 %attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
-%attr(755,root,root) %{_libdir}/libphononexperimental.so
 %{_includedir}/*
 %{_datadir}/apps/cmake
 

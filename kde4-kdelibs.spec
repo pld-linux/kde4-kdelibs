@@ -58,6 +58,7 @@ BuildRequires:	giflib-devel
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
 %{?with_kerberos5:BuildRequires:	krb5-devel}
+BuildRequires:	kde4-kdesupport-phonon >= %{version}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel

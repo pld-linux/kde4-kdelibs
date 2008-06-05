@@ -58,7 +58,6 @@ BuildRequires:	giflib-devel
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
 %{?with_kerberos5:BuildRequires:	krb5-devel}
-BuildRequires:	kde4-kdesupport-phonon >= %{version}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
@@ -81,6 +80,7 @@ BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
 BuildRequires:	qt4-qmake >= 4.4.0
+BuildRequires:	qt4-phonon-devel >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.0.98
@@ -321,7 +321,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
-%attr(755,root,root) %{_bindir}/kde4automoc
 %attr(755,root,root) %{_bindir}/kde4-config
 %attr(755,root,root) %{_bindir}/kded4
 %attr(755,root,root) %{_bindir}/kdeinit4

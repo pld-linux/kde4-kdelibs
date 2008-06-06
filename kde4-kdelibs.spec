@@ -57,6 +57,7 @@ BuildRequires:	giflib-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
+BuildRequires:	kde4-automoc
 %{?with_kerberos5:BuildRequires:	krb5-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel

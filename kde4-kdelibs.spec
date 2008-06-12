@@ -1,3 +1,6 @@
+# TODO:
+# - drop kde4-kdelibs-shared subpackage. It claims to obsolete
+#   kde3 while it's lie. These packages aren't compatible.
 #
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support

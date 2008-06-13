@@ -1,12 +1,8 @@
-# TODO:
-# - drop kde4-kdelibs-shared subpackage. It claims to obsolete
-#   kde3 while it's lie. These packages aren't compatible.
 #
 # Conditional build:
 %bcond_without	alsa		# build without ALSA support
 %bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
-%bcond_with	verbose		# verbose build
 #
 %define		_state		unstable
 %define		orgname		kdelibs
@@ -19,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.82
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -93,7 +89,6 @@ BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	%{name}-shared = %{version}-%{release}
 Requires:	QtCore >= 4.4.0
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
@@ -105,6 +100,8 @@ Requires:	xorg-app-iceauth
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs < 9:3.5.8-11
 Conflicts:	kdelibs4
+Provides:	%{name}-shared
+Obsoletes:	%{name}-shared
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_defaultdocdir	%{_prefix}/share/doc
@@ -237,19 +234,6 @@ Zawiera:
 - listy klas i ich składników
 - listę przestrzeni nazw (namespace)
 
-%package shared
-Summary:	KDE 3 and KDE 4 shared files
-Summary(pl.UTF-8):	Pliki współdzielone między KDE 3 i KDE 4
-Group:		X11/Libraries
-Provides:	kdelibs-shared
-Obsoletes:	kdelibs-shared
-
-%description shared
-KDE 3 and KDE 4 shared files.
-
-%description shared -l pl.UTF-8
-Pliki współdzielone między KDE 3 i KDE 4.
-
 %prep
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
@@ -301,11 +285,6 @@ install -d \
 # For fileshare
 touch $RPM_BUILD_ROOT/etc/security/fileshare.conf
 
-# avoid conflict with kde3. Looks like this is only for upgrading
-# directory structure from some old kde version to current kde3/4
-rm $RPM_BUILD_ROOT%{_datadir}/apps/kconf_update/kio_help.upd
-rm $RPM_BUILD_ROOT%{_datadir}/apps/kconf_update/move_kio_help_cache.sh
-
 if [ -d $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-%{version}-apidocs ] ; then
 	mv -f $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-{%{version}-,}apidocs
 fi
@@ -330,17 +309,15 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
-#
-# conflict with kde3
-#%attr(755,root,root) %{_bindir}/kjscmd
-#
-#%attr(755,root,root) %{_bindir}/kjsconsole
+%attr(755,root,root) %{_bindir}/kjscmd
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/preparetips
-
+%attr(755,root,root) %{_bindir}/checkXML
+%attr(755,root,root) %{_bindir}/kunittestmodrunner
+%attr(755,root,root) %{_bindir}/makekdewidgets
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %dir %{_datadir}/apps/nepomuk
@@ -350,6 +327,7 @@ rm -rf $RPM_BUILD_ROOT
 ##### nepomuk ???
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
+%{_mandir}/man1/makekdewidgets.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
@@ -358,7 +336,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/apps
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
-
+%{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
 %{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
@@ -400,6 +378,29 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
+
+%{_datadir}/apps/katepart
+%{_datadir}/apps/kcm_componentchooser
+%dir %{_datadir}/apps/kconf_update
+%{_datadir}/apps/kdeui
+%{_datadir}/apps/kdewidgets
+%dir %{_datadir}/apps/khtml
+%dir %{_datadir}/apps/khtml/css
+%{_datadir}/apps/khtml/css/html4.css
+%{_datadir}/apps/khtml/css/quirks.css
+%{_datadir}/apps/khtml/khtml_browser.rc
+%dir %{_datadir}/apps/kjava
+%{_datadir}/apps/kjava/kjava.jar
+%{_datadir}/apps/ksgmltools2
+%{_datadir}/apps/kssl
+%dir %{_datadir}/config
+%dir %{_datadir}/config/ui
+%{_datadir}/config/ui/ui_standards.rc
+%{_datadir}/config/kdebug.areas
+%{_datadir}/config/kdebugrc
+%{_datadir}/locale/all_languages
+%{_mandir}/man1/checkXML.1*
+%lang(en) %{_kdedocdir}/en/common
 
 %files libs
 %defattr(644,root,root,755)
@@ -492,32 +493,3 @@ rm -rf $RPM_BUILD_ROOT
 #%defattr(644,root,root,755)
 #%{_kdedocdir}/en/%{name}*-apidocs
 %endif
-
-%files shared
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/checkXML
-%attr(755,root,root) %{_bindir}/kunittestmodrunner
-%attr(755,root,root) %{_bindir}/makekdewidgets
-%{_datadir}/apps/katepart
-%{_datadir}/apps/kcm_componentchooser
-%dir %{_datadir}/apps/kconf_update
-#%attr(755,root,root) %{_datadir}/apps/kconf_update/*.sh
-%{_datadir}/apps/kdeui
-%{_datadir}/apps/kdewidgets
-%dir %{_datadir}/apps/khtml
-%dir %{_datadir}/apps/khtml/css
-%{_datadir}/apps/khtml/css/html4.css
-%{_datadir}/apps/khtml/css/quirks.css
-%{_datadir}/apps/khtml/khtml_browser.rc
-%dir %{_datadir}/apps/kjava
-%{_datadir}/apps/kjava/kjava.jar
-%{_datadir}/apps/ksgmltools2
-%{_datadir}/apps/kssl
-%dir %{_datadir}/config
-%dir %{_datadir}/config/ui
-%{_datadir}/config/ui/ui_standards.rc
-%{_datadir}/config/kdebug.areas
-%{_datadir}/config/kdebugrc
-%{_datadir}/locale/all_languages
-%{_mandir}/man1/checkXML.1*
-%lang(en) %{_kdedocdir}/en/common

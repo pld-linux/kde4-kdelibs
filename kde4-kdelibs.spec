@@ -24,7 +24,7 @@ Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
-Patch0:		%{name}-lib64.patch
+Patch1:		%{name}-lib64.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= 4.4.0

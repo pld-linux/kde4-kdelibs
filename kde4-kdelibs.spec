@@ -24,6 +24,7 @@ Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
+Patch0:		%{name}-lib64.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= 4.4.0
@@ -237,6 +238,7 @@ Zawiera:
 %prep
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
+%patch1 -p0
 
 %build
 export kde_htmldir=%{_kdedocdir}
@@ -256,7 +258,9 @@ cd build
 	-DMIME_INSTALL_DIR=/nogo \
 	-DTEMPLATES_INSTALL_DIR=%{_kde_share_dir}/templates \
 	-DHTML_INSTALL_DIR=%{_kde_html_dir} \
-	-DLIB_SUFFIX=$(lib=%{_lib}; echo ${lib#lib}) \
+%if "%{_lib}" == "lib64"
+	-DLIB_SUFFIX=64 \
+%endif
 	-DKDE4_ENABLE_FINAL=OFF \
 	../
 

@@ -80,8 +80,8 @@ BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
-BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	qt4-phonon-devel >= 4.4.0
+BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.0.98
@@ -98,11 +98,11 @@ Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs
 Requires:	setup >= 2.4.6-7
 Requires:	xorg-app-iceauth
+Provides:	%{name}-shared
+Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs < 9:3.5.8-11
 Conflicts:	kdelibs4
-Provides:	%{name}-shared
-Obsoletes:	%{name}-shared
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_defaultdocdir	%{_prefix}/share/doc
@@ -308,9 +308,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_kdedocdir}/en
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
-%dir /etc/xdg/menus
+%dir %{_sysconfdir}/xdg/menus
 #
-/etc/xdg/menus/applications.menu
+%{_sysconfdir}/xdg/menus/applications.menu
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4

@@ -283,6 +283,8 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
 	$RPM_BUILD_ROOT%{_datadir}/config.kcfg \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
+	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
+	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
 	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps
 
@@ -306,7 +308,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_kdedocdir}/en
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
-%dir %{_datadir}/kde4/services/ServiceMenus
 #
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kjs

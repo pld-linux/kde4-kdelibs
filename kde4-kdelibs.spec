@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.82
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -304,6 +304,10 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}/kde
 %dir %{_kdedocdir}
 %dir %{_kdedocdir}/en
+# from kde4-kdebase.spec - old common subpackage
+%dir %{_desktopdir}/kde4
+%dir %{_datadir}/kde4/services/ServiceMenus
+#
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4

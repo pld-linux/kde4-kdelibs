@@ -57,7 +57,7 @@ BuildRequires:	giflib-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
-BuildRequires:	kde4-automoc
+BuildRequires:	automoc4 >= 0.9.83
 %{?with_kerberos5:BuildRequires:	krb5-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
@@ -80,7 +80,7 @@ BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
-BuildRequires:	qt4-phonon-devel >= 4.4.0
+BuildRequires:	phonon-devel >= 4.1.83
 BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18

@@ -194,6 +194,7 @@ Requires:	libart_lgpl-devel
 Requires:	libidn-devel
 Requires:	mdns-bonjour-devel
 Requires:	pcre-devel
+Requires:	phonon-devel
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
 Conflicts:	kdelibs-devel
@@ -497,7 +498,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
-%{_includedir}/*
+#%{_includedir}/*
 %{_datadir}/apps/cmake
 
 %if %{with apidocs}

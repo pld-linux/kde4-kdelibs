@@ -41,7 +41,7 @@ BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
-BuildRequires:	automoc4 > 0.9.83
+BuildRequires:	automoc4 >= 0.9.83
 BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake

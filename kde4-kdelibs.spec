@@ -559,8 +559,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KAboutApplicationDialog
 %{_includedir}/KDE/KAboutData
 %{_includedir}/KDE/KAboutPerson
-%{_includedir}/KDE/KAccelGen/Deref
-%{_includedir}/KDE/KAccelGen/Deref_Key
+%{_includedir}/KDE/KAccelGen
 %{_includedir}/KDE/KAcceleratorManager
 %{_includedir}/KDE/KAction
 %{_includedir}/KDE/KActionCollection
@@ -751,8 +750,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMacroExpanderBase
 %{_includedir}/KDE/KMainWindow
 %{_includedir}/KDE/KMakeTypeList
-%{_includedir}/KDE/KMediaPlayer/Player
-%{_includedir}/KDE/KMediaPlayer/View
+%{_includedir}/KDE/KMediaPlayer
 %{_includedir}/KDE/KMenu
 %{_includedir}/KDE/KMenuBar
 %{_includedir}/KDE/KMessage
@@ -914,10 +912,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KTzfileTimeZoneSource
 %{_includedir}/KDE/KUndoStack
 %{_includedir}/KDE/KUniqueApplication
-%{_includedir}/KDE/KUnitTest/Runner
-%{_includedir}/KDE/KUnitTest/SlotTester
-%{_includedir}/KDE/KUnitTest/TestResults
-%{_includedir}/KDE/KUnitTest/Tester
+%{_includedir}/KDE/KUnitTest
 %{_includedir}/KDE/KUriFilter
 %{_includedir}/KDE/KUriFilterData
 %{_includedir}/KDE/KUriFilterPlugin
@@ -933,7 +928,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUser
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
-%{_includedir}/KDE/KWallet/Wallet
+%{_includedir}/KDE/KWallet
 %{_includedir}/KDE/KWindowInfo
 %{_includedir}/KDE/KWindowSystem
 %{_includedir}/KDE/KWordMacroExpander
@@ -965,12 +960,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/ThreadWeaver
 %{_includedir}/KDE/ThumbCreator
 %{_includedir}/KDE/kdbgstream
-%{_includedir}/KDE/khtml/DrawContentsEvent
-%{_includedir}/KDE/khtml/MouseDoubleClickEvent
-%{_includedir}/KDE/khtml/MouseEvent
-%{_includedir}/KDE/khtml/MouseMoveEvent
-%{_includedir}/KDE/khtml/MousePressEvent
-%{_includedir}/KDE/khtml/MouseReleaseEvent
+%{_includedir}/KDE/khtml
 %{_includedir}/KDE/kndbgstream
 %dir %{_includedir}/dnssd
 %{_includedir}/dnssd/*
@@ -990,6 +980,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/kparts
 %{_includedir}/kparts/*
 %{_includedir}/kross
+%dir %{_includedir}/ktexteditor
 %{_includedir}/ktexteditor/*
 %dir %{_includedir}/nepomuk
 %{_includedir}/nepomuk/*

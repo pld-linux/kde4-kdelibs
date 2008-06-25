@@ -81,6 +81,7 @@ BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
+BuildRequires:	phonon-devel >= 4.1.83
 BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18

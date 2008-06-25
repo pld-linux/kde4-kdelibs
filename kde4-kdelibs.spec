@@ -382,9 +382,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
 %{_datadir}/mime/packages/*
-%dir %{_datadir}/kde4
 %{_datadir}/kde4/servicetypes
-%{_datadir}/kde4/services
+%{_datadir}/kde4/services/*
 
 # conflicts with applnk
 #%{_sysconfdir}/xdg/menus/applications.menu
@@ -452,9 +451,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
 
-%dir %{_libdir}/kde4
 %attr(755,root,root) %{_libdir}/kde4/*.so
-%dir %{_libdir}/kde4/plugins
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
 %dir %{_libdir}/kde4/plugins/imageformats

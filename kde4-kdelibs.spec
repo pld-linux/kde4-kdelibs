@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.83
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -972,35 +972,39 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/khtml/MousePressEvent
 %{_includedir}/KDE/khtml/MouseReleaseEvent
 %{_includedir}/KDE/kndbgstream
-%{_includedir}/dnssd
+%dir %{_includedir}/dnssd
 %{_includedir}/dnssd/*
-%{_includedir}/dom
+%dir %{_includedir}/dom
 %{_includedir}/dom/*
-%{_includedir}/kdesu
+%dir %{_includedir}/kdesu
 %{_includedir}/kdesu/*
-%{_includedir}/khexedit
+%dir %{_includedir}/khexedit
 %{_includedir}/khexedit/*
-%{_includedir}/kio
+%dir %{_includedir}/kio
 %{_includedir}/kio/*
-%{_includedir}/kjs
+%dir %{_includedir}/kjs
 %{_includedir}/kjs/*
-%{_includedir}/kmediaplayer
+%dir %{_includedir}/kmediaplayer
 %{_includedir}/kmediaplayer/*
 %{_includedir}/knewstuff2
-%{_includedir}/kparts
+%dir %{_includedir}/kparts
 %{_includedir}/kparts/*
 %{_includedir}/kross
 %{_includedir}/ktexteditor/*
-%{_includedir}/nepomuk
+%dir %{_includedir}/nepomuk
 %{_includedir}/nepomuk/*
 %{_includedir}/*.h
-%{_includedir}/solid
+%dir %{_includedir}/solid
 %{_includedir}/solid/*
-%{_includedir}/sonnet
+%dir %{_includedir}/sonnet
 %{_includedir}/sonnet/*
-%{_includedir}/threadweaver
+%dir %{_includedir}/threadweaver
 %{_includedir}/threadweaver/*
-
+%{_includedir}/*.tcc
+%dir %{_includedir}/ksettings
+%{_includedir}/ksettings/*
+%dir %{_includedir}/kunittest
+%{_includedir}/kunittest/*
 
 %if %{with apidocs}
 #%files apidocs

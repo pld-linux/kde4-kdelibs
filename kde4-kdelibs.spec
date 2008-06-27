@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.83
-Release:	2
+Version:	4.0.84
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	2fbea759a4a8a535c2307c7c600e2d0d
+# Source0-md5:	1cb3aa8fe803499c3eedd3175681d07a
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -330,6 +330,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
+%attr(755,root,root) %{_bindir}/kwalletd
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %dir %{_datadir}/apps/nepomuk
@@ -415,6 +416,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
+%attr(755,root,root) %{_libdir}/libkdeinit4_kwalletd.so
 %attr(755,root,root) %{_libdir}/libkde3support.so.*
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*

@@ -24,7 +24,6 @@ Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
-Patch1:		%{name}-lib64.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= 4.4.0
@@ -239,13 +238,10 @@ Zawiera:
 %prep
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
-%patch1 -p0
 
 %build
 export kde_htmldir=%{_kdedocdir}
 export kde_libs_htmldir=%{_kdedocdir}
-export KDEDIR=%{_prefix}
-export QTDIR=%{_prefix}
 install -d build
 cd build
 %cmake \

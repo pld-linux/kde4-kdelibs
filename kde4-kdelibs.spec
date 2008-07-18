@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.98
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -96,15 +96,13 @@ Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs
 Requires:	setup >= 2.4.6-7
+Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs < 9:3.5.8-11
 Conflicts:	kdelibs4
-Conflicts:	gnome-menus
-Conflicts:	applnk
-Conflicts:	kdelibs-shared
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_defaultdocdir	%{_prefix}/share/doc
@@ -309,8 +307,8 @@ rm -rf $RPM_BUILD_ROOT
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
 %dir %{_sysconfdir}/xdg/menus
-#
-%{_sysconfdir}/xdg/menus/applications.menu
+# DO NOT PACKAGE THIS FILE vvvv - use applnk
+#%{_sysconfdir}/xdg/menus/applications.menu
 %ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4

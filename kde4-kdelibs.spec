@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.98
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -101,7 +101,7 @@ Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
-Conflicts:	kdelibs < 9:3.5.8-11
+Conflicts:	kdelibs
 Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 

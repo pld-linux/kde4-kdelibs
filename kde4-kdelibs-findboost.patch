@@ -4,7 +4,7 @@
      # cdrom inserted it will popup a very annoying dialog
      #D:/boost/include
      /sw/local/include
-+    /usr/include/boost
++    /usr/include
    )
  
    SET(_boost_LIBRARIES_SEARCH_DIRS

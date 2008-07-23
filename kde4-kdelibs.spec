@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.0.98
-Release:	4
+Release:	5
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -24,6 +24,7 @@ Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
+Patch1:		%{name}-findboost.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= 4.4.0
@@ -239,6 +240,7 @@ Zawiera:
 %prep
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
+%patch1 -p0
 
 %build
 export kde_htmldir=%{_kdedocdir}

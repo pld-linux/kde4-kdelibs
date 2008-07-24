@@ -41,7 +41,7 @@ BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
-BuildRequires:	automoc4 >= 0.9.83
+BuildRequires:	automoc4 >= 0.9.84
 BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake
@@ -77,15 +77,15 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.1.83
+BuildRequires:	phonon-devel >= 4.2.0
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= 4.4.0
 %{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
 BuildRequires:	qt4-qmake >= 4.4.0
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.0.98
-BuildRequires:	strigi-devel >= 0.5.9
+BuildRequires:	soprano-devel >= 2.1
+BuildRequires:	strigi-devel >= 0.5.10
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel

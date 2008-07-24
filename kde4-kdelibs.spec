@@ -4,7 +4,7 @@
 %bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		unstable
+%define		_state		stable
 %define		orgname		kdelibs
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.0.99
+Version:	4.1.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	92e6d8d1bc0dccd8f5c204039c2aa00d
+# Source0-md5:	86496aed25d4dce440418b3064a27913
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop

@@ -4,7 +4,7 @@
 %bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdelibs
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.0
-Release:	2
+Version:	4.1.60
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	86496aed25d4dce440418b3064a27913
+# Source0-md5:	aa02159950770919c17d87a81754cd3b
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -443,8 +443,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkfile.so.*
 %attr(755,root,root) %{_libdir}/libkrosscore.so.*
 %attr(755,root,root) %{_libdir}/libkrossui.so.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.4.1.0
-%attr(755,root,root) %{_libdir}/libnepomuk.so.4
+%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*.*
+%attr(755,root,root) %{_libdir}/libnepomuk.so.?
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
@@ -457,8 +457,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
 %dir %{_libdir}/kde4/plugins/script
-%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4.1.0
-%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.4
+%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.*.*.*
+%attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so.?
 %attr(755,root,root) %{_libdir}/kde4/plugins/script/libkrossqtsplugin.so
 %dir %{_libdir}/kconf_update_bin
 %dir %{_libdir}/kde4/libexec
@@ -660,6 +660,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDirSelectDialog
 %{_includedir}/KDE/KDirWatch
 %{_includedir}/KDE/KDiskFreeSpace
+%{_includedir}/KDE/KDiskFreeSpaceInfo
 %{_includedir}/KDE/KDoubleNumInput
 %{_includedir}/KDE/KDoubleSpinBox
 %{_includedir}/KDE/KDoubleValidator

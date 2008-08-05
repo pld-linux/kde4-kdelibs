@@ -341,6 +341,7 @@ rm -rf $RPM_BUILD_ROOT
 ##### nepomuk ???
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
+%{_mandir}/man1/kdecmake.1*
 %{_mandir}/man1/makekdewidgets.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*

@@ -6,6 +6,8 @@
 #
 %define		_state		unstable
 %define		orgname		kdelibs
+%define		_qtver		4.4.1
+
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
 Summary(ko.UTF-8):	KDE - 라이브러리
@@ -15,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.60
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -27,16 +29,16 @@ Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
-BuildRequires:	Qt3Support-devel >= 4.4.0
-BuildRequires:	QtCore-devel >= 4.4.0
-BuildRequires:	QtDBus-devel >= 4.4.0
-BuildRequires:	QtDesigner-devel >= 4.4.0
-BuildRequires:	QtGui-devel >= 4.4.0
-BuildRequires:	QtScript-devel >= 4.4.0
-BuildRequires:	QtSvg-devel >= 4.4.0
-BuildRequires:	QtTest-devel >= 4.4.0
-BuildRequires:	QtUiTools-devel >= 4.4.0
-BuildRequires:	QtXml-devel >= 4.4.0
+BuildRequires:	Qt3Support-devel >= %{_qtver}
+BuildRequires:	QtCore-devel >= %{_qtver}
+BuildRequires:	QtDBus-devel >= %{_qtver}
+BuildRequires:	QtDesigner-devel >= %{_qtver}
+BuildRequires:	QtGui-devel >= %{_qtver}
+BuildRequires:	QtScript-devel >= %{_qtver}
+BuildRequires:	QtSvg-devel >= %{_qtver}
+BuildRequires:	QtTest-devel >= %{_qtver}
+BuildRequires:	QtUiTools-devel >= %{_qtver}
+BuildRequires:	QtXml-devel >= %{_qtver}
 BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
@@ -44,7 +46,7 @@ BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.84
 BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
-BuildRequires:	cmake
+BuildRequires:	cmake >= 2.6.0
 BuildRequires:	cups-devel
 BuildRequires:	docbook-dtd41-sgml
 BuildRequires:	docbook-dtd412-xml
@@ -79,9 +81,9 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.2.0
 BuildRequires:	pkgconfig
-BuildRequires:	qt4-build >= 4.4.0
-%{?with_apidocs:BuildRequires:	qt4-doc >= 4.4.0}
-BuildRequires:	qt4-qmake >= 4.4.0
+BuildRequires:	qt4-build >= %{_qtver}
+%{?with_apidocs:BuildRequires:	qt4-doc >= %{_qtver}}
+BuildRequires:	qt4-qmake >= %{_qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.1
@@ -90,7 +92,7 @@ BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	QtCore >= 4.4.0
+Requires:	QtCore >= %{_qtver}
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl

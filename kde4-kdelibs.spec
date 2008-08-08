@@ -46,7 +46,7 @@ BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.84
 BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
-BuildRequires:	cmake >= 2.6.0
+BuildRequires:	cmake = 2.6.0
 BuildRequires:	cups-devel
 BuildRequires:	docbook-dtd41-sgml
 BuildRequires:	docbook-dtd412-xml

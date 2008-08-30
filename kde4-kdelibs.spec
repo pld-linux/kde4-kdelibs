@@ -16,18 +16,17 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.63
-Release:	2
+Version:	4.1.64
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	5a81d38623bba9c5578178bdce47cd61
+# Source0-md5:	c6a59a7168ea10f14f49108d7eea91d4
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
-Patch2:		%{name}-findxine.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{_qtver}
@@ -244,7 +243,6 @@ Zawiera:
 %setup -q -n %{orgname}-%{version}
 %patch0 -p0
 %patch1 -p0
-%patch2 -p0
 
 %build
 export kde_htmldir=%{_kdedocdir}

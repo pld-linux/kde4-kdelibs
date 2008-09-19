@@ -331,11 +331,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
-%attr(755,root,root) %{_bindir}/kwalletd
+#%attr(755,root,root) %{_bindir}/kwalletd
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %dir %{_datadir}/apps/nepomuk
-%{_datadir}/apps/nepomuk/ontologies
+#%{_datadir}/apps/nepomuk/ontologies
 %dir %{_datadir}/apps/nepomuk/pics
 %{_datadir}/apps/nepomuk/pics/rating.png
 ##### nepomuk ???
@@ -419,7 +419,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libkdeinit4_kwalletd.so
+#%attr(755,root,root) %{_libdir}/libkdeinit4_kwalletd.so
 %attr(755,root,root) %{_libdir}/libkde3support.so.*
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*
@@ -441,7 +441,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libktexteditor.so.*
 %attr(755,root,root) %{_libdir}/libkunittest.so.*
 %attr(755,root,root) %{_libdir}/libkutils.so.*
-%attr(755,root,root) %{_libdir}/libkwalletbackend.so.*
+#%attr(755,root,root) %{_libdir}/libkwalletbackend.so.*
 %attr(755,root,root) %{_libdir}/libsolid.so.*
 %attr(755,root,root) %{_libdir}/libthreadweaver.so.*
 %attr(755,root,root) %{_libdir}/libkfile.so.*
@@ -491,7 +491,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libktexteditor.so
 %attr(755,root,root) %{_libdir}/libkunittest.so
 %attr(755,root,root) %{_libdir}/libkutils.so
-%attr(755,root,root) %{_libdir}/libkwalletbackend.so
+#%attr(755,root,root) %{_libdir}/libkwalletbackend.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkfile.so

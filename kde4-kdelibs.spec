@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.65
+Version:	4.1.67
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	9f8781b028901d379cee98631f938546
+# Source0-md5:	de1631211c866a536eff9213a15049c2
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -43,7 +43,7 @@ BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
-BuildRequires:	automoc4 >= 0.9.84
+BuildRequires:	automoc4 >= 0.9.87
 BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.6.1-2

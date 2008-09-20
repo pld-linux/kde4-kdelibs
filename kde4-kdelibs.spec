@@ -128,7 +128,6 @@ Included in this package are among others:
 - kdecore - KDE core library,
 - kdeui - KDE user interface library,
 - khtml - KDE HTML widget with javascript and CSS support,
-- kwallet - KDE password manager.
 
 %description -l es.UTF-8
 Bibliotecas para KDE.
@@ -142,7 +141,6 @@ Pakiet ten zawiera między innymi:
 - kdecore - podstawową bibliotekę KDE,
 - kdeui - interfejs użytkownika KDE,
 - khtml - obsługę HTML, javascript oraz CSS dla KDE,
-- kwallet - system zarządzania hasłami w KDE.
 
 %description -l pt_BR.UTF-8
 Bibliotecas de fundação do KDE requeridas por todo e qualquer
@@ -331,7 +329,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
-#%attr(755,root,root) %{_bindir}/kwalletd
 # nepomuk ???
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %dir %{_datadir}/apps/nepomuk
@@ -419,7 +416,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-#%attr(755,root,root) %{_libdir}/libkdeinit4_kwalletd.so
 %attr(755,root,root) %{_libdir}/libkde3support.so.*
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*
@@ -441,7 +437,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libktexteditor.so.*
 %attr(755,root,root) %{_libdir}/libkunittest.so.*
 %attr(755,root,root) %{_libdir}/libkutils.so.*
-#%attr(755,root,root) %{_libdir}/libkwalletbackend.so.*
 %attr(755,root,root) %{_libdir}/libsolid.so.*
 %attr(755,root,root) %{_libdir}/libthreadweaver.so.*
 %attr(755,root,root) %{_libdir}/libkfile.so.*
@@ -491,7 +486,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libktexteditor.so
 %attr(755,root,root) %{_libdir}/libkunittest.so
 %attr(755,root,root) %{_libdir}/libkutils.so
-#%attr(755,root,root) %{_libdir}/libkwalletbackend.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkfile.so

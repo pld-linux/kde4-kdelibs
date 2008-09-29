@@ -247,9 +247,9 @@ export kde_htmldir=%{_kdedocdir}
 export kde_libs_htmldir=%{_kdedocdir}
 install -d build
 cd build
+
 %cmake \
 	-DCMAKE_INSTALL_PREFIX=%{_kde_prefix} \
-	-DCMAKE_BUILD_TYPE=%{_kde_build_type} \
 	-DLIB_INSTALL_DIR=%{_kde_libdir} \
 	-DCONFIG_INSTALL_DIR=%{_kde_config_dir} \
 	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \

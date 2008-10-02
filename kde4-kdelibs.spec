@@ -423,6 +423,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*
 %attr(755,root,root) %{_libdir}/libkdesu.so.*
+%attr(755,root,root) %{_libdir}/libkformulalib.so
 %attr(755,root,root) %{_libdir}/libkpty.so.*
 %attr(755,root,root) %{_libdir}/libkdeui.so.*
 %attr(755,root,root) %{_libdir}/libkdnssd.so.*
@@ -473,7 +474,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
-%attr(755,root,root) %{_libdir}/libkformulalib.so
 %attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so

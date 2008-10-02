@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.67
+Version:	4.1.68
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	de1631211c866a536eff9213a15049c2
+# Source0-md5:	654fdd31baac232a75efb1a53c5d9d97
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -391,6 +391,9 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
 
+%dir %{_datadir}/apps/formulashape
+%{_datadir}/apps/formulashape/fonts
+
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %dir %{_datadir}/apps/kconf_update
@@ -453,6 +456,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kformulawidgets.so
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
 %dir %{_libdir}/kde4/plugins/script
@@ -469,6 +473,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
+%attr(755,root,root) %{_libdir}/libkformulalib.so
 %attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so

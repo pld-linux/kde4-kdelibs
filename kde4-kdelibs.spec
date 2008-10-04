@@ -288,9 +288,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
 	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps
 
-# For fileshare
-touch $RPM_BUILD_ROOT/etc/security/fileshare.conf
-
 if [ -d $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-%{version}-apidocs ] ; then
 	mv -f $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-{%{version}-,}apidocs
 fi
@@ -311,7 +308,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_sysconfdir}/xdg/menus
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 #%{_sysconfdir}/xdg/menus/applications.menu
-%ghost /etc/security/fileshare.conf
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4

@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.68
+Version:	4.1.69
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	654fdd31baac232a75efb1a53c5d9d97
+# Source0-md5:	1a5b1834df6e782236ebd3294d8c7f2a
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -339,6 +339,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
+%{_mandir}/man8/kdeinit4.8*
 
 %dir %{_datadir}/autostart
 %dir %{_datadir}/apps
@@ -741,6 +742,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KLibrary
 %{_includedir}/KDE/KLineEdit
 %{_includedir}/KDE/KListWidget
+%{_includedir}/KDE/KListWidgetSearchLine
 %{_includedir}/KDE/KLocale
 %{_includedir}/KDE/KLocalizedString
 %{_includedir}/KDE/KLockFile

@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.70
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -340,6 +340,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
 %{_mandir}/man8/kdeinit4.8*
+%{_mandir}/man8/kcookiejar4.8*
+%{_mandir}/man8/meinproc4.8*
 
 %dir %{_datadir}/autostart
 %dir %{_datadir}/apps
@@ -380,7 +382,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/katemoderc
 %{_datadir}/mime/packages/*
 %{_datadir}/kde4/servicetypes
-%{_datadir}/kde4/services/*
+%{_datadir}/kde4/services/*.desktop
+%{_datadir}/kde4/services/*.protocol
+%dir %{_datadir}/kde4/services/kded
+%{_datadir}/kde4/services/kded/*
+%dir %{_datadir}/kde4/services/qimageioplugins
+%{_datadir}/kde4/services/qimageioplugins/*
 
 # conflicts with applnk
 #%{_sysconfdir}/xdg/menus/applications.menu

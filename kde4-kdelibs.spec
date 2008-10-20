@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.70
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -401,7 +401,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
-%dir %{_datadir}/apps/kconf_update
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
 %dir %{_datadir}/apps/khtml

@@ -305,7 +305,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_kdedocdir}/en
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
-%dir %{_sysconfdir}/xdg/menus
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 #%{_sysconfdir}/xdg/menus/applications.menu
 %attr(755,root,root) %{_bindir}/kjs
@@ -389,9 +388,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/kde4/services/qimageioplugins
 %{_datadir}/kde4/services/qimageioplugins/*
 %dir %{_datadir}/kde4/services/ServiceMenus
-
-# conflicts with applnk
-#%{_sysconfdir}/xdg/menus/applications.menu
 
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml

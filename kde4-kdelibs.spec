@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.72
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -102,7 +102,6 @@ Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
-Obsoletes:	kde4-kdebase-workspace-plasma
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs

@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.71
+Version:	4.1.72
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	ddeb33fefedb3eab9b454d24731b5845
+# Source0-md5:	4e233d135b7f5b21f2c4dc5db74267cd
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -102,6 +102,7 @@ Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
+Obsoletes:	kde4-kdebase-workspace-plasma
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
@@ -413,6 +414,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/ui/ui_standards.rc
 %{_datadir}/config/kdebug.areas
 %{_datadir}/config/kdebugrc
+%{_datadir}/config/plasmoids.knsrc
 %{_datadir}/locale/all_languages
 %{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
@@ -423,7 +425,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*
 %attr(755,root,root) %{_libdir}/libkdesu.so.*
-%attr(755,root,root) %{_libdir}/libkformulalib.so
+%attr(755,root,root) %{_libdir}/libkformula.so.*
+%attr(755,root,root) %{_libdir}/libplasma.so.*
 %attr(755,root,root) %{_libdir}/libkpty.so.*
 %attr(755,root,root) %{_libdir}/libkdeui.so.*
 %attr(755,root,root) %{_libdir}/libkdnssd.so.*
@@ -474,6 +477,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
+%attr(755,root,root) %{_libdir}/libkformula.so
 %attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so
@@ -498,6 +502,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
+%attr(755,root,root) %{_libdir}/libplasma.so
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
 %{_includedir}/KDE/DNSSD
@@ -965,6 +970,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/kdbgstream
 %{_includedir}/KDE/khtml
 %{_includedir}/KDE/kndbgstream
+%{_includedir}/KDE/Plasma
+%dir %{_includedir}/plasma
+%{_includedir}/plasma/*
 %dir %{_includedir}/dnssd
 %{_includedir}/dnssd/*
 %dir %{_includedir}/dom

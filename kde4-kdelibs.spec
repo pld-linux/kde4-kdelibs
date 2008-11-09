@@ -38,6 +38,7 @@ BuildRequires:	QtScript-devel >= %{_qtver}
 BuildRequires:	QtSvg-devel >= %{_qtver}
 BuildRequires:	QtTest-devel >= %{_qtver}
 BuildRequires:	QtUiTools-devel >= %{_qtver}
+BuildRequires:	QtWebKit-devel >= %{_qtver}
 BuildRequires:	QtXml-devel >= %{_qtver}
 BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}

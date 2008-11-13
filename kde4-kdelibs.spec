@@ -335,10 +335,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man1/kdecmake.1*
+%{_mandir}/man1/kjs.1*
+%{_mandir}/man1/kjscmd.1*
+%{_mandir}/man1/kross.1*
 %{_mandir}/man1/makekdewidgets.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
+%{_mandir}/man8/kded4.8*
 %{_mandir}/man8/kdeinit4.8*
 %{_mandir}/man8/kcookiejar4.8*
 %{_mandir}/man8/meinproc4.8*
@@ -461,6 +465,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kformulawidgets.so
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so 
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
 %dir %{_libdir}/kde4/plugins/script
@@ -567,6 +572,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KAccelGen
 %{_includedir}/KDE/KAcceleratorManager
 %{_includedir}/KDE/KAction
+%{_includedir}/KDE/KActionCategory
 %{_includedir}/KDE/KActionCollection
 %{_includedir}/KDE/KActionMenu
 %{_includedir}/KDE/KActionSelector

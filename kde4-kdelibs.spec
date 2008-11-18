@@ -105,6 +105,7 @@ Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
+Conflicts:	kdelibs
 Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 

@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.73
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -272,7 +272,6 @@ rm -rf $RPM_BUILD_ROOT
 
 install -d \
 	$RPM_BUILD_ROOT/etc/security \
-	$RPM_BUILD_ROOT%{_kdedocdir}/en/kcontrol \
 	$RPM_BUILD_ROOT%{_libdir}/kconf_update_bin \
 	$RPM_BUILD_ROOT%{_datadir}/autostart \
 	$RPM_BUILD_ROOT%{_datadir}/applnk/.hidden \
@@ -287,10 +286,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
 	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps
 
-if [ -d $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-%{version}-apidocs ] ; then
-	mv -f $RPM_BUILD_ROOT%{_kdedocdir}/en/%{name}-{%{version}-,}apidocs
-fi
-
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -300,9 +295,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %dir %{_docdir}/kde
-%dir %{_kdedocdir}
-%dir %{_kdedocdir}/en
-%dir %{_kdedocdir}/en/kcontrol
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
 # DO NOT PACKAGE THIS FILE vvvv - use applnk

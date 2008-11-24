@@ -274,7 +274,6 @@ rm -rf $RPM_BUILD_ROOT
 install -d \
 	$RPM_BUILD_ROOT/etc/security \
 	$RPM_BUILD_ROOT%{_libdir}/kconf_update_bin \
-	$RPM_BUILD_ROOT%{_datadir}/autostart \
 	$RPM_BUILD_ROOT%{_datadir}/applnk/.hidden \
 	$RPM_BUILD_ROOT%{_datadir}/apps/khtml/kpartplugins \
 	$RPM_BUILD_ROOT%{_datadir}/apps/profiles \
@@ -339,7 +338,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/kcookiejar4.8*
 %{_mandir}/man8/meinproc4.8*
 
-%dir %{_datadir}/autostart
 %dir %{_datadir}/apps
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
@@ -359,8 +357,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
-
-%dir %{_datadir}/services
 
 %{_iconsdir}/crystalsvg
 %{_iconsdir}/oxygen

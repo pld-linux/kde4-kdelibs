@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.73
-Release:	2
+Version:	4.1.80
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	22267d18926163552131c177845b77f5
+# Source0-md5:	dc33ed72409eb2fecd760a66ea01bb0c
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -80,7 +80,7 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.2.0
+BuildRequires:	phonon-devel >= 4.2.80
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= %{_qtver}
 %{?with_apidocs:BuildRequires:	qt4-doc >= %{_qtver}}
@@ -410,6 +410,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/locale/all_languages
 %{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
+%lang(en) %{_kdedocdir}/en/kioslave
 
 %files libs
 %defattr(644,root,root,755)

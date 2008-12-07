@@ -337,7 +337,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/kcookiejar4.8*
 %{_mandir}/man8/meinproc4.8*
 
-%dir %{_datadir}/apps
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh

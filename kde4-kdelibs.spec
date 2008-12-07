@@ -284,7 +284,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
-	$RPM_BUILD_ROOT%{_iconsdir}/oxygen/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -359,7 +358,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/knewstuff
 
 %{_iconsdir}/crystalsvg
-%{_iconsdir}/oxygen
 %{_iconsdir}/hicolor/*x*/actions/*.png
 
 %dir %{_datadir}/applnk

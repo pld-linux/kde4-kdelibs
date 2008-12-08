@@ -109,14 +109,6 @@ Conflicts:	kdelibs
 Conflicts:	kdelibs4
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_defaultdocdir	%{_prefix}/share/doc
-%define		_iconsdir	%{_prefix}/share/icons
-%define		_kde_prefix	%{_prefix}
-%define		_kde_libdir	%{_libdir}
-%define		_kde_share_dir	%{_datadir}
-%define		_kde_html_dir	%{_kdedocdir}
-%define		_kde_config_dir	%{_datadir}/config
-
 # confuses OpenEXR detection
 %undefine	configure_cache
 
@@ -247,16 +239,15 @@ Zawiera:
 install -d build
 cd build
 %cmake \
-	-DCMAKE_INSTALL_PREFIX=%{_kde_prefix} \
-	-DCMAKE_BUILD_TYPE=%{_kde_build_type} \
-	-DLIB_INSTALL_DIR=%{_kde_libdir} \
-	-DCONFIG_INSTALL_DIR=%{_kde_config_dir} \
+	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
+	-DLIB_INSTALL_DIR=%{_libdir} \
+	-DCONFIG_INSTALL_DIR=%{_datadir}/config \
 	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
-	-DDATA_INSTALL_DIR=%{_kde_share_dir}/apps \
-	-DKCFG_INSTALL_DIR=%{_kde_share_dir}/config.kcfg \
+	-DDATA_INSTALL_DIR=%{_datadir}/apps \
+	-DKCFG_INSTALL_DIR=%{_datadir}/config.kcfg \
 	-DMIME_INSTALL_DIR=/nogo \
-	-DTEMPLATES_INSTALL_DIR=%{_kde_share_dir}/templates \
-	-DHTML_INSTALL_DIR=%{_kde_html_dir} \
+	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
+	-DHTML_INSTALL_DIR=%{_kdedocdir} \
 %if "%{_lib}" == "lib64"
 	-DLIB_SUFFIX=64 \
 %endif

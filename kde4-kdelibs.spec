@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.85
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -274,7 +274,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
-	$RPM_BUILD_ROOT%{_iconsdir}/crystalsvg/{16x16,22x22,32x32,48x48,64x64,128x128,scalable}/apps \
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -347,7 +346,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
 
-%{_iconsdir}/crystalsvg
 %{_iconsdir}/hicolor/*x*/actions/*.png
 
 %dir %{_datadir}/applnk

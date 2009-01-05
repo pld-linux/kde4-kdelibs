@@ -20,7 +20,7 @@ Version:	4.1.87
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.pbone.net/mirror/ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	3e0defaad0599f6997f3bb8637e11fac
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk

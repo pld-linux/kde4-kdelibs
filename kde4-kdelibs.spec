@@ -682,6 +682,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFileTreeView
 %{_includedir}/KDE/KFilterBase
 %{_includedir}/KDE/KFilterDev
+%{_includedir}/KDE/KFilterProxySearchLine
 %{_includedir}/KDE/KFind
 %{_includedir}/KDE/KFindDialog
 %{_includedir}/KDE/KFloatValidator

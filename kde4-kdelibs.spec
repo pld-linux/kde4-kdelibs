@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.1.87
-Release:	2
+Version:	4.1.96
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	3e0defaad0599f6997f3bb8637e11fac
+# Source0-md5:	b9254b5afda5bf1855b8d381b6d4509b
 Source1:	pnm.protocol
 Source2:	x-icq.mimelnk
 Source3:	x-mplayer2.desktop
@@ -375,9 +375,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
 
-%dir %{_datadir}/apps/formulashape
-%{_datadir}/apps/formulashape/fonts
-
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
@@ -408,7 +405,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*
 %attr(755,root,root) %{_libdir}/libkdesu.so.*
-%attr(755,root,root) %{_libdir}/libkformula.so.*
 %attr(755,root,root) %{_libdir}/libplasma.so.*
 %attr(755,root,root) %{_libdir}/libkpty.so.*
 %attr(755,root,root) %{_libdir}/libkdeui.so.*
@@ -443,7 +439,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
-%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kformulawidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so 
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
@@ -461,7 +456,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
-%attr(755,root,root) %{_libdir}/libkformula.so
 %attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so

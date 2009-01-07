@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.1.87
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -269,6 +269,8 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/apps/khtml/kpartplugins \
 	$RPM_BUILD_ROOT%{_datadir}/apps/profiles \
 	$RPM_BUILD_ROOT%{_datadir}/apps/remotes \
+	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme \
+	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme/default \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
 	$RPM_BUILD_ROOT%{_datadir}/config.kcfg \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
@@ -352,6 +354,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/applnk/.hidden
 %dir %{_datadir}/apps/profiles
 %dir %{_datadir}/apps/remotes
+%dir %{_datadir}/apps/desktoptheme
+%dir %{_datadir}/apps/desktoptheme/default
 %dir %{_datadir}/services/kconfiguredialog
 %{_datadir}/config/accept-languages.codes
 %{_datadir}/config/colors

@@ -80,7 +80,7 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.2.80
+BuildRequires:	phonon-devel >= 4.2.96
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= %{_qtver}
 %{?with_apidocs:BuildRequires:	qt4-doc >= %{_qtver}}
@@ -88,7 +88,7 @@ BuildRequires:	qt4-qmake >= %{_qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.1.64
-BuildRequires:	strigi-devel >= 0.5.12-0.r850421.1
+BuildRequires:	strigi-devel >= 0.6.3
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel

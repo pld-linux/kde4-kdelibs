@@ -98,7 +98,7 @@ Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
-Requires:	kde-common-dirs >= 0.2
+Requires:	kde-common-dirs >= 0.3
 Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth

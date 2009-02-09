@@ -1,7 +1,7 @@
 Index: khtml/misc/borderarcstroker.cpp
 ===================================================================
---- khtml/misc/borderarcstroker.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ khtml/misc/borderarcstroker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- khtml/misc/borderarcstroker.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/misc/borderarcstroker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -347,7 +347,7 @@
      const KCubicBezier inner(innerPath.elementAt(0), innerPath.elementAt(1), innerPath.elementAt(2), innerPath.elementAt(3));
      const KCubicBezier outer(outerPath.elementAt(0), outerPath.elementAt(1), outerPath.elementAt(2), outerPath.elementAt(3));
@@ -11,10 +11,47 @@ Index: khtml/misc/borderarcstroker.cpp
      if (a < 0)
          a += 360.0;
  
+Index: khtml/misc/loader.cpp
+===================================================================
+--- khtml/misc/loader.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/misc/loader.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -85,6 +85,8 @@
+ 
+ #include "blocked_icon.cpp"
+ 
++#include <QPaintEngine>
++
+ using namespace khtml;
+ using namespace DOM;
+ using namespace khtmlImLoad;
+@@ -613,18 +615,20 @@
+     int w = i->size().width();
+     int h = i->size().height();
+ 
+-    if (i->hasAlpha()) {
++    QPixmap pm(w, h);
++    if (i->hasAlpha() && !pm.paintEngine()->hasFeature(QPaintEngine::PorterDuff)) {
+         QImage im(w, h, QImage::Format_ARGB32_Premultiplied);
+ 
+         QPainter paint(&im);
+-        paint.setCompositionMode(QPainter::CompositionMode_Source);
+         ImagePainter pi(i);
+         pi.paint(0, 0, &paint);
+         paint.end();
+         return QPixmap::fromImage( im );
+     } else {
+-        QPixmap pm(w, h);
++        pm.fill(Qt::transparent);
+         QPainter paint(&pm);
++        if (i->hasAlpha())
++             paint.setCompositionMode(QPainter::CompositionMode_Source);
+         ImagePainter pi(i);
+         pi.paint(0, 0, &paint);
+         paint.end();
 Index: khtml/khtml_part.cpp
 ===================================================================
---- khtml/khtml_part.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- khtml/khtml_part.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -291,16 +291,26 @@
    if ( prof == BrowserViewGUI ) {
      d->m_paViewDocument = new KAction( i18n( "View Do&cument Source" ), this );
@@ -53,11 +90,164 @@ Index: khtml/khtml_part.cpp
        d->m_paSelectAll->setShortcuts( KShortcut() ); // avoid clashes
  
    d->m_paToggleCaretMode = new KToggleAction(i18n("Toggle Caret Mode"), this );
+Index: khtml/html/html_headimpl.cpp
+===================================================================
+--- khtml/html/html_headimpl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/html/html_headimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -604,6 +604,12 @@
+ void HTMLStyleElementImpl::insertedIntoDocument()
+ {
+     HTMLElementImpl::insertedIntoDocument();
++    
++    // If we're empty, we have to call parseText here, since we won't get childrenChanged();
++    // but we still want a CSSOM object
++    if (!firstChild())
++        parseText();
++    
+     if (m_sheet)
+         document()->updateStyleSelector();
+ }
+@@ -619,6 +625,11 @@
+ {
+     HTMLElementImpl::childrenChanged();
+ 
++    parseText();
++}
++
++void HTMLStyleElementImpl::parseText()
++{
+     DOMString text = "";
+ 
+     for (NodeImpl *c = firstChild(); c != 0; c = c->nextSibling()) {
+Index: khtml/html/html_objectimpl.cpp
+===================================================================
+--- khtml/html/html_objectimpl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/html/html_objectimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -789,9 +789,7 @@
+ 
+ DocumentImpl* HTMLObjectElementImpl::contentDocument() const
+ {
+-    if ( !m_render ) return 0;
+-    if ( !m_render->isWidget() ) return 0;
+-    QWidget* widget = static_cast<RenderWidget*>( m_render )->widget();
++    QWidget* widget = childWidget();
+     if( widget && qobject_cast<KHTMLView*>( widget ) )
+         return static_cast<KHTMLView*>( widget )->part()->xmlDocImpl();
+     return 0;
+Index: khtml/html/html_headimpl.h
+===================================================================
+--- khtml/html/html_headimpl.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/html/html_headimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -205,6 +205,8 @@
+     virtual bool checkRemovePendingSheet();
+ 
+ protected:
++    void parseText();
++    
+     CSSStyleSheetImpl *m_sheet;
+     DOMString m_type;
+     QString m_media;
+Index: khtml/ecma/debugger/debugwindow.cpp
+===================================================================
+--- khtml/ecma/debugger/debugwindow.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/debugger/debugwindow.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -350,6 +350,12 @@
+     }
+ }
+ 
++void DebugWindow::forceStopAtNext()
++{
++    DebugWindow* self = window();
++    self->m_breakAtNext = true;
++}
++
+ void DebugWindow::stopAtNext()
+ {
+     m_breakAtNext = m_stopAct->isChecked();
+Index: khtml/ecma/debugger/debugwindow.h
+===================================================================
+--- khtml/ecma/debugger/debugwindow.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/debugger/debugwindow.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -113,6 +113,9 @@
+     // Called by KJSProxy when we navigate away from a page
+     void clearInterpreter(KJS::Interpreter* interp);
+ 
++    // Hook for activating the debugger from gdb or such
++    static void forceStopAtNext();
++
+ public Q_SLOTS:
+     void stopAtNext();
+     void continueExecution();
+Index: khtml/ecma/kjs_range.cpp
+===================================================================
+--- khtml/ecma/kjs_range.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_range.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -61,7 +61,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMRangeProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMRangeProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMRange",DOMRangeProto,DOMRangeProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMRange",DOMRangeProto,DOMRangeProtoFunc,ObjectPrototype)
+ 
+ DOMRange::DOMRange(ExecState *exec, DOM::RangeImpl* r)
+  : m_impl(r)
+Index: khtml/ecma/kjs_audio.cpp
+===================================================================
+--- khtml/ecma/kjs_audio.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_audio.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -64,7 +64,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(AudioProto)
+ KJS_IMPLEMENT_PROTOFUNC(AudioProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("Audio", AudioProto, AudioProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("Audio", AudioProto, AudioProtoFunc, ObjectPrototype)
+ 
+ const ClassInfo Audio::info = { "Audio", 0, &AudioTable, 0 };
+ 
+Index: khtml/ecma/kjs_binding.h
+===================================================================
+--- khtml/ecma/kjs_binding.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_binding.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -35,6 +35,7 @@
+ #include <kjs/lookup.h>
+ #include <kjs/function.h>
+ #include <kjs/JSVariableObject.h>
++#include <kjs/object_object.h>
+ 
+ #include <stdlib.h> // for abort
+ 
+@@ -358,6 +359,8 @@
+ #define IMPLEMENT_PSEUDO_CONSTRUCTOR_IMP(Class,ClassName,ProtoClass,ParentProto) \
+     const ClassInfo Class::info = { ClassName, 0, 0, 0 }; \
+     Class::Class(ExecState* exec): DOMObject(ParentProto) {\
++        /* Since ProtoClass ctor might need us, make sure we're registered */ \
++        exec->lexicalInterpreter()->globalObject()->put(exec, "[[" ClassName ".constructor]]", this, KJS::Internal | KJS::DontEnum); \
+         JSObject* proto = ProtoClass::self(exec); \
+         putDirect(exec->propertyNames().prototype, proto, DontDelete|ReadOnly); \
+     }\
 Index: khtml/ecma/kjs_dom.cpp
 ===================================================================
---- khtml/ecma/kjs_dom.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ khtml/ecma/kjs_dom.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -655,15 +655,15 @@
+--- khtml/ecma/kjs_dom.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_dom.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -101,7 +101,16 @@
+ @end
+ */
+ KJS_IMPLEMENT_PROTOFUNC(DOMNodeProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMNode", DOMNodeProto, DOMNodeProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE_IMP("DOMNode", DOMNodeProto, DOMNodeProtoFunc, DOMNodeConstants)
++{
++    // We need to setup the constructor property to the ctor here, but NodeConstructor::self
++    // will try to make us again, since we're in the middle of cacheGlobalObject.
++    // To workaround that, register ourselves so the re-entry of cacheGlobalObject
++    // will pick us. NodeCtor ctor does the same already, to fix the problem 
++    // in the other direction.
++    exec->lexicalInterpreter()->globalObject()->put(exec, *name(), this, KJS::Internal | KJS::DontEnum);
++    putDirect(exec->propertyNames().constructor, NodeConstructor::self(exec), DontEnum);
++}
+ 
+ const ClassInfo DOMNode::info = { "Node", 0, &DOMNodeTable, 0 };
+ 
+@@ -655,15 +664,15 @@
        static_cast<DOM::DocumentFragmentImpl*>(range->createContextualFragment(args[1]->toString(exec).domString(), exception).handle());
        if (exception.triggered()) return jsUndefined();
  
@@ -78,10 +268,683 @@ Index: khtml/ecma/kjs_dom.cpp
          if (node.nextSibling())
  	  node.parentNode()->insertBefore(docFrag.get(), node.nextSibling(),exception);
  	else
+@@ -691,7 +700,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMNodeListProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMNodeListProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMNodeList",DOMNodeListProto,DOMNodeListProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMNodeList",DOMNodeListProto,DOMNodeListProtoFunc, ObjectPrototype)
+ 
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(NodeListPseudoCtor, "NodeList", DOMNodeListProto)
+ 
+@@ -917,7 +926,7 @@
+ */
+ 
+ KJS_IMPLEMENT_PROTOFUNC(DOMDocumentProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMDocument",DOMDocumentProto, DOMDocumentProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMDocument",DOMDocumentProto, DOMDocumentProtoFunc, DOMNodeProto)
+ 
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(DocumentPseudoCtor, "Document", DOMDocumentProto)
+ 
+@@ -1187,7 +1196,7 @@
+ @end
+ */
+ KJS_IMPLEMENT_PROTOFUNC(DOMElementProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMElement",DOMElementProto,DOMElementProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMElement",DOMElementProto,DOMElementProtoFunc,DOMNodeProto)
+ 
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(ElementPseudoCtor, "Element", DOMElementProto)
+ 
+@@ -1376,7 +1385,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMDOMImplementationProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMDOMImplementationProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMImplementation",DOMDOMImplementationProto,DOMDOMImplementationProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMImplementation",DOMDOMImplementationProto,DOMDOMImplementationProtoFunc,ObjectPrototype)
+ 
+ const ClassInfo DOMDOMImplementation::info = { "DOMImplementation", 0, 0, 0 };
+ 
+@@ -1508,7 +1517,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMNamedNodeMapProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMNamedNodeMapProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("NamedNodeMap",DOMNamedNodeMapProto,DOMNamedNodeMapProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("NamedNodeMap",DOMNamedNodeMapProto,DOMNamedNodeMapProtoFunc,ObjectPrototype)
+ 
+ const ClassInfo DOMNamedNodeMap::info = { "NamedNodeMap", 0, &DOMNamedNodeMapTable, 0 };
+ 
+@@ -1903,9 +1912,9 @@
+   replaceData	DOMCharacterData::ReplaceData	DontDelete|Function 2
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMCharacterDataProto, DOMNodeProto)
++KJS_DEFINE_PROTOTYPE(DOMCharacterDataProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMCharacterDataProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMCharacterData",DOMCharacterDataProto,DOMCharacterDataProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMCharacterData",DOMCharacterDataProto,DOMCharacterDataProtoFunc,DOMNodeProto)
+ 
+ DOMCharacterData::DOMCharacterData(ExecState *exec, DOM::CharacterDataImpl* d)
+  : DOMNode(exec, d)
+@@ -1987,9 +1996,9 @@
+   replaceWholeText DOMText::ReplaceWholeText DontDelete|Function 1
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMTextProto, DOMCharacterDataProto)
++KJS_DEFINE_PROTOTYPE(DOMTextProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMTextProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMText",DOMTextProto,DOMTextProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMText",DOMTextProto,DOMTextProtoFunc,DOMCharacterDataProto)
+ 
+ DOMText::DOMText(ExecState *exec, DOM::TextImpl* t)
+   : DOMCharacterData(exec, t)
+Index: khtml/ecma/xmlserializer.cpp
+===================================================================
+--- khtml/ecma/xmlserializer.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/xmlserializer.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -39,7 +39,7 @@
+ namespace KJS {
+ KJS_DEFINE_PROTOTYPE(XMLSerializerProto)
+ KJS_IMPLEMENT_PROTOFUNC(XMLSerializerProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("XMLSerializer", XMLSerializerProto,XMLSerializerProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("XMLSerializer", XMLSerializerProto,XMLSerializerProtoFunc, ObjectPrototype)
+ 
+ XMLSerializerConstructorImp::XMLSerializerConstructorImp(ExecState* exec)
+     : JSObject(exec->lexicalInterpreter()->builtinObjectPrototype())
+Index: khtml/ecma/kjs_css.cpp
+===================================================================
+--- khtml/ecma/kjs_css.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_css.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -135,7 +135,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMCSSStyleDeclarationProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMCSSStyleDeclarationProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMCSSStyleDeclaration", DOMCSSStyleDeclarationProto, DOMCSSStyleDeclarationProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMCSSStyleDeclaration", DOMCSSStyleDeclarationProto, DOMCSSStyleDeclarationProtoFunc, ObjectPrototype)
+ 
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(CSSStyleDeclarationPseudoCtor, "DOMCSSStyleDeclaration",DOMCSSStyleDeclarationProto)
+ 
+@@ -495,7 +495,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMMediaListProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMMediaListProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMMediaList", DOMMediaListProto, DOMMediaListProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMMediaList", DOMMediaListProto, DOMMediaListProtoFunc, ObjectPrototype)
+ 
+ DOMMediaList::DOMMediaList(ExecState *exec, DOM::MediaListImpl* ml)
+   : m_impl(ml)
+@@ -593,7 +593,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMCSSStyleSheetProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMCSSStyleSheetProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMCSSStyleSheet",DOMCSSStyleSheetProto,DOMCSSStyleSheetProtoFunc) // warning, use _WITH_PARENT if DOMStyleSheet gets a proto
++KJS_IMPLEMENT_PROTOTYPE("DOMCSSStyleSheet",DOMCSSStyleSheetProto,DOMCSSStyleSheetProtoFunc, ObjectPrototype) // warning, give a parent if DOMStyleSheet gets a proto
+ 
+ DOMCSSStyleSheet::DOMCSSStyleSheet(ExecState *exec, DOM::CSSStyleSheetImpl* ss): DOMStyleSheet(exec, ss)
+ {
+@@ -1119,7 +1119,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMCSSPrimitiveValueProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMCSSPrimitiveValueProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMCSSPrimitiveValue",DOMCSSPrimitiveValueProto,DOMCSSPrimitiveValueProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMCSSPrimitiveValue",DOMCSSPrimitiveValueProto,DOMCSSPrimitiveValueProtoFunc,ObjectPrototype)
+ 
+ DOMCSSPrimitiveValue::DOMCSSPrimitiveValue(ExecState *exec, DOM::CSSPrimitiveValueImpl* v)
+   : DOMCSSValue(exec, v) {
+Index: khtml/ecma/kjs_views.cpp
+===================================================================
+--- khtml/ecma/kjs_views.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_views.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -40,7 +40,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(DOMAbstractViewProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMAbstractViewProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMAbstractView", DOMAbstractViewProto,DOMAbstractViewProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMAbstractView", DOMAbstractViewProto,DOMAbstractViewProtoFunc,ObjectPrototype)
+ 
+ DOMAbstractView::DOMAbstractView(ExecState *exec, DOM::AbstractViewImpl* av)
+   : m_impl(av)
+Index: khtml/ecma/xmlhttprequest.cpp
+===================================================================
+--- khtml/ecma/xmlhttprequest.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/xmlhttprequest.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -68,7 +68,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(XMLHttpRequestProto)
+ KJS_IMPLEMENT_PROTOFUNC(XMLHttpRequestProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("XMLHttpRequest", XMLHttpRequestProto,XMLHttpRequestProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("XMLHttpRequest", XMLHttpRequestProto,XMLHttpRequestProtoFunc, ObjectPrototype)
+ 
+ 
+ XMLHttpRequestQObject::XMLHttpRequestQObject(XMLHttpRequest *_jsObject)
+Index: khtml/ecma/kjs_traversal.cpp
+===================================================================
+--- khtml/ecma/kjs_traversal.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_traversal.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -61,7 +61,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMNodeIteratorProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMNodeIteratorProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMNodeIterator",DOMNodeIteratorProto,DOMNodeIteratorProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMNodeIterator",DOMNodeIteratorProto,DOMNodeIteratorProtoFunc,ObjectPrototype)
+ 
+ DOMNodeIterator::DOMNodeIterator(ExecState *exec, DOM::NodeIteratorImpl* ni)
+   : DOMObject(DOMNodeIteratorProto::self(exec)), m_impl(ni) {}
+@@ -194,7 +194,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMTreeWalkerProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMTreeWalkerProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMTreeWalker",DOMTreeWalkerProto,DOMTreeWalkerProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMTreeWalker",DOMTreeWalkerProto,DOMTreeWalkerProtoFunc,ObjectPrototype)
+ 
+ DOMTreeWalker::DOMTreeWalker(ExecState *exec, DOM::TreeWalkerImpl* tw)
+   : m_impl(tw) {
+Index: khtml/ecma/kjs_html.cpp
+===================================================================
+--- khtml/ecma/kjs_html.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_html.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -73,9 +73,9 @@
+ 
+ namespace KJS {
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLDocumentProto, DOMDocumentProto)
++KJS_DEFINE_PROTOTYPE(HTMLDocumentProto)
+ KJS_IMPLEMENT_PROTOFUNC(HTMLDocFunction)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLDocument", HTMLDocumentProto, HTMLDocFunction)
++KJS_IMPLEMENT_PROTOTYPE("HTMLDocument", HTMLDocumentProto, HTMLDocFunction, DOMDocumentProto)
+ 
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLDocumentPseudoCtor, "HTMLDocument", HTMLDocumentProto)
+ 
+@@ -444,7 +444,7 @@
+   switch (token) {
+     case Body: {
+       DOM::NodeImpl* body = toNode(value);
+-      if (body->isHTMLElement())
++      if (body && body->isHTMLElement())
+         doc.setBody(static_cast<DOM::HTMLElementImpl*>(body), exception);
+       return;
+     }
+@@ -2575,8 +2575,8 @@
+ 
+ 
+ //Prototype mess for this...
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLElementProto, DOMElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLElement", HTMLElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLElement", HTMLElementProto, HTMLElementFunction, DOMElementProto )
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLElementPseudoCtor, "HTMLElement", HTMLElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLHtmlElement", HTMLHtmlElementProto, HTMLElementProto)
+@@ -2603,16 +2603,16 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLStyleElement", HTMLStyleElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLStyleElementPseudoCtor, "HTMLStyleElement", HTMLStyleElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLBodyElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLBodyElement", HTMLBodyElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLBodyElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLBodyElement", HTMLBodyElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLBodyElementPseudoCtor, "HTMLBodyElement", HTMLBodyElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLFormElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLFormElement", HTMLFormElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLFormElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLFormElement", HTMLFormElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLFormElementPseudoCtor, "HTMLFormElement", HTMLFormElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLSelectElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLSelectElement", HTMLSelectElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLSelectElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLSelectElement", HTMLSelectElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLSelectElementPseudoCtor, "HTMLSelectElement", HTMLSelectElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLOptGroupElement", HTMLOptGroupElementProto, HTMLElementProto)
+@@ -2621,16 +2621,16 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLOptionElement", HTMLOptionElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLOptionElementPseudoCtor, "HTMLOptionElement", HTMLOptionElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLInputElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLInputElement", HTMLInputElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLInputElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLInputElement", HTMLInputElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLInputElementPseudoCtor, "HTMLInputElement", HTMLInputElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLTextAreaElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLTextAreaElement", HTMLTextAreaElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLTextAreaElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLTextAreaElement", HTMLTextAreaElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLTextAreaElementPseudoCtor, "HTMLTextAreaElement", HTMLTextAreaElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLButtonElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLButtonElement", HTMLButtonElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLButtonElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLButtonElement", HTMLButtonElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLButtonElementPseudoCtor, "HTMLButtonElement", HTMLButtonElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLLabelElement", HTMLLabelElementProto, HTMLElementProto)
+@@ -2693,8 +2693,8 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLModElement", HTMLModElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLModElementPseudoCtor, "HTMLModElement", HTMLModElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLAnchorElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLAnchorElement", HTMLAnchorElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLAnchorElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLAnchorElement", HTMLAnchorElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLAnchorElementPseudoCtor, "HTMLAnchorElement", HTMLAnchorElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLImageElement", HTMLImageElementProto, HTMLElementProto)
+@@ -2718,8 +2718,8 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLScriptElement", HTMLScriptElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLScriptElementPseudoCtor, "HTMLScriptElement", HTMLScriptElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLTableElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLTableElement", HTMLTableElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLTableElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLTableElement", HTMLTableElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLTableElementPseudoCtor, "HTMLTableElement", HTMLTableElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLTableCaptionElement", HTMLTableCaptionElementProto, HTMLElementProto)
+@@ -2728,12 +2728,12 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLTableColElement", HTMLTableColElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLTableColElementPseudoCtor, "HTMLTableColElement", HTMLTableColElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLTableSectionElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLTableSectionElement", HTMLTableSectionElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLTableSectionElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLTableSectionElement", HTMLTableSectionElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLTableSectionElementPseudoCtor, "HTMLTableSectionElement", HTMLTableSectionElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLTableRowElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLTableRowElement", HTMLTableRowElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLTableRowElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLTableRowElement", HTMLTableRowElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLTableRowElementPseudoCtor, "HTMLTableRowElement", HTMLTableRowElementProto)
+ 
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLTableCellElement", HTMLTableCellElementProto, HTMLElementProto)
+@@ -2751,12 +2751,12 @@
+ KJS_EMPTY_PROTOTYPE_WITH_PROTOTYPE("HTMLIFrameElement", HTMLIFrameElementProto, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLIFrameElementPseudoCtor, "HTMLIFrameElement", HTMLIFrameElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLMarqueeElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLMarqueeElement", HTMLMarqueeElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLMarqueeElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLMarqueeElement", HTMLMarqueeElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLMarqueeElementPseudoCtor, "HTMLMarqueeElement", HTMLMarqueeElementProto)
+ 
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLCanvasElementProto, HTMLElementProto)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLCanvasElement", HTMLCanvasElementProto, HTMLElementFunction)
++KJS_DEFINE_PROTOTYPE(HTMLCanvasElementProto)
++KJS_IMPLEMENT_PROTOTYPE("HTMLCanvasElement", HTMLCanvasElementProto, HTMLElementFunction, HTMLElementProto)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLCanvasElementPseudoCtor, "HTMLCanvasElement", HTMLCanvasElementProto)
+ 
+ 
+@@ -2900,7 +2900,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(HTMLCollectionProto)
+ KJS_IMPLEMENT_PROTOFUNC(HTMLCollectionProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLCollection", HTMLCollectionProto,HTMLCollectionProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("HTMLCollection", HTMLCollectionProto, HTMLCollectionProtoFunc, ObjectPrototype)
+ IMPLEMENT_PSEUDO_CONSTRUCTOR(HTMLCollectionPseudoCtor, "HTMLCollection", HTMLCollectionProto)
+ 
+ const ClassInfo KJS::HTMLCollection::info = { "HTMLCollection", 0, 0, 0 };
+@@ -3130,9 +3130,9 @@
+   add		HTMLSelectCollection::Add		DontDelete|Function 2
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(HTMLSelectCollectionProto, HTMLCollectionProto)
++KJS_DEFINE_PROTOTYPE(HTMLSelectCollectionProto)
+ KJS_IMPLEMENT_PROTOFUNC(HTMLSelectCollectionProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("HTMLOptionsCollection", HTMLSelectCollectionProto, HTMLSelectCollectionProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("HTMLOptionsCollection", HTMLSelectCollectionProto, HTMLSelectCollectionProtoFunc, HTMLCollectionProto)
+ 
+ const ClassInfo KJS::HTMLSelectCollection::info = { "HTMLOptionsCollection", &HTMLCollection::info, 0, 0 };
+ 
+Index: khtml/ecma/kjs_events.cpp
+===================================================================
+--- khtml/ecma/kjs_events.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_events.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -255,7 +255,7 @@
+ */
+ KJS_DEFINE_PROTOTYPE(DOMEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMEvent", DOMEventProto, DOMEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMEvent", DOMEventProto, DOMEventProtoFunc,ObjectPrototype)
+ 
+ DOMEvent::DOMEvent(ExecState *exec, DOM::EventImpl* e)
+   : m_impl(e) {
+@@ -476,9 +476,9 @@
+   initUIEvent	DOMUIEvent::InitUIEvent	DontDelete|Function 5
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMUIEventProto,DOMEventProto)
++KJS_DEFINE_PROTOTYPE(DOMUIEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMUIEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMUIEvent",DOMUIEventProto,DOMUIEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMUIEvent",DOMUIEventProto,DOMUIEventProtoFunc,DOMEventProto)
+ 
+ DOMUIEvent::DOMUIEvent(ExecState *exec, DOM::UIEventImpl* ue) :
+   DOMEvent(DOMUIEventProto::self(exec), ue) {}
+@@ -575,9 +575,9 @@
+   initMouseEvent	DOMMouseEvent::InitMouseEvent	DontDelete|Function 15
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMMouseEventProto,DOMUIEventProto)
++KJS_DEFINE_PROTOTYPE(DOMMouseEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMMouseEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMMouseEvent",DOMMouseEventProto,DOMMouseEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMMouseEvent",DOMMouseEventProto,DOMMouseEventProtoFunc,DOMUIEventProto)
+ 
+ DOMMouseEvent::DOMMouseEvent(ExecState *exec, DOM::MouseEventImpl* me) :
+   DOMUIEvent(DOMMouseEventProto::self(exec), me) {}
+@@ -765,9 +765,9 @@
+   # Missing: initTextEventNS
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMTextEventProto,DOMUIEventProto)//Note: no proto in KeyBase
++KJS_DEFINE_PROTOTYPE(DOMTextEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMTextEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMTextEvent", DOMTextEventProto,DOMTextEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMTextEvent", DOMTextEventProto,DOMTextEventProtoFunc,DOMUIEventProto)//Note: no proto in KeyBase
+ 
+ DOMTextEvent::DOMTextEvent(ExecState *exec, DOM::TextEventImpl* ke) :
+   DOMKeyEventBase(DOMTextEventProto::self(exec), ke) {}
+@@ -826,9 +826,9 @@
+   getModifierState      DOMKeyboardEvent::GetModifierState      DontDelete|Function 1
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMKeyboardEventProto, DOMUIEventProto) //Note: no proto in
++KJS_DEFINE_PROTOTYPE(DOMKeyboardEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMKeyboardEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMKeyboardEvent",DOMKeyboardEventProto,DOMKeyboardEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMKeyboardEvent",DOMKeyboardEventProto,DOMKeyboardEventProtoFunc, DOMUIEventProto) //Note: no proto in KeyBase
+ 
+ DOMKeyboardEvent::DOMKeyboardEvent(ExecState *exec, DOM::KeyboardEventImpl* ke) :
+   DOMKeyEventBase(DOMKeyboardEventProto::self(exec), ke) {}
+@@ -959,9 +959,9 @@
+   initMutationEvent	DOMMutationEvent::InitMutationEvent	DontDelete|Function 8
+ @end
+ */
+-KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMMutationEventProto,DOMEventProto)
++KJS_DEFINE_PROTOTYPE(DOMMutationEventProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMMutationEventProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMMutationEvent",DOMMutationEventProto,DOMMutationEventProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMMutationEvent",DOMMutationEventProto,DOMMutationEventProtoFunc,DOMEventProto)
+ 
+ DOMMutationEvent::DOMMutationEvent(ExecState *exec, DOM::MutationEventImpl* me) :
+   DOMEvent(DOMMutationEventProto::self(exec), me) {}
+Index: khtml/ecma/kjs_context2d.cpp
+===================================================================
+--- khtml/ecma/kjs_context2d.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_context2d.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -74,7 +74,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(Context2DProto)
+ KJS_IMPLEMENT_PROTOFUNC(Context2DFunction)
+-KJS_IMPLEMENT_PROTOTYPE("CanvasRenderingContext2DProto", Context2DProto, Context2DFunction)
++KJS_IMPLEMENT_PROTOTYPE("CanvasRenderingContext2DProto", Context2DProto, Context2DFunction, ObjectPrototype)
+ 
+ /*
+    @begin Context2DProtoTable 48
+@@ -658,7 +658,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(CanvasGradientProto)
+ KJS_IMPLEMENT_PROTOFUNC(CanvasGradientFunction)
+-KJS_IMPLEMENT_PROTOTYPE("CanvasGradientProto", CanvasGradientProto, CanvasGradientFunction)
++KJS_IMPLEMENT_PROTOTYPE("CanvasGradientProto", CanvasGradientProto, CanvasGradientFunction, ObjectPrototype)
+ 
+ /*
+    @begin CanvasGradientProtoTable 1
+@@ -696,7 +696,7 @@
+ // Provide an empty prototype in case people want to hack it
+ KJS_DEFINE_PROTOTYPE(CanvasPatternProto)
+ KJS_IMPLEMENT_PROTOFUNC(CanvasPatternFunction)
+-KJS_IMPLEMENT_PROTOTYPE("CanvasPatternProto", CanvasPatternProto, CanvasPatternFunction)
++KJS_IMPLEMENT_PROTOTYPE("CanvasPatternProto", CanvasPatternProto, CanvasPatternFunction, ObjectPrototype)
+ 
+ /*
+    @begin CanvasPatternProtoTable 0
+Index: khtml/ecma/kjs_dom.h
+===================================================================
+--- khtml/ecma/kjs_dom.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/kjs_dom.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -65,7 +65,7 @@
+            OnResize, OnScroll, OnSelect, OnSubmit, OnUnload,
+            OffsetLeft, OffsetTop, OffsetWidth, OffsetHeight, OffsetParent,
+            ClientLeft, ClientTop, ClientWidth, ClientHeight, ScrollLeft, ScrollTop,
+-	   ScrollWidth, ScrollHeight, SourceIndex, TextContent };
++           ScrollWidth, ScrollHeight, SourceIndex, TextContent };
+ 
+     //### toNode? virtual
+     DOM::NodeImpl* impl() const { return m_impl.get(); }
+@@ -74,7 +74,7 @@
+   };
+ 
+   DEFINE_CONSTANT_TABLE(DOMNodeConstants)
+-  KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMNodeProto, DOMNodeConstants)
++  KJS_DEFINE_PROTOTYPE(DOMNodeProto)
+   DEFINE_PSEUDO_CONSTRUCTOR(NodeConstructor)
+ 
+   class DOMNodeList : public DOMObject {
+@@ -137,7 +137,7 @@
+     DOM::DocumentImpl* impl() { return static_cast<DOM::DocumentImpl*>(m_impl.get()); }
+   };
+   
+-  KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMDocumentProto, DOMNodeProto)
++  KJS_DEFINE_PROTOTYPE(DOMDocumentProto)
+ 
+   DEFINE_PSEUDO_CONSTRUCTOR(DocumentPseudoCtor)
+ 
+@@ -181,7 +181,7 @@
+   DOM::AttrImpl    *toAttr   (JSValue *); // returns 0 if passed-in value is not a DOMAtt object
+   DOM::ElementImpl *toElement(JSValue *); // returns 0 if passed-in value is not a DOMElement object
+ 
+-  KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(DOMElementProto, DOMNodeProto)
++  KJS_DEFINE_PROTOTYPE(DOMElementProto)
+   DEFINE_PSEUDO_CONSTRUCTOR(ElementPseudoCtor)
+ 
+   class DOMDOMImplementation : public DOMObject {
+Index: khtml/ecma/domparser.cpp
+===================================================================
+--- khtml/ecma/domparser.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/ecma/domparser.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -44,7 +44,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(DOMParserProto)
+ KJS_IMPLEMENT_PROTOFUNC(DOMParserProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("DOMParser",DOMParserProto,DOMParserProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("DOMParser",DOMParserProto,DOMParserProtoFunc,ObjectPrototype)
+ 
+ 
+ DOMParserConstructorImp::DOMParserConstructorImp(ExecState* exec, DOM::DocumentImpl *d)
+Index: khtml/css/css_stylesheetimpl.h
+===================================================================
+--- khtml/css/css_stylesheetimpl.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/css/css_stylesheetimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -27,6 +27,7 @@
+ #include "css/css_base.h"
+ #include "misc/loader_client.h"
+ #include "xml/dom_docimpl.h"
++#include <QPointer>
+ 
+ namespace khtml {
+     class CachedCSSStyleSheet;
+@@ -133,7 +134,9 @@
+ class StyleSheetListImpl : public khtml::Shared<StyleSheetListImpl>
+ {
+ public:
+-    StyleSheetListImpl() {}
++    // the manager argument should be passed only when this is 
++    // document.styleSheets.
++    StyleSheetListImpl(DocumentImpl* manager = 0): managerDocument(manager) {}
+     ~StyleSheetListImpl();
+ 
+     // the following two ignore implicit stylesheets
+@@ -144,6 +147,11 @@
+     void remove(StyleSheetImpl* s);
+ 
+     QList<StyleSheetImpl*> styleSheets;
++    
++    // we need the document pointer to make it update the stylesheet list
++    // if needed for the global list. Luckily, we don't care about that if the 
++    // document dies, so we use QPointer to break the cycle
++    QPointer<DocumentImpl> managerDocument;
+ };
+ 
+ // ----------------------------------------------------------------------------
+Index: khtml/css/css_stylesheetimpl.cpp
+===================================================================
+--- khtml/css/css_stylesheetimpl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/css/css_stylesheetimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -349,6 +349,12 @@
+ 
+ void StyleSheetListImpl::add( StyleSheetImpl* s )
+ {
++    if (managerDocument)
++        managerDocument->ensureStyleSheetListUpToDate();
++
++    // ### in cases this is document.styleSheets, maybe 
++    // we should route to DocumentImpl::addStyleSheets?
++
+     if ( !styleSheets.contains( s ) ) {
+         s->ref();
+         styleSheets.append( s );
+@@ -357,12 +363,18 @@
+ 
+ void StyleSheetListImpl::remove( StyleSheetImpl* s )
+ {
++    if (managerDocument)
++        managerDocument->ensureStyleSheetListUpToDate();
++
+     if ( styleSheets.removeAll( s ) )
+         s->deref();
+ }
+ 
+ unsigned long StyleSheetListImpl::length() const
+ {
++    if (managerDocument)
++        managerDocument->ensureStyleSheetListUpToDate();
++
+     // hack so implicit BODY stylesheets don't get counted here
+     unsigned long l = 0;
+     foreach (StyleSheetImpl* sh, styleSheets) {
+@@ -374,6 +386,9 @@
+ 
+ StyleSheetImpl *StyleSheetListImpl::item ( unsigned long index )
+ {
++    if (managerDocument)
++        managerDocument->ensureStyleSheetListUpToDate();
++
+     unsigned long l = 0;
+     foreach (StyleSheetImpl* sh, styleSheets) {
+         if (!sh->isCSSStyleSheet() || !static_cast<CSSStyleSheetImpl*>(sh)->implicit()) {
+Index: khtml/xml/dom_docimpl.h
+===================================================================
+--- khtml/xml/dom_docimpl.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/xml/dom_docimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -282,10 +282,16 @@
+      * in existing sheets, then set this argument to true for efficiency.
+      */
+     void updateStyleSelector(bool shallow=false);
++    
++    void ensureStyleSheetListUpToDate() { if (m_styleSheetListDirty) rebuildStyleSheetList(true); }
+ 
+     bool readyForLayout() const;
+-    void recalcStyleSelector();
+-    void rebuildStyleSelector();
++    
++private:    
++    void rebuildStyleSheetList(bool force = false);
++    void rebuildStyleSelector ();
++    bool m_styleSheetListDirty;
++public:
+ 
+     // Tries to restore the elements value from the doc state,
+     // if it seems like the same thing
+Index: khtml/xml/dom_docimpl.cpp
+===================================================================
+--- khtml/xml/dom_docimpl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ khtml/xml/dom_docimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -422,12 +422,13 @@
+     m_defaultView = new AbstractViewImpl(this);
+     m_defaultView->ref();
+     m_listenerTypes = 0;
+-    m_styleSheets = new StyleSheetListImpl;
++    m_styleSheets = new StyleSheetListImpl(this);
+     m_styleSheets->ref();
+     m_addedStyleSheets = 0;
+     m_inDocument = true;
+     m_styleSelectorDirty = false;
+     m_styleSelector = 0;
++    m_styleSheetListDirty = true;
+ 
+     m_inStyleRecalc = false;
+     m_pendingStylesheets = 0;
+@@ -2205,13 +2206,19 @@
+ //    kDebug() << "PENDING " << m_pendingStylesheets;
+ 
+     // Don't bother updating, since we haven't loaded all our style info yet.
+-    if (m_pendingStylesheets > 0)
++    if (m_pendingStylesheets > 0) {
++        // ... however, if the list of stylesheets changed, mark it as dirty
++        // so DOM ops can get an up-to-date version.
++        if (!shallow)
++            m_styleSheetListDirty = true;
+         return;
++    }
++    
++    if (!shallow)
++        rebuildStyleSheetList();
+ 
+-    if (shallow)
+-        rebuildStyleSelector();
+-    else
+-        recalcStyleSelector();
++    rebuildStyleSelector();
++    
+     recalcStyle(Force);
+ #if 0
+ 
+@@ -2226,12 +2233,17 @@
+     return renderer() && haveStylesheetsLoaded() && (!isHTMLDocument() || (body() && body()->renderer()));
+ }
+ 
+-void DocumentImpl::recalcStyleSelector()
++void DocumentImpl::rebuildStyleSheetList(bool force)
+ {
+-    if ( !m_render || !attached() ) return;
+-
+-    assert(m_pendingStylesheets==0);
+-
++    if ( !m_render || !attached() ) {
++        // Unless we're forced due to CSS DOM ops, we don't have to compute info
++        // when there is nothing to display
++        if (!force) {
++            m_styleSheetListDirty = true;
++            return;
++        }
++    }
++    
+     QList<StyleSheetImpl*> oldStyleSheets = m_styleSheets->styleSheets;
+     m_styleSheets->styleSheets.clear();
+     QString sheetUsed = view() ? view()->part()->d->m_sheetUsed.replace("&&", "&") : QString();
+@@ -2371,11 +2383,14 @@
+     foreach ( StyleSheetImpl* sh, oldStyleSheets)
+         sh->deref();
+ 
+-    rebuildStyleSelector();
++    m_styleSheetListDirty = false;
+ }
+ 
+ void DocumentImpl::rebuildStyleSelector()
+ {
++    if ( !m_render || !attached() )
++        return;
++
+     // Create a new style selector
+     delete m_styleSelector;
+     QString usersheet = m_usersheet;
 Index: cmake/modules/FindGMP.cmake
 ===================================================================
---- cmake/modules/FindGMP.cmake	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ cmake/modules/FindGMP.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- cmake/modules/FindGMP.cmake	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ cmake/modules/FindGMP.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -15,7 +15,7 @@
  endif (GMP_INCLUDE_DIR AND GMP_LIBRARIES)
  
@@ -91,10 +954,36 @@ Index: cmake/modules/FindGMP.cmake
  
  include(FindPackageHandleStandardArgs)
  FIND_PACKAGE_HANDLE_STANDARD_ARGS(GMP DEFAULT_MSG GMP_INCLUDE_DIR GMP_LIBRARIES)
+Index: interfaces/kimproxy/interface/kcm_instantmessenger.desktop
+===================================================================
+--- interfaces/kimproxy/interface/kcm_instantmessenger.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/kimproxy/interface/kcm_instantmessenger.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -130,7 +130,7 @@
+ Comment[pt_BR]=O mensageiro instantâneo possibilita o bate-papo entre indivíduos e grupos.
+ Comment[ro]=Aplicația de mesagerie instantanee permite convorbiri între persoane sau grupuri de persoane.
+ Comment[ru]=Клиент обмена сообщениями служит для обмена сообщениями между людьми и между группами.
+-Comment[se]=Šleađgadiehtoprográmma gos olbmot ja joavkkut sáhttet buillardallat (chat).
++Comment[se]=Šleađgadiehtoprográmma gos olbmot ja joavkkut sáhttet buillardit (Chat).
+ Comment[sk]=Instant messenger umožňuje rozhovor medzi rôznymi osobami a skupinami.
+ Comment[sl]=Takojšni sporočilnik omogoča dvosmeren klepet med posamezniki in skupinami.
+ Comment[sr]=Брзим гласником можете ћаскати са другим појединцима и у групама.
+Index: interfaces/kspeech/dbustexttospeech.desktop
+===================================================================
+--- interfaces/kspeech/dbustexttospeech.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/kspeech/dbustexttospeech.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -55,7 +55,7 @@
+ Comment[pt_BR]=Serviço de conversão de texto para fala com interface D-Bus
+ Comment[ro]=Serviciu text-vorbire cu interfață D-Bus
+ Comment[ru]=Служба синтеза речи с интерфейсом D-Bus
+-Comment[se]=Hupmejuvvon-teaksta-bálválus mas lea D-Bus-lákta
++Comment[se]=Hubmon-teaksta-bálvalus mas lea D-Bus-lákta
+ Comment[sk]=Služba prevodu textu na reč s rozhraním D-Bus
+ Comment[sl]=Servis, ki spremeni besedilo v govor, z vmesnikom D-Bus
+ Comment[sr]=Текст‑у‑говор сервис са д‑бус сучељем
 Index: interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop
 ===================================================================
---- interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -30,6 +30,7 @@
  Comment[kn]=ಕೆಟೆಕ್ಸ್ಟ್ ಎಡಿಟರ್ ಉತ್ಥಾಪಿಸು/ಉಳಿಸು ಶೋಧಿಸು/ಪರಿಶೀಲಿಸಿ ಮಿಳಿತಾನ್ವಯ (ಪ್ಲಗಿನ್)
  Comment[ko]=KTextEditor 필터/검사 불러오기/저장 플러그인
@@ -114,8 +1003,8 @@ Index: interfaces/ktexteditor/ktexteditor_loadsavefiltercheckplugin.desktop
  Comment[sr@latin]=Priključak uređivača teksta za filtriranje i proveru na učitavanju i upisivanju
 Index: interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp
 ===================================================================
---- interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -19,6 +19,8 @@
  
  #include "codecompletionmodelcontrollerinterface.h"
@@ -125,20 +1014,60 @@ Index: interfaces/ktexteditor/codecompletionmodelcontrollerinterface.cpp
  #include <ktexteditor/view.h>
  #include <ktexteditor/document.h>
  
+Index: interfaces/ktexteditor/ktexteditorplugin.desktop
+===================================================================
+--- interfaces/ktexteditor/ktexteditorplugin.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/ktexteditor/ktexteditorplugin.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -62,7 +62,7 @@
+ Comment[pt_BR]=Plug-in do KTextEditor
+ Comment[ro]=Modul editor de text
+ Comment[ru]=Расширение KTextEditor
+-Comment[se]=KDE-čállinprográmma lassemoduvla
++Comment[se]=KDE-čállinprográmma lassemodula
+ Comment[sk]=Modul KTextEditor
+ Comment[sl]=Vstavek KTextEditor
+ Comment[sr]=Прикључак за уређивање текста
+Index: interfaces/ktexteditor/kcm_ktexteditor.desktop
+===================================================================
+--- interfaces/ktexteditor/kcm_ktexteditor.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ interfaces/ktexteditor/kcm_ktexteditor.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -139,7 +139,7 @@
+ Comment[pt_BR]=O serviço de edição de texto fornece um visualizador e editor de texto aos aplicativos.  Os aplicativos KDE que fornecem recursos de edição de texto devem utilizar este serviço.
+ Comment[ro]=Serviciul de editare text asigură aplicațiilor un vizualizor de text și un editor. Aplicațiile KDE care oferă capabilități de editare de text ar trebui să utilizeze acest serviciu.
+ Comment[ru]=Служба текстового редактора для приложений, в которых требуется просмотр и редактирование текста. Её должны использовать приложения KDE, в которых требуется редактирование текста.
+-Comment[se]=Čállinprográmmabálvalus fállá teakstačájeheami ja -doaimmaheaheami. KDE-prográmmat, mat fállet teakstadoaimmahanvejolašvuođaid, galggašedje geavahit dán bálvalusa.
++Comment[se]=Čállinprográmmabálvalus fállá teakstačájeheami ja -doaimmaheami. KDE-prográmmat, mat fállet teakstadoaimmahanvejolašvuođaid, galggašedje geavahit dán bálvalusa.
+ Comment[sk]=Služba textového editora poskytuje aplikáciám prehliadač a editor textových súborov. Aplikácie KDE, ktoré podporujú úpravu textu, by mali používať túto službu.
+ Comment[sl]=Storitev urejevalnika besedila omogoča programom dostop do pregledovalnika in urejevalnika besedil. Programi za KDE, ki omogočajo urejanje besedila, naj bi uporabljali to storitev.
+ Comment[sr]=Сервис уређивача текста пружа програмима начин за приказивање и уређивање текстова. Требало би да га користе сви КДЕ програми којима је то потребно.
+Index: knotify/config/knotifyconfigactionswidget.cpp
+===================================================================
+--- knotify/config/knotifyconfigactionswidget.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ knotify/config/knotifyconfigactionswidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -103,7 +103,7 @@
+ 
+ 	config->writeEntry( "Sound" , m_ui.Sound_select->url().url() );
+ 	config->writeEntry( "Logfile" , m_ui.Logfile_select->url().url() );
+-	config->writeEntry( "Execute" , m_ui.Execute_select->url().url() );
++	config->writeEntry( "Execute" , m_ui.Execute_select->url().path() );
+ 	switch(m_ui.KTTS_combo->currentIndex())
+ 	{
+ 		case 0:
 Index: kate/plugins/kdatatool/ktexteditor_kdatatool.desktop
 ===================================================================
---- kate/plugins/kdatatool/ktexteditor_kdatatool.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/plugins/kdatatool/ktexteditor_kdatatool.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -64,7 +64,7 @@
+--- kate/plugins/kdatatool/ktexteditor_kdatatool.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/plugins/kdatatool/ktexteditor_kdatatool.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -64,7 +64,8 @@
  Name[pt]=Ferramentas de Dados
  Name[pt_BR]=Ferramentas de dados
  Name[ro]=Utilitare de date
 -Name[ru]=Работа с данными
 +Name[ru]=Обработка данных
++Name[se]=Dáhtareaiddut
  Name[sk]=Dátové nástroje
  Name[sl]=Podatkovna orodja
  Name[sr]=Алатке за податке
-@@ -137,7 +137,7 @@
+@@ -137,7 +138,7 @@
  Comment[pt]=Activa as ferramentas de dados como os sinónimos e a verificação ortográfica (se estiverem instalados)
  Comment[pt_BR]=Habilita ferramentas de dados, como dicionário de sinônimos e verificador ortográfico (se instalados)
  Comment[ro]=Activează utilitare de date precum dicționarul și verificarea ortografică (dacă sînt instalate)
@@ -149,8 +1078,8 @@ Index: kate/plugins/kdatatool/ktexteditor_kdatatool.desktop
  Comment[sl]=Omogoči orodja za podatke, kot so slovar sopomenk in preverjanje črkovanja (če so nameščena)
 Index: kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop
 ===================================================================
---- kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -71,7 +71,7 @@
  Name[pt]=Completação de Palavras
  Name[pt_BR]=Complementação de palavras
@@ -171,8 +1100,8 @@ Index: kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop
  Comment[sr]=Дирекционо или искачуће допуњавање према речима из документа
 Index: kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop
 ===================================================================
---- kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -39,7 +39,7 @@
  Name[pt]=Verificação/adição da codificação em Python
  Name[pt_BR]=Verificação/adição da codificação em Python
@@ -193,8 +1122,8 @@ Index: kate/plugins/pythonencoding/ktexteditor_python-encoding.desktop
  Comment[sr]=При уписивању питонских фајлова, проверава и додаје ред о кодирању
 Index: kate/plugins/timedate/ktexteditor_timedate.desktop
 ===================================================================
---- kate/plugins/timedate/ktexteditor_timedate.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/plugins/timedate/ktexteditor_timedate.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/plugins/timedate/ktexteditor_timedate.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/plugins/timedate/ktexteditor_timedate.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -120,7 +120,7 @@
  Comment[hu]=Az aktuális dátum és idő beszúrása
  Comment[hy]=Մտցրեք ընթացիք Ժամը և Ամսաթիվը
@@ -206,8 +1135,8 @@ Index: kate/plugins/timedate/ktexteditor_timedate.desktop
  Comment[km]=បញ្ចូល​ពេលវេលា និង​កាលបរិច្ឆេទ​បច្ចុប្បន្ន
 Index: kate/vimode/katevinormalmode.cpp
 ===================================================================
---- kate/vimode/katevinormalmode.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/vimode/katevinormalmode.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/vimode/katevinormalmode.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/vimode/katevinormalmode.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -471,167 +471,6 @@
    return false;
  }
@@ -661,8 +1590,8 @@ Index: kate/vimode/katevinormalmode.cpp
    if ( line == -1 ) {
 Index: kate/syntax/data/latex.xml
 ===================================================================
---- kate/syntax/data/latex.xml	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/syntax/data/latex.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/syntax/data/latex.xml	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/syntax/data/latex.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1,20 +1,25 @@
 -<?xml version="1.01" encoding="UTF-8"?>
 +<?xml version="1.0" encoding="UTF-8"?>
@@ -816,8 +1745,8 @@ Index: kate/syntax/data/latex.xml
  
 Index: kate/utils/katevimodebar.cpp
 ===================================================================
---- kate/utils/katevimodebar.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/utils/katevimodebar.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/utils/katevimodebar.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/utils/katevimodebar.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -27,6 +27,7 @@
  #include <QtGui/QLabel>
  #include <QtGui/QHBoxLayout>
@@ -845,16 +1774,16 @@ Index: kate/utils/katevimodebar.cpp
  void KateViModeBar::clearMessage()
 Index: kate/script/data/CMakeLists.txt
 ===================================================================
---- kate/script/data/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/script/data/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/script/data/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/script/data/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1,2 +1,2 @@
  # install some javascripts
 -install( FILES jstest.js sort.js lisp.js cstyle.js python.js ruby.js DESTINATION ${DATA_INSTALL_DIR}/katepart/script )
 +install( FILES jstest.js sort.js lisp.js cstyle.js python.js ruby.js lilypond.js DESTINATION ${DATA_INSTALL_DIR}/katepart/script )
 Index: kate/completion/katecompletionmodel.cpp
 ===================================================================
---- kate/completion/katecompletionmodel.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/completion/katecompletionmodel.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/completion/katecompletionmodel.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/completion/katecompletionmodel.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -94,12 +94,13 @@
    if( v.isValid() && v.canConvert(QVariant::Int) ) {
      QVariant value = index.data(v.toInt());
@@ -885,7 +1814,44 @@ Index: kate/completion/katecompletionmodel.cpp
            return ' ' + g->title;
          break;
  
-@@ -1527,10 +1528,12 @@
+@@ -491,7 +492,7 @@
+   return createIndex(row, 0, 0);
+ }
+ 
+-void KateCompletionModel::clearGroups( )
++void KateCompletionModel::clearGroups( bool shouldReset )
+ {
+   clearExpanding();
+   m_ungrouped->clear();
+@@ -524,7 +525,8 @@
+   m_emptyGroups.append(m_bestMatches);
+   m_groupHash.insert(BestMatchesProperty, m_bestMatches);
+ 
+-  reset();
++  if(shouldReset)
++    reset();
+ }
+ 
+ QSet<KateCompletionModel::Group*> KateCompletionModel::createItems(const HierarchicalModelHandler& _handler, const QModelIndex& i, bool notifyModel) {
+@@ -563,7 +565,7 @@
+ 
+ void KateCompletionModel::createGroups()
+ {
+-  clearGroups();
++  clearGroups(false); //Reset is done below
+ 
+   bool has_groups=false;
+   foreach (CodeCompletionModel* sourceModel, m_completionModels) {
+@@ -603,7 +605,7 @@
+     g = m_argumentHints;
+   } else{
+     QString customGroup = handler.customGroup();
+-    if(!customGroup.isNull()) {
++    if(!customGroup.isNull() && m_hasGroups) {
+       if(m_customGroupHash.contains(customGroup)) {
+         g = m_customGroupHash[customGroup];
+       }else{
+@@ -1527,10 +1529,12 @@
    , matchCompletion(true)
    , matchFilters(true)
  {
@@ -900,10 +1866,49 @@ Index: kate/completion/katecompletionmodel.cpp
    if(doInitialMatch) {
      filter();
      match();
+@@ -1967,7 +1971,7 @@
+ 
+   m_currentMatch.remove(model);
+ 
+-  clearGroups();
++  clearGroups(false);
+ 
+   model->disconnect(this);
+ 
+@@ -1978,6 +1982,7 @@
+     createGroups();
+   }else{
+     emit contentGeometryChanged();
++    reset();
+   }
+ }
+ 
+@@ -2064,8 +2069,6 @@
+   m_currentMatch.clear();
+ 
+   clearGroups();
+-
+-  reset();
+ }
+ 
+ #include "katecompletionmodel.moc"
+Index: kate/completion/katecompletionmodel.h
+===================================================================
+--- kate/completion/katecompletionmodel.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/completion/katecompletionmodel.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -278,7 +278,7 @@
+     ///i must be an index in the source model
+     QSet<Group*> deleteItems(const QModelIndex& i);
+     Group* createItem(const HierarchicalModelHandler&, const QModelIndex& i, bool notifyModel = false);
+-    void clearGroups();
++    void clearGroups(bool reset = true);
+     void hideOrShowGroup(Group* g);
+     /// When forceGrouping is enabled, all given attributes will be used for grouping, regardless of the completion settings.
+     Group* fetchGroup(int attribute, const QString& scope = QString(), bool forceGrouping = false);
 Index: kate/completion/expandingtree/expandingdelegate.cpp
 ===================================================================
---- kate/completion/expandingtree/expandingdelegate.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/completion/expandingtree/expandingdelegate.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/completion/expandingtree/expandingdelegate.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/completion/expandingtree/expandingdelegate.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -72,6 +72,8 @@
  {
    QStyleOptionViewItem option(optionOld);
@@ -973,8 +1978,8 @@ Index: kate/completion/expandingtree/expandingdelegate.cpp
      //initStyleOption(&opt, index);
 Index: kate/completion/expandingtree/expandingdelegate.h
 ===================================================================
---- kate/completion/expandingtree/expandingdelegate.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/completion/expandingtree/expandingdelegate.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/completion/expandingtree/expandingdelegate.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/completion/expandingtree/expandingdelegate.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -60,9 +60,12 @@
      virtual QSize sizeHint ( const QStyleOptionViewItem & option, const QModelIndex & index ) const;
      virtual bool editorEvent ( QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index );
@@ -996,10 +2001,53 @@ Index: kate/completion/expandingtree/expandingdelegate.h
    private:
  
      ExpandingWidgetModel* m_model;
+Index: kate/completion/katecompletionwidget.cpp
+===================================================================
+--- kate/completion/katecompletionwidget.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/completion/katecompletionwidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -610,8 +610,6 @@
+ 
+   QModelIndex toExecute;
+   
+-  KTextEditor::Cursor oldPos = view()->cursorPosition();
+-  
+   if(index.model() == m_presentationModel)
+     toExecute = m_presentationModel->mapToSource(index);
+   else
+@@ -625,6 +623,8 @@
+   // encapsulate all editing as being from the code completion, and undo-able in one step.
+   view()->doc()->editStart(true, Kate::CodeCompletionEdit);
+ 
++  KTextEditor::SmartCursor* oldPos = view()->doc()->smartManager()->newSmartCursor(view()->cursorPosition(), KTextEditor::SmartCursor::StayOnInsert);
++  
+   KTextEditor::CodeCompletionModel* model = static_cast<KTextEditor::CodeCompletionModel*>(const_cast<QAbstractItemModel*>(toExecute.model()));
+   Q_ASSERT(model);
+ 
+@@ -655,13 +655,18 @@
+   view()->sendCompletionExecuted(start, model, toExecute);
+   
+   KTextEditor::Cursor newPos = view()->cursorPosition();
+-  if(newPos > oldPos) {
++
++  if(newPos > *oldPos) {
+     m_automaticInvocationAt = newPos;
+-    m_automaticInvocationLine = view()->doc()->text(KTextEditor::Range(oldPos, newPos));
++    m_automaticInvocationLine = view()->doc()->text(KTextEditor::Range(*oldPos, newPos));
+     kDebug() << "executed, starting automatic invocation with line" << m_automaticInvocationLine;
+     m_lastInsertionByUser = false;
+     m_automaticInvocationTimer->start();
+   }
++  
++  view()->doc()->smartMutex()->lock();
++  delete oldPos;
++  view()->doc()->smartMutex()->unlock();
+ }
+ 
+ void KateCompletionWidget::resizeEvent( QResizeEvent * event )
 Index: kate/view/kateviewhelpers.cpp
 ===================================================================
---- kate/view/kateviewhelpers.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/view/kateviewhelpers.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/view/kateviewhelpers.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/view/kateviewhelpers.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1672,7 +1672,7 @@
  {
    doc->setEncoding(e);
@@ -1011,8 +2059,8 @@ Index: kate/view/kateviewhelpers.cpp
  }
 Index: kate/document/katedocument.cpp
 ===================================================================
---- kate/document/katedocument.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kate/document/katedocument.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kate/document/katedocument.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kate/document/katedocument.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -5396,6 +5396,7 @@
  
  bool KateDocument::setEncoding (const QString &e)
@@ -1021,10 +2069,134 @@ Index: kate/document/katedocument.cpp
    return m_config->setEncoding(e);
  }
  
+Index: kjs/array_instance.cpp
+===================================================================
+--- kjs/array_instance.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kjs/array_instance.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -254,6 +254,13 @@
+         if (!map) {
+             map = new SparseArrayValueMap;
+             storage->m_sparseValueMap = map;
++
++            // If we create a sparse map, we need to ensure that there is at least one spot
++            // in the vector map, however, since the sparse map can't put/get key 0.
++            // It's safe to do it here, since put(0) will always put it in the vector part,
++            // but we have to do it before a get(0) or it will crash
++            if (!m_vectorLength)
++                increaseVectorLength(1);
+         }
+         map->add(i, value);
+         return;
+Index: kjs/object_object.cpp
+===================================================================
+--- kjs/object_object.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kjs/object_object.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -56,6 +56,10 @@
+     putDirectFunction(new ObjectProtoFunc(exec, funcProto, ObjectProtoFunc::LookupSetter, 1, *lookupSetterPropertyName), DontEnum);
+ }
+ 
++JSObject* ObjectPrototype::self(ExecState* exec)
++{
++    return exec->lexicalInterpreter()->builtinObjectPrototype();
++}
+ 
+ // ------------------------------ ObjectProtoFunc --------------------------------
+ 
+Index: kjs/object_object.h
+===================================================================
+--- kjs/object_object.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kjs/object_object.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -34,9 +34,14 @@
+    * The initial value of Object.prototype (and thus all objects created
+    * with the Object constructor
+    */
+-  class ObjectPrototype : public JSObject {
++  class KJS_EXPORT ObjectPrototype : public JSObject {
+   public:
+     ObjectPrototype(ExecState *exec, FunctionPrototype *funcProto);
++    
++    // Returns the lexical default object prototype for the given interpreter.
++    // This is just an alias for exec->lexicalInterpreter()->builtinObjectPrototype() 
++    // for uniformity with custom prototypes.
++    static JSObject* self(ExecState* exec);
+   };
+ 
+   /**
+Index: kjs/lookup.h
+===================================================================
+--- kjs/lookup.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kjs/lookup.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -362,31 +362,12 @@
+     static const KJS::ClassInfo info; \
+     bool getOwnPropertySlot(KJS::ExecState *, const KJS::Identifier&, KJS::PropertySlot&); \
+   protected: \
+-    ClassProto(KJS::ExecState *exec) \
+-      : KJS::JSObject(exec->lexicalInterpreter()->builtinObjectPrototype()) { } \
+-    \
++    ClassProto(KJS::ExecState *exec);\
+     static KJS::Identifier* s_name;           \
+     static KJS::Identifier* name(); \
+   };
+ 
+-#define KJS_DEFINE_PROTOTYPE_WITH_PROTOTYPE(ClassProto, ClassProtoProto) \
+-    class ClassProto : public KJS::JSObject { \
+-        friend KJS::JSObject* KJS_CACHEGLOBALOBJECT_NS cacheGlobalObject<ClassProto>(KJS::ExecState* exec, const KJS::Identifier& propertyName); \
+-    public: \
+-        static KJS::JSObject* self(KJS::ExecState* exec); \
+-        virtual const KJS::ClassInfo* classInfo() const { return &info; } \
+-        static const KJS::ClassInfo info; \
+-        bool getOwnPropertySlot(KJS::ExecState*, const KJS::Identifier&, KJS::PropertySlot&); \
+-    protected: \
+-        ClassProto(KJS::ExecState* exec) \
+-            : KJS::JSObject(ClassProtoProto::self(exec)) { } \
+-    \
+-    static KJS::Identifier* s_name; \
+-    static KJS::Identifier* name(); \
+-    };
+-
+-
+-#define KJS_IMPLEMENT_PROTOTYPE(ClassName, ClassProto,ClassFunc) \
++#define KJS_IMPLEMENT_PROTOTYPE_IMP(ClassName,ClassProto,ClassFunc,ClassProtoProto) \
+     const KJS::ClassInfo ClassProto::info = { ClassName, 0, &ClassProto##Table, 0 }; \
+     KJS::Identifier* ClassProto::s_name = 0; \
+     KJS::JSObject *ClassProto::self(KJS::ExecState *exec) \
+@@ -401,9 +382,12 @@
+     { \
+       if (!s_name) s_name = new KJS::Identifier("[[" ClassName ".prototype]]"); \
+       return s_name; \
+-    }
++    }\
++    ClassProto::ClassProto(KJS::ExecState *exec): KJS::JSObject(ClassProtoProto::self(exec))
+ 
+-
++#define KJS_IMPLEMENT_PROTOTYPE(ClassName,ClassProto,ClassFunc,ClassProtoProto) \
++    KJS_IMPLEMENT_PROTOTYPE_IMP(ClassName,ClassProto,ClassFunc,ClassProtoProto) {}
++    
+ #define KJS_IMPLEMENT_PROTOFUNC(ClassFunc) \
+   class ClassFunc : public KJS::InternalFunctionImp {   \
+   public: \
+Index: kfile/kdiroperator.cpp
+===================================================================
+--- kfile/kdiroperator.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kfile/kdiroperator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -2186,11 +2186,11 @@
+     // the preview widget is restored
+     QList<int> sizes = d->splitter->sizes();
+     const bool hasPreview = (sizes.count() == 2);
+-    const bool restorePreviewWidth = hasPreview && (d->previewWidth != sizes[1]);
+ 
+     d->splitter->resize(size());
+-
+     sizes = d->splitter->sizes();
++    
++    const bool restorePreviewWidth = hasPreview && (d->previewWidth != sizes[1]);
+     if (restorePreviewWidth) {
+         const int availableWidth = sizes[0] + sizes[1];
+         sizes[0] = availableWidth - d->previewWidth;
 Index: kfile/kurlnavigator.cpp
 ===================================================================
---- kfile/kurlnavigator.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kfile/kurlnavigator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kfile/kurlnavigator.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kfile/kurlnavigator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -194,13 +194,13 @@
      void deleteButtons();
  
@@ -1137,10 +2309,56 @@ Index: kfile/kurlnavigator.cpp
  {
      const int length = url.length();
      if ((length > 0) && (url.at(length - 1) == QChar('/'))) {
+@@ -954,24 +954,28 @@
+     return d->m_showPlacesSelector;
+ }
+ 
+-void KUrlNavigator::setUrl(const KUrl& url)
++void KUrlNavigator::setUrl(const KUrl& newUrl)
+ {
+-    QString urlStr(KUrlCompletion::replacedPath(url.pathOrUrl(), true, true));
+-
+-    if (urlStr.length() > 0 && urlStr.at(0) == '~') {
++    if (newUrl == url()) {
++        return;
++    }
++    
++    QString urlStr(KUrlCompletion::replacedPath(newUrl.pathOrUrl(), true, true));
++    
++    if ((urlStr.length() > 0) && (urlStr.at(0) == '~')) {
+         // replace '~' by the home directory
+         urlStr.remove(0, 1);
+         urlStr.insert(0, QDir::homePath());
+     }
+ 
+-    if ((url.protocol() == "tar") || (url.protocol() == "zip")) {
++    if ((newUrl.protocol() == "tar") || (newUrl.protocol() == "zip")) {
+         // The URL represents a tar- or zip-file. Check whether
+         // the URL is really part of the tar- or zip-file, otherwise
+         // replace it by the local path again.
+-        bool insideCompressedPath = d->isCompressedPath(url);
++        bool insideCompressedPath = d->isCompressedPath(newUrl);
+         if (!insideCompressedPath) {
+-            KUrl prevUrl = url;
+-            KUrl parentUrl = url.upUrl();
++            KUrl prevUrl = newUrl;
++            KUrl parentUrl = newUrl.upUrl();
+             while (parentUrl != prevUrl) {
+                 if (d->isCompressedPath(parentUrl)) {
+                     insideCompressedPath = true;
+@@ -984,7 +988,7 @@
+         if (!insideCompressedPath) {
+             // drop the tar: or zip: protocol since we are not
+             // inside the compressed path anymore
+-            urlStr = url.path();
++            urlStr = newUrl.path();
+         }
+     }
+ 
 Index: kfile/kfilepreviewgenerator.cpp
 ===================================================================
---- kfile/kfilepreviewgenerator.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kfile/kfilepreviewgenerator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kfile/kfilepreviewgenerator.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kfile/kfilepreviewgenerator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -16,6 +16,7 @@
   *   the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,      *
   *   Boston, MA 02110-1301, USA.                                               *
@@ -1169,8 +2387,8 @@ Index: kfile/kfilepreviewgenerator.cpp
              QSize size = icon.size();
 Index: kdoctools/customization/fr/user.entities
 ===================================================================
---- kdoctools/customization/fr/user.entities	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdoctools/customization/fr/user.entities	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdoctools/customization/fr/user.entities	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdoctools/customization/fr/user.entities	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -212,6 +212,10 @@
  <!ENTITY traducteurArnaudMuchembled   '<othercredit role="translator"><firstname>Arnaud</firstname><surname>Muchembled</surname><affiliation><address><email>arno.muchembled@orange.fr</email></address></affiliation><contrib>Traduction française&nbsp;</contrib></othercredit>'>
  <!ENTITY relecteurArnaudMuchembled    '<othercredit role="reviewer"><firstname>Arnaud</firstname><surname>Muchembled</surname><affiliation><address><email>arno.muchembled@orange.fr</email></address></affiliation><contrib>Relecture de la documentation française&nbsp;</contrib></othercredit>'>
@@ -1190,10 +2408,19 @@ Index: kdoctools/customization/fr/user.entities
  <!ENTITY PenelopeSorveyron 'Pénélope Sorveyron <email>goneri@free.fr</email>'>
  <!ENTITY NicolasTernissien   'Nicolas Ternissien <email>nicolast@libertysurf.fr</email>'>
  <!ENTITY GillesThioliere   'Gilles Thiolière <email>zhovirax@wanadoo.fr</email>'>
+Index: kdoctools/customization/nl/user.entities
+===================================================================
+--- kdoctools/customization/nl/user.entities	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdoctools/customization/nl/user.entities	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -150,3 +150,4 @@
+ <!ENTITY khc     "<application>KDE Helpcentrum</application>">
+ <!ENTITY kic     "<application>KDE Informatiecentrum</application>">
+ <!ENTITY palm     "PalmOS(tm)-apparaat">
++<!ENTITY systemsettings "<application>Systeeminstellingen</application>">
 Index: kdoctools/customization/et/user.entities
 ===================================================================
---- kdoctools/customization/et/user.entities	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdoctools/customization/et/user.entities	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdoctools/customization/et/user.entities	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdoctools/customization/et/user.entities	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -50,6 +50,7 @@
  <!ENTITY dpi    '<acronym>dpi</acronym>'>
  <!ENTITY FAQ    '<acronym>KKK</acronym>'>
@@ -1204,8 +2431,8 @@ Index: kdoctools/customization/et/user.entities
  <!-- Custom entities -->
 Index: doc/kioslave/ftp/index.docbook
 ===================================================================
---- doc/kioslave/ftp/index.docbook	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ doc/kioslave/ftp/index.docbook	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- doc/kioslave/ftp/index.docbook	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ doc/kioslave/ftp/index.docbook	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -5,7 +5,7 @@
  <!ENTITY % English "INCLUDE" > <!-- change language only here -->
  ]>
@@ -1218,13 +2445,13 @@ Index: doc/kioslave/ftp/index.docbook
 Index: includes/DNSSD/ServiceTypeBrowser
 ===================================================================
 --- includes/DNSSD/ServiceTypeBrowser	(.../tags/KDE/4.2.0/kdelibs)	(wersja 0)
-+++ includes/DNSSD/ServiceTypeBrowser	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
++++ includes/DNSSD/ServiceTypeBrowser	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -0,0 +1 @@
 +#include "../../dnssd/servicetypebrowser.h"
 Index: includes/CMakeLists.txt
 ===================================================================
---- includes/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ includes/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- includes/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ includes/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -484,6 +484,7 @@
    DNSSD/ServiceBase
    DNSSD/ServiceBrowser
@@ -1235,8 +2462,8 @@ Index: includes/CMakeLists.txt
  
 Index: kded/kded.cpp
 ===================================================================
---- kded/kded.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kded/kded.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kded/kded.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/kded.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -115,9 +115,8 @@
     KToolInvocation::kdeinitExecWait( "kdontchangethehostname", args );
  }
@@ -1303,10 +2530,118 @@ Index: kded/kded.cpp
  
       KDE_signal(SIGTERM, sighandler);
       KDE_signal(SIGHUP, sighandler);
+Index: kded/kbuildsycoca.cpp
+===================================================================
+--- kded/kbuildsycoca.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/kbuildsycoca.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -514,7 +514,7 @@
+ 
+    // Calculate per-servicetype/mimetype data
+    mimeTypeFactory->parseSubclasses();
+-   serviceFactory->populateServiceTypes();
++   serviceFactory->postProcessServices();
+ 
+    // Write factory data....
+    for(KSycocaFactoryList::Iterator factory = factories()->begin();
+Index: kded/kbuildservicefactory.cpp
+===================================================================
+--- kded/kbuildservicefactory.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/kbuildservicefactory.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -193,13 +193,50 @@
+     }
+ }
+ 
++void KBuildServiceFactory::postProcessServices()
++{
++    // By doing all this here rather than in addEntry (and removing when replacing
++    // with local override), we only do it for the final applications.
+ 
++    // For every service...
++    KSycocaEntryDict::Iterator itserv = m_entryDict->begin();
++    const KSycocaEntryDict::Iterator endserv = m_entryDict->end();
++    for( ; itserv != endserv ; ++itserv ) {
++
++        KSycocaEntry::Ptr entry = *itserv;
++        KService::Ptr service = KService::Ptr::staticCast(entry);
++
++        if (!service->isDeleted()) {
++            const QString parent = service->parentApp();
++            if (!parent.isEmpty())
++                m_serviceGroupFactory->addNewChild(parent, KSycocaEntry::Ptr::staticCast(service));
++        }
++
++        const QString name = service->desktopEntryName();
++        m_nameDict->add(name, entry);
++        m_nameMemoryHash.insert(name, service);
++
++        const QString relName = service->entryPath();
++        //kDebug(7021) << "adding service" << service.data() << service->menuId() << "name=" << name << "relName=" << relName;
++        m_relNameDict->add(relName, entry);
++        m_relNameMemoryHash.insert(relName, service); // for KMimeAssociations
++
++        const QString menuId = service->menuId();
++        if (!menuId.isEmpty()) { // empty for services, non-empty for applications
++            m_menuIdDict->add(menuId, entry);
++            m_menuIdMemoryHash.insert(menuId, service); // for KMimeAssociations
++        }
++    }
++    populateServiceTypes();
++}
++
+ void KBuildServiceFactory::populateServiceTypes()
+ {
+     // For every service...
+     KSycocaEntryDict::Iterator itserv = m_entryDict->begin();
+     const KSycocaEntryDict::Iterator endserv = m_entryDict->end();
+     for( ; itserv != endserv ; ++itserv ) {
++
+         KService::Ptr service = KService::Ptr::staticCast(*itserv);
+         QVector<KService::ServiceTypeAndPreference> serviceTypeList = service->_k_accessServiceTypes();
+         //bool hasAllAll = false;
+@@ -336,30 +373,18 @@
+     if (m_dupeDict.contains(newEntry))
+         return;
+ 
+-    KSycocaFactory::addEntry(newEntry);
+-
+     const KService::Ptr service = KService::Ptr::staticCast( newEntry );
+     m_dupeDict.insert(newEntry);
+ 
+-    if (!service->isDeleted()) {
+-        const QString parent = service->parentApp();
+-        if (!parent.isEmpty())
+-            m_serviceGroupFactory->addNewChild(parent, KSycocaEntry::Ptr::staticCast(service));
++    KSycocaEntry::Ptr oldEntry = m_entryDict->value(newEntry->storageId());
++    if (oldEntry) {
++        // Already exists -> replace
++        //KService::Ptr oldService = KService::Ptr::staticCast(oldEntry);
++        // We found a more-local override, e.g. ~/.local/share/applications/kde4/foo.desktop
++        // So forget about the more global file.
++        //kDebug(7021) << "removing" << oldService.data() << oldService->entryPath() << "because of" << service->entryPath();
++        KSycocaFactory::removeEntry(newEntry->storageId());
+     }
+ 
+-    const QString name = service->desktopEntryName();
+-    m_nameDict->add( name, newEntry );
+-    m_nameMemoryHash.insert(name, service);
+-
+-    const QString relName = service->entryPath();
+-    //kDebug(7021) << "adding service" << service->menuId() << "name=" << name << "relName=" << relName;
+-    m_relNameDict->add( relName, newEntry );
+-    m_relNameMemoryHash.insert(relName, service); // for KMimeAssociations
+-
+-    const QString menuId = service->menuId();
+-    if (!menuId.isEmpty()) {
+-        m_menuIdDict->add( menuId, newEntry );
+-        m_menuIdMemoryHash.insert(menuId, service); // for KMimeAssociations
+-    }
++    KSycocaFactory::addEntry(newEntry);
+ }
+-
 Index: kded/kded.h
 ===================================================================
---- kded/kded.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kded/kded.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kded/kded.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/kded.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -41,7 +41,7 @@
  {
    Q_OBJECT
@@ -1325,10 +2660,57 @@ Index: kded/kded.h
     /**
      * When a desktop file is updated, a timer is started (5 sec)
      * before rebuilding the binary - so that multiple updates result
+Index: kded/vfolder_menu.cpp
+===================================================================
+--- kded/vfolder_menu.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/vfolder_menu.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -349,7 +349,7 @@
+ VFolderMenu::addApplication(const QString &id, KService::Ptr service)
+ {
+    service->setMenuId(id);
+-   m_appsInfo->applications.insert(id, service);
++   m_appsInfo->applications.insert(id, service); // replaces, if already there
+    m_serviceFactory->addEntry(KSycocaEntry::Ptr::staticCast(service));
+ }
+ 
+@@ -1029,7 +1029,7 @@
+ void
+ VFolderMenu::processKDELegacyDirs()
+ {
+-kDebug(7021) << "processKDELegacyDirs()";
++    kDebug(7021);
+ 
+    QHash<QString,KService::Ptr> items;
+    QString prefix = "kde4-";
+@@ -1091,7 +1091,7 @@
+ void
+ VFolderMenu::processLegacyDir(const QString &dir, const QString &relDir, const QString &prefix)
+ {
+-kDebug(7021).nospace() << "processLegacyDir(" << dir << ", " << relDir << ", " << prefix << ")";
++    kDebug(7021).nospace() << "processLegacyDir(" << dir << ", " << relDir << ", " << prefix << ")";
+ 
+    QHash<QString,KService::Ptr> items;
+    // We look for a set of files.
+Index: kded/kbuildservicefactory.h
+===================================================================
+--- kded/kbuildservicefactory.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kded/kbuildservicefactory.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -83,9 +83,10 @@
+      */
+     static QStringList resourceTypes();
+ 
+-    void populateServiceTypes();
++    void postProcessServices();
+ 
+ private:
++    void populateServiceTypes();
+     void saveOfferList(QDataStream &str);
+     void collectInheritedServices();
+     void collectInheritedServices(KMimeType::Ptr mime, QSet<KMimeType::Ptr>& visitedMimes);
 Index: solid/solid/backends/hal/halstorageaccess.cpp
 ===================================================================
---- solid/solid/backends/hal/halstorageaccess.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ solid/solid/backends/hal/halstorageaccess.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- solid/solid/backends/hal/halstorageaccess.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ solid/solid/backends/hal/halstorageaccess.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -314,6 +314,8 @@
              options<<"utf8";
          else if (halOptions.contains("iocharset="))
@@ -1340,8 +2722,8 @@ Index: solid/solid/backends/hal/halstorageaccess.cpp
      else if ( halOptions.contains("locale=") ) {
 Index: mimetypes/kde.xml
 ===================================================================
---- mimetypes/kde.xml	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ mimetypes/kde.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- mimetypes/kde.xml	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ mimetypes/kde.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -395,6 +395,48 @@
      <glob pattern="*.wsz"/>
    </mime-type>
@@ -1393,8 +2775,8 @@ Index: mimetypes/kde.xml
      <glob pattern="*.kexis"/>
 Index: CMakeLists.txt
 ===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -51,6 +51,11 @@
  find_package(Strigi REQUIRED)
  
@@ -1409,8 +2791,8 @@ Index: CMakeLists.txt
  
 Index: kioslave/http/http.cpp
 ===================================================================
---- kioslave/http/http.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kioslave/http/http.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kioslave/http/http.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kioslave/http/http.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -5,7 +5,7 @@
     Copyright (C) 2001,2002 Hamish Rodda <rodda@kde.org>
     Copyright (C) 2007      Nick Shaforostoff <shafff@ukr.net>
@@ -3108,7 +4490,7 @@ Index: kioslave/http/http.cpp
 Index: kioslave/http/httpauthentication.cpp
 ===================================================================
 --- kioslave/http/httpauthentication.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 0)
-+++ kioslave/http/httpauthentication.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
++++ kioslave/http/httpauthentication.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -0,0 +1,735 @@
 +/* This file is part of the KDE libraries
 +    Copyright (C) 2008, 2009 Andreas Hartmetz <ahartmetz@gmail.com>
@@ -3847,8 +5229,8 @@ Index: kioslave/http/httpauthentication.cpp
 +#endif // HAVE_LIBGSSAPI
 Index: kioslave/http/http.h
 ===================================================================
---- kioslave/http/http.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kioslave/http/http.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kioslave/http/http.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kioslave/http/http.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -4,7 +4,7 @@
     Copyright (C) 2000,2001 George Staikos <staikos@kde.org>
     Copyright (C) 2001,2002 Hamish Rodda <rodda@kde.org>
@@ -3996,7 +5378,7 @@ Index: kioslave/http/http.h
 Index: kioslave/http/httpauthentication.h
 ===================================================================
 --- kioslave/http/httpauthentication.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 0)
-+++ kioslave/http/httpauthentication.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
++++ kioslave/http/httpauthentication.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -0,0 +1,156 @@
 +/* This file is part of the KDE libraries
 +    Copyright (C) 2008, 2009 Andreas Hartmetz <ahartmetz@gmail.com>
@@ -4156,8 +5538,8 @@ Index: kioslave/http/httpauthentication.h
 +#endif // HTTPAUTHENTICATION_H
 Index: kioslave/http/parsinghelpers.cpp
 ===================================================================
---- kioslave/http/parsinghelpers.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kioslave/http/parsinghelpers.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kioslave/http/parsinghelpers.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kioslave/http/parsinghelpers.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -145,7 +145,8 @@
          {"location", false},
          {"p3p", true}, // http://www.w3.org/TR/P3P/
@@ -4179,8 +5561,8 @@ Index: kioslave/http/parsinghelpers.cpp
      for (uint i = 0; i < sizeof(headerFieldTemplates) / sizeof(HeaderFieldTemplate); i++) {
 Index: kinit/klauncher.cpp
 ===================================================================
---- kinit/klauncher.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kinit/klauncher.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kinit/klauncher.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kinit/klauncher.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -17,6 +17,8 @@
    Boston, MA 02110-1301, USA.
  */
@@ -4673,8 +6055,8 @@ Index: kinit/klauncher.cpp
          {
 Index: kinit/kinit.cpp
 ===================================================================
---- kinit/kinit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kinit/kinit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kinit/kinit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kinit/kinit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -19,6 +19,8 @@
   * Boston, MA 02110-1301, USA.
   */
@@ -4907,8 +6289,8 @@ Index: kinit/kinit.cpp
         if (!konq.isEmpty()) {
 Index: kinit/klauncher.h
 ===================================================================
---- kinit/klauncher.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kinit/klauncher.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kinit/klauncher.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kinit/klauncher.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -87,6 +87,7 @@
     QString name;
     QStringList arg_list;
@@ -4951,8 +6333,8 @@ Index: kinit/klauncher.h
  Q_SIGNALS:
 Index: nepomuk/core/resource.cpp
 ===================================================================
---- nepomuk/core/resource.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ nepomuk/core/resource.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- nepomuk/core/resource.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ nepomuk/core/resource.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -170,8 +170,11 @@
  
  void Nepomuk::Resource::addType( const QUrl& type )
@@ -4969,8 +6351,8 @@ Index: nepomuk/core/resource.cpp
  
 Index: nepomuk/core/ontology/entitymanager.h
 ===================================================================
---- nepomuk/core/ontology/entitymanager.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ nepomuk/core/ontology/entitymanager.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- nepomuk/core/ontology/entitymanager.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ nepomuk/core/ontology/entitymanager.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -25,10 +25,6 @@
  #include <QtCore/QSharedData>
  #include <QtCore/QMutex>
@@ -4984,8 +6366,8 @@ Index: nepomuk/core/ontology/entitymanager.h
  }
 Index: nepomuk/core/ontology/entity.cpp
 ===================================================================
---- nepomuk/core/ontology/entity.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ nepomuk/core/ontology/entity.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- nepomuk/core/ontology/entity.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ nepomuk/core/ontology/entity.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -32,19 +32,6 @@
  
  #include <kicon.h>
@@ -5008,8 +6390,8 @@ Index: nepomuk/core/ontology/entity.cpp
        available( uri_.isValid() ? -1 : 0 ),
 Index: kio/kio/tcpslavebase.cpp
 ===================================================================
---- kio/kio/tcpslavebase.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/tcpslavebase.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/tcpslavebase.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/tcpslavebase.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -198,9 +198,16 @@
          return -1;
      }
@@ -5032,8 +6414,8 @@ Index: kio/kio/tcpslavebase.cpp
  
 Index: kio/kio/copyjob.h
 ===================================================================
---- kio/kio/copyjob.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/copyjob.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/copyjob.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/copyjob.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -245,6 +245,7 @@
  
      protected:
@@ -5044,8 +6426,8 @@ Index: kio/kio/copyjob.h
          Q_PRIVATE_SLOT(d_func(), void slotStart())
 Index: kio/kio/kdirwatch.cpp
 ===================================================================
---- kio/kio/kdirwatch.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/kdirwatch.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/kdirwatch.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/kdirwatch.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -91,6 +91,8 @@
    } else {
  #ifdef Q_OS_WIN
@@ -5057,8 +6439,8 @@ Index: kio/kio/kdirwatch.cpp
  #endif
 Index: kio/kio/jobclasses.h
 ===================================================================
---- kio/kio/jobclasses.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/jobclasses.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/jobclasses.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/jobclasses.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -546,15 +546,19 @@
           * instead of the amount of data that that has been received.
           * @see slotProcessedSize
@@ -5097,8 +6479,8 @@ Index: kio/kio/jobclasses.h
           * Called when m_subJob finishes.
 Index: kio/kio/job.cpp
 ===================================================================
---- kio/kio/job.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/job.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/job.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/job.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -399,7 +399,7 @@
      q->connect( slave, SIGNAL(finished()),
                  SLOT(slotFinished()) );
@@ -5140,10 +6522,90 @@ Index: kio/kio/job.cpp
         {
             KIO::filesize_t size = processedAmount(KJob::Bytes)+dataForSlave.size();
             setProcessedAmount(KJob::Bytes, size);
+Index: kio/kio/ksambashare.cpp
+===================================================================
+--- kio/kio/ksambashare.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/ksambashare.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -29,6 +29,19 @@
+ #include <kconfiggroup.h>
+ #include <kglobal.h>
+ 
++// Default smb.conf locations
++static const char * DefaultSambaConfigFilePathList[] =
++{
++  "/etc/samba/smb.conf",
++  "/etc/smb.conf",
++  "/usr/local/etc/smb.conf",
++  "/usr/local/samba/lib/smb.conf",
++  "/usr/samba/lib/smb.conf",
++  "/usr/lib/smb.conf",
++  "/usr/local/lib/smb.conf"
++};
++static const int DefaultSambaConfigFilePathListSize = sizeof( DefaultSambaConfigFilePathList ) / sizeof(char*);
++
+ class KSambaShare::KSambaSharePrivate
+ {
+ public:
+@@ -70,36 +83,30 @@
+  **/
+ bool KSambaShare::KSambaSharePrivate::findSmbConf()
+ {
+-  KConfig config(QLatin1String(FILESHARECONF));
+-  const KConfigGroup group(&config, QString());
+-  smbConf = group.readEntry("SMBCONF");
++  KConfig config( QLatin1String( FILESHARECONF ) );
++  const KConfigGroup group( &config, QString() );
++  smbConf = group.readEntry( "SMBCONF" );
+ 
+-  if ( QFile::exists(smbConf) )
++  if ( QFile::exists( smbConf ) )
+     return true;
+ 
+-  if ( QFile::exists("/etc/samba/smb.conf") )
+-    smbConf = "/etc/samba/smb.conf";
+-  else
+-  if ( QFile::exists("/etc/smb.conf") )
+-    smbConf = "/etc/smb.conf";
+-  else
+-  if ( QFile::exists("/usr/local/samba/lib/smb.conf") )
+-    smbConf = "/usr/local/samba/lib/smb.conf";
+-  else
+-  if ( QFile::exists("/usr/samba/lib/smb.conf") )
+-    smbConf = "/usr/samba/lib/smb.conf";
+-  else
+-  if ( QFile::exists("/usr/lib/smb.conf") )
+-    smbConf = "/usr/lib/smb.conf";
+-  else
+-  if ( QFile::exists("/usr/local/lib/smb.conf") )
+-    smbConf = "/usr/local/lib/smb.conf";
+-  else {
+-    kDebug(7000) << "KSambaShare: Could not found smb.conf!";
+-    return false;
++  bool success = false;
++  for( int i = 0; i<DefaultSambaConfigFilePathListSize; ++i )
++  {
++    const QString filePath( DefaultSambaConfigFilePathList[i] );
++    if( QFile::exists( filePath ) )
++    {
++        smbConf = filePath;
++        success = true;
++        break;
++    }
+   }
++  
++  if( ! success )
++    kDebug(7000) << "KSambaShare: Could not find smb.conf!";
+ 
+-  return true;
++  return success;
++  
+ }
+ 
+ 
 Index: kio/kio/copyjob.cpp
 ===================================================================
---- kio/kio/copyjob.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/kio/copyjob.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/kio/copyjob.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kio/copyjob.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -153,7 +153,7 @@
      QList<CopyInfo> dirs;
      KUrl::List dirsToRemove;
@@ -5258,10 +6720,79 @@ Index: kio/kio/copyjob.cpp
          statNextSrc();
      }
  }
+Index: kio/bookmarks/kbookmarkmanager.cc
+===================================================================
+--- kio/bookmarks/kbookmarkmanager.cc	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/bookmarks/kbookmarkmanager.cc	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -398,6 +398,7 @@
+     {
+         file.simpleBackupFile( file.fileName(), QString(), ".bak" );
+         QTextStream stream(&file);
++        stream.setCodec( QTextCodec::codecForName( "UTF-8" ) );
+         stream << internalDocument().toString();
+         stream.flush();
+         if ( file.finalize() )
+Index: kio/kfile/kfiledialog.cpp
+===================================================================
+--- kio/kfile/kfiledialog.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/kfile/kfiledialog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -52,17 +52,24 @@
+ const bool NATIVE_FILEDIALOGS_BY_DEFAULT = false;
+ #endif
+ 
+-static QStringList mime2KdeFilter( const QStringList &mimeTypes )
++static QStringList mime2KdeFilter( const QStringList &mimeTypes, QString *allExtensions = 0 )
+ {
+   const KUrl emptyUrl;
+   QStringList kdeFilter;
++  QStringList allExt;
+   foreach( const QString& mimeType, mimeTypes ) {
+     KMimeType::Ptr mime( KMimeType::mimeType(mimeType) );
+-    if (mime)
++    if (mime) {
++      allExt += mime->patterns();
+       kdeFilter.append(mime->patterns().join(QLatin1String(" ")) +
+                        QLatin1Char('|') +
+                        mime->comment(emptyUrl));
++    }
+   }
++  if (allExtensions) {
++      allExt.sort();
++      *allExtensions = allExt.join(QLatin1String(" "));
++  }
+   return kdeFilter;
+ }
+ /** @return File dialog filter in Qt format for @a filters
+@@ -318,8 +325,14 @@
+ {
+     d->w->setMimeFilter(mimeTypes, defaultType);
+ 
+-    if (d->native)
+-        d->native->filter = mime2KdeFilter( mimeTypes ).join(QLatin1String("\n"));
++    if (d->native) {
++        QString allExtensions;
++        QStringList filters = mime2KdeFilter(mimeTypes, &allExtensions);
++        if (defaultType.isEmpty() && (mimeTypes.count() > 1)) {
++            filters.prepend(allExtensions + QLatin1Char('|') + i18n("All Supported Files"));
++        }
++        d->native->filter = filters.join(QLatin1String("\n"));
++    }
+ }
+ 
+ void KFileDialog::clearFilter()
+@@ -633,7 +646,7 @@
+             parent,
+             caption.isEmpty() ? i18n("Save As") : caption,
+             KFileDialogPrivate::Native::staticStartDir( startDir ).path(),
+-            filter );
++            qtFilter(filter) );
+ // TODO use extra args?     QString * selectedFilter = 0, Options options = 0
+         if (!result.isEmpty()) {
+             if (!recentDirClass.isEmpty())
 Index: kio/misc/kssld/kssld.cpp
 ===================================================================
---- kio/misc/kssld/kssld.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/misc/kssld/kssld.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/misc/kssld/kssld.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/misc/kssld/kssld.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -104,7 +104,7 @@
      if (rule.hostName().isEmpty()) {
          return;
@@ -5289,10 +6820,22 @@ Index: kio/misc/kssld/kssld.cpp
  
      //Find a rule for the hostname, either directly or with wildcards
      QString key = hostName;
+Index: kio/misc/kpac/proxyscout.notifyrc
+===================================================================
+--- kio/misc/kpac/proxyscout.notifyrc	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/misc/kpac/proxyscout.notifyrc	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -516,6 +516,7 @@
+ Comment[pt_BR]=Houve um erro ao executar o script de configuração do proxy
+ Comment[ro]=A apărut o eroare la execuția scriptului de configurare proxy
+ Comment[ru]=Ошибка при выполнении скрипта настройки прокси-сервера
++Comment[se]=Meattáhus čuožžilii go vujii gaskabálváheivehanskripta
+ Comment[sk]=Vyskytla sa chyba počas spustenia konfiguračného skriptu proxy
+ Comment[sl]=Prišlo je do napake pri izvajanju nastavitvenega skripta posrednika
+ Comment[sr]=Грешка током извршавања скрипте поставе проксија
 Index: kio/tests/kioslavetest.cpp
 ===================================================================
---- kio/tests/kioslavetest.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/tests/kioslavetest.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/tests/kioslavetest.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/tests/kioslavetest.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -14,6 +14,7 @@
  #include <QtCore/QDir>
  #include <QtGui/QGroupBox>
@@ -5434,7 +6977,7 @@ Index: kio/tests/kioslavetest.cpp
 Index: kio/kssl/ksslcertificatemanager.upd
 ===================================================================
 --- kio/kssl/ksslcertificatemanager.upd	(.../tags/KDE/4.2.0/kdelibs)	(wersja 0)
-+++ kio/kssl/ksslcertificatemanager.upd	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
++++ kio/kssl/ksslcertificatemanager.upd	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -0,0 +1,5 @@
 +# KConfigGroup cannot handle arbitrary binary data as group names.
 +# As fixing this right would be quite hard, and the data is not very valuable,
@@ -5444,14 +6987,14 @@ Index: kio/kssl/ksslcertificatemanager.upd
 Index: kio/kssl/ksslcertificatemanager.upd.sh
 ===================================================================
 --- kio/kssl/ksslcertificatemanager.upd.sh	(.../tags/KDE/4.2.0/kdelibs)	(wersja 0)
-+++ kio/kssl/ksslcertificatemanager.upd.sh	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
++++ kio/kssl/ksslcertificatemanager.upd.sh	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -0,0 +1,2 @@
 +#!/bin/sh
 +rm `kde4-config --localprefix`/share/config/ksslcertificatemanager
 Index: kio/CMakeLists.txt
 ===================================================================
---- kio/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kio/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kio/CMakeLists.txt	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kio/CMakeLists.txt	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -245,6 +245,9 @@
     kssl/certificateparty.ui
  )
@@ -5464,8 +7007,8 @@ Index: kio/CMakeLists.txt
  
 Index: kpty/kpty.cpp
 ===================================================================
---- kpty/kpty.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kpty/kpty.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kpty/kpty.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kpty/kpty.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -148,6 +148,10 @@
  {
  }
@@ -5479,8 +7022,8 @@ Index: kpty/kpty.cpp
  {
 Index: kpty/kpty_p.h
 ===================================================================
---- kpty/kpty_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kpty/kpty_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kpty/kpty_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kpty/kpty_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -31,6 +31,7 @@
      Q_DECLARE_PUBLIC(KPty)
  
@@ -5491,8 +7034,8 @@ Index: kpty/kpty_p.h
  #endif
 Index: kdeui/dialogs/kbugreport.cpp
 ===================================================================
---- kdeui/dialogs/kbugreport.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/dialogs/kbugreport.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdeui/dialogs/kbugreport.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/dialogs/kbugreport.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -127,7 +127,7 @@
    {
      // From
@@ -5513,8 +7056,8 @@ Index: kdeui/dialogs/kbugreport.cpp
      tmpLabel = new QLabel( d->m_aboutData->bugAddress(), parent );
 Index: kdeui/windowmanagement/kwindowinfo_win.cpp
 ===================================================================
---- kdeui/windowmanagement/kwindowinfo_win.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/windowmanagement/kwindowinfo_win.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdeui/windowmanagement/kwindowinfo_win.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/windowmanagement/kwindowinfo_win.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -147,7 +147,7 @@
          return NET::PopupMenu;
      else if(windowStyleEx & WS_EX_TOOLWINDOW && supported_types & NET::TooltipMask)
@@ -5526,8 +7069,8 @@ Index: kdeui/windowmanagement/kwindowinfo_win.cpp
      return wt;
 Index: kdeui/widgets/ktextedit.cpp
 ===================================================================
---- kdeui/widgets/ktextedit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/widgets/ktextedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdeui/widgets/ktextedit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/ktextedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -909,6 +909,8 @@
      return true;
    } else if ( KStandardShortcut::pasteSelection().contains( key ) ) {
@@ -5537,11 +7080,85 @@ Index: kdeui/widgets/ktextedit.cpp
    } else if (event->modifiers() == Qt::ControlModifier &&
              (event->key() == Qt::Key_Return || event->key() == Qt::Key_Enter) &&
                qobject_cast<KDialog*>(parent->window()) ) {
+Index: kdeui/widgets/kcompletionbox.h
+===================================================================
+--- kdeui/widgets/kcompletionbox.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/kcompletionbox.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -228,7 +228,6 @@
+     virtual void slotActivated( QListWidgetItem * );
+ 
+ private Q_SLOTS:
+-    void slotSetCurrentItem( QListWidgetItem *i ); // grrr
+     void slotCurrentChanged();
+     void canceled();
+     void slotItemClicked( QListWidgetItem * );
 Index: kdeui/widgets/klineedit.cpp
 ===================================================================
---- kdeui/widgets/klineedit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/widgets/klineedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -1423,6 +1423,16 @@
+--- kdeui/widgets/klineedit.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/klineedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -104,8 +104,6 @@
+         }
+     }
+ 
+-    void doCompletion(const QString& txt);
+-
+     /**
+      * Checks whether we should/should not consume a key used as a shortcut.
+      * This makes it possible to handle shortcuts in the focused widget before any
+@@ -826,7 +824,7 @@
+                     if (e->key() == Qt::Key_Delete )
+                         d->autoSuggest=false;
+ 
+-                    d->doCompletion(txt);
++                    doCompletion(txt);
+ 
+                     if(  (e->key() == Qt::Key_Backspace || e->key() == Qt::Key_Delete) )
+                         d->autoSuggest=true;
+@@ -899,7 +897,7 @@
+                 if ( d->completionBox )
+                   d->completionBox->setCancelledText( txt );
+ 
+-                d->doCompletion(txt);
++                doCompletion(txt);
+ 
+                 if ( (e->key() == Qt::Key_Backspace || e->key() == Qt::Key_Delete ) &&
+                     mode == KGlobalSettings::CompletionPopupAuto )
+@@ -930,7 +928,7 @@
+                 const int len = txt.length();
+                 if ( cursorPosition() == len && len != 0 )
+                 {
+-                    d->doCompletion(txt);
++                    doCompletion(txt);
+                     return;
+                 }
+             }
+@@ -995,7 +993,6 @@
+             }
+         }
+     }
+-
+     const int selectedLength = selectedText().length();
+ 
+     // Let QLineEdit handle any other keys events.
+@@ -1284,17 +1281,6 @@
+             // Eat the event if the user asked for it, or if a completionbox was visible
+             if (stopEvent)
+                 return true;
+-        } else if (e->key() == Qt::Key_Tab && e->modifiers() == Qt::NoButton ) {
+-            // #65877: Key_Tab should complete using the first (or selected) item, and then offer completions again
+-            const bool tabHandling = d->completionBox && d->completionBox->isVisible() && d->completionBox->count() > 0;
+-            if (tabHandling) {
+-                QListWidgetItem* currentItem = d->completionBox->currentItem();
+-                const QString txt = currentItem ? currentItem->text() : d->completionBox->item(0)->text();
+-                setTextWorkaround(txt);
+-                d->doCompletion(txt);
+-                e->accept();
+-                return true;
+-            }
+         }
+     }
+     return QLineEdit::event( ev );
+@@ -1423,6 +1409,16 @@
      else if (KStandardShortcut::endOfLine().contains( key ))
          return true;
  
@@ -5558,10 +7175,365 @@ Index: kdeui/widgets/klineedit.cpp
      if (completionBox && completionBox->isVisible ())
      {
          const int key = e->key();
+@@ -1700,14 +1696,14 @@
+     return echoMode() == NoEcho || echoMode() == Password;
+ }
+ 
+-void KLineEditPrivate::doCompletion(const QString& txt)
++void KLineEdit::doCompletion(const QString& txt)
+ {
+-    if (q->emitSignals()) {
+-        emit q->completion(txt); // emit when requested...
++    if (emitSignals()) {
++        emit completion(txt); // emit when requested...
+     }
+ 
+-    if (q->handleSignals()) {
+-        q->makeCompletion(txt);  // handle when requested...
++    if (handleSignals()) {
++        makeCompletion(txt);  // handle when requested...
+     }
+ }
+ 
+Index: kdeui/widgets/kcompletionbox.cpp
+===================================================================
+--- kdeui/widgets/kcompletionbox.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/kcompletionbox.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -22,6 +22,7 @@
+ 
+ 
+ #include "kcompletionbox.h"
++#include "klineedit.h"
+ 
+ #include <QtCore/QEvent>
+ #include <QtGui/QApplication>
+@@ -40,7 +41,7 @@
+     QWidget *m_parent; // necessary to set the focus back
+     QString cancelText;
+     bool tabHandling : 1;
+-    bool down_workaround : 1;
++    bool down_workaround : 1; // next call to down() selects the first item
+     bool upwardBox : 1;
+     bool emitSelected : 1;
+ };
+@@ -114,135 +115,143 @@
+         return false;
+     }
+ 
+-    if (wid && (wid == d->m_parent || wid->windowFlags() & Qt::Window) && 
+-               (type == QEvent::Move || type == QEvent::Resize)) {
++    if (wid && (wid == d->m_parent || wid->windowFlags() & Qt::Window) &&
++        (type == QEvent::Move || type == QEvent::Resize)) {
+         hide();
+         return false;
+     }
+ 
+     if (type == QEvent::MouseButtonPress && (wid && !isAncestorOf(wid))) {
+         if (!d->emitSelected && currentItem() && !qobject_cast<QScrollBar*>(o)) {
+-          Q_ASSERT(currentItem());
+-          emit currentTextChanged(currentItem()->text() );
++            Q_ASSERT(currentItem());
++            emit currentTextChanged(currentItem()->text() );
+         }
+         hide();
+         e->accept();
+         return true;
+     }
+ 
+-    if (wid && wid->isAncestorOf(d->m_parent)) {
+-        if ( isVisible() ) {
+-            if ( type == QEvent::KeyPress ) {
+-                QKeyEvent *ev = static_cast<QKeyEvent *>( e );
+-                switch ( ev->key() ) {
+-                    case Qt::Key_Backtab:
+-                        if ( d->tabHandling && (ev->modifiers() == Qt::NoButton ||
+-                             (ev->modifiers() & Qt::ShiftModifier)) ) {
+-                            up();
+-                            ev->accept();
+-                            return true;
+-                        }
+-                        break;
+-                    case Qt::Key_Tab:
+-                        if ( d->tabHandling && (ev->modifiers() == Qt::NoButton) ) {
+-                            down(); // Only on TAB!!
+-                            ev->accept();
+-                            return true;
+-                        }
+-                        break;
+-                    case Qt::Key_Down:
+-                        down();
+-                        ev->accept();
+-                        return true;
+-                    case Qt::Key_Up:
+-                        // If there is no selected item and we've popped up above
+-                        // our parent, select the first item when they press up.
+-                        if ( !selectedItems().isEmpty() ||
+-                             mapToGlobal( QPoint( 0, 0 ) ).y() >
+-                             d->m_parent->mapToGlobal( QPoint( 0, 0 ) ).y() )
+-                            up();
+-                        else
+-                            down();
+-                        ev->accept();
+-                        return true;
+-                    case Qt::Key_PageUp:
+-                        pageUp();
+-                        ev->accept();
+-                        return true;
+-                    case Qt::Key_PageDown:
+-                        pageDown();
+-                        ev->accept();
+-                        return true;
+-                    case Qt::Key_Escape:
+-                        canceled();
+-                        ev->accept();
+-                        return true;
+-                    case Qt::Key_Enter:
+-                    case Qt::Key_Return:
+-                        if ( ev->modifiers() & Qt::ShiftModifier ) {
++    if (wid && wid->isAncestorOf(d->m_parent) && isVisible()) {
++        if ( type == QEvent::KeyPress ) {
++            QKeyEvent *ev = static_cast<QKeyEvent *>( e );
++            switch ( ev->key() ) {
++            case Qt::Key_Backtab:
++                if ( d->tabHandling && (ev->modifiers() == Qt::NoButton ||
++                                        (ev->modifiers() & Qt::ShiftModifier)) ) {
++                    up();
++                    ev->accept();
++                    return true;
++                }
++                break;
++            case Qt::Key_Tab:
++                if ( d->tabHandling && (ev->modifiers() == Qt::NoButton) ) {
++                    down();
++                    // #65877: Key_Tab should complete using the first
++                    // (or selected) item, and then offer completions again
++                    if (count() == 1) {
++                        KLineEdit* parent = qobject_cast<KLineEdit*>(d->m_parent);
++                        if (parent) {
++                            parent->doCompletion(currentItem()->text());
++                        } else {
+                             hide();
+-                            ev->accept();  // Consume the Enter event
+-                            return true;
+                         }
+-                        break;
+-                    case Qt::Key_End:
+-                        if ( ev->modifiers() & Qt::ControlModifier )
+-                        {
+-                            end();
+-                            ev->accept();
+-                            return true;
+-                        }
+-                        break;
+-                    case Qt::Key_Home:
+-                        if ( ev->modifiers() & Qt::ControlModifier )
+-                        {
+-                            home();
+-                            ev->accept();
+-                            return true;
+-                        }
+-                    default:
+-                        break;
++                    }
++                    ev->accept();
++                    return true;
+                 }
+-            } else if ( type == QEvent::ShortcutOverride ) {
+-                // Override any accelerators that match
+-                // the key sequences we use here...
+-                QKeyEvent *ev = static_cast<QKeyEvent *>( e );
+-                switch ( ev->key() ) {
+-                    case Qt::Key_Down:
+-                    case Qt::Key_Up:
+-                    case Qt::Key_PageUp:
+-                    case Qt::Key_PageDown:
+-                    case Qt::Key_Escape:
+-                    case Qt::Key_Enter:
+-                    case Qt::Key_Return:
+-                      ev->accept();
+-                      return true;
+-                      break;
+-                    case Qt::Key_Tab:
+-                    case Qt::Key_Backtab:
+-                        if ( ev->modifiers() == Qt::NoButton ||
+-                            (ev->modifiers() & Qt::ShiftModifier))
+-                        {
+-                            ev->accept();
+-                            return true;
+-                        }
+-                        break;
+-                    case Qt::Key_Home:
+-                    case Qt::Key_End:
+-                        if ( ev->modifiers() & Qt::ControlModifier )
+-                        {
+-                            ev->accept();
+-                            return true;
+-                        }
+-                        break;
+-                    default:
+-                        break;
++                break;
++            case Qt::Key_Down:
++                down();
++                ev->accept();
++                return true;
++            case Qt::Key_Up:
++                // If there is no selected item and we've popped up above
++                // our parent, select the first item when they press up.
++                if ( !selectedItems().isEmpty() ||
++                     mapToGlobal( QPoint( 0, 0 ) ).y() >
++                     d->m_parent->mapToGlobal( QPoint( 0, 0 ) ).y() )
++                    up();
++                else
++                    down();
++                ev->accept();
++                return true;
++            case Qt::Key_PageUp:
++                pageUp();
++                ev->accept();
++                return true;
++            case Qt::Key_PageDown:
++                pageDown();
++                ev->accept();
++                return true;
++            case Qt::Key_Escape:
++                canceled();
++                ev->accept();
++                return true;
++            case Qt::Key_Enter:
++            case Qt::Key_Return:
++                if ( ev->modifiers() & Qt::ShiftModifier ) {
++                    hide();
++                    ev->accept();  // Consume the Enter event
++                    return true;
+                 }
+-            } else if ( type == QEvent::FocusOut ) {
+-                  QFocusEvent* event = static_cast<QFocusEvent*>( e );
+-                  if (event->reason() != Qt::PopupFocusReason)
+-                    hide();
++                break;
++            case Qt::Key_End:
++                if ( ev->modifiers() & Qt::ControlModifier )
++                {
++                    end();
++                    ev->accept();
++                    return true;
++                }
++                break;
++            case Qt::Key_Home:
++                if ( ev->modifiers() & Qt::ControlModifier )
++                {
++                    home();
++                    ev->accept();
++                    return true;
++                }
++            default:
++                break;
+             }
++        } else if ( type == QEvent::ShortcutOverride ) {
++            // Override any accelerators that match
++            // the key sequences we use here...
++            QKeyEvent *ev = static_cast<QKeyEvent *>( e );
++            switch ( ev->key() ) {
++            case Qt::Key_Down:
++            case Qt::Key_Up:
++            case Qt::Key_PageUp:
++            case Qt::Key_PageDown:
++            case Qt::Key_Escape:
++            case Qt::Key_Enter:
++            case Qt::Key_Return:
++                ev->accept();
++                return true;
++                break;
++            case Qt::Key_Tab:
++            case Qt::Key_Backtab:
++                if ( ev->modifiers() == Qt::NoButton ||
++                     (ev->modifiers() & Qt::ShiftModifier))
++                {
++                    ev->accept();
++                    return true;
++                }
++                break;
++            case Qt::Key_Home:
++            case Qt::Key_End:
++                if ( ev->modifiers() & Qt::ControlModifier )
++                {
++                    ev->accept();
++                    return true;
++                }
++                break;
++            default:
++                break;
++            }
++        } else if ( type == QEvent::FocusOut ) {
++            QFocusEvent* event = static_cast<QFocusEvent*>( e );
++            if (event->reason() != Qt::PopupFocusReason)
++                hide();
+         }
+     }
+ 
+@@ -333,7 +342,7 @@
+             qApp->removeEventFilter( this );
+         d->cancelText.clear();
+     }
+-  
++
+     KListWidget::setVisible(visible);
+ }
+ 
+@@ -427,7 +436,7 @@
+     //int i = currentItem() - numItemsVisible();
+     //i = i < 0 ? 0 : i;
+     //setCurrentRow( i );
+-    
++
+     moveCursor(QAbstractItemView::MovePageUp , Qt::NoModifier);
+ }
+ 
+@@ -546,11 +555,6 @@
+     d->down_workaround = true;
+ }
+ 
+-void KCompletionBox::slotSetCurrentItem( QListWidgetItem *i )
+-{
+-    setCurrentItem( i ); // grrr
+-}
+-
+ void KCompletionBox::slotCurrentChanged()
+ {
+     if (currentItem())
+Index: kdeui/widgets/klineedit.h
+===================================================================
+--- kdeui/widgets/klineedit.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/klineedit.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -340,13 +340,22 @@
+      * @return whether or not the clear button is shown
+      **/
+     bool isClearButtonShown() const;
+-    
++
+     /**
+      * @return the size used by the clear button
+      * @since KDE 4.1
+      **/
+     QSize clearButtonUsedSize() const;
+ 
++    /**
++     * Do completion now. This is called automatically when typing a key for instance.
++     * Emits completion() and/or calls makeCompletion(), depending on
++     * emitSignals and handleSignals.
++     *
++     * @since 4.2.1
++     */
++    void doCompletion(const QString& txt);
++
+ Q_SIGNALS:
+ 
+     /**
 Index: kdeui/widgets/kmainwindow.cpp
 ===================================================================
---- kdeui/widgets/kmainwindow.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/widgets/kmainwindow.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdeui/widgets/kmainwindow.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/kmainwindow.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -461,6 +461,7 @@
  KMainWindow::~KMainWindow()
  {
@@ -5572,8 +7544,8 @@ Index: kdeui/widgets/kmainwindow.cpp
  }
 Index: kdeui/widgets/kcharselect.cpp
 ===================================================================
---- kdeui/widgets/kcharselect.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdeui/widgets/kcharselect.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdeui/widgets/kcharselect.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/widgets/kcharselect.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -351,14 +351,14 @@
      d->backButton = new QToolButton(this);
      comboLayout->addWidget(d->backButton);
@@ -5591,10 +7563,25 @@ Index: kdeui/widgets/kcharselect.cpp
      d->forwardButton->setIcon(KIcon("go-next"));
      d->forwardButton->setToolTip(i18n("Next Character"));
  
+Index: kdeui/util/knotificationmanager.cpp
+===================================================================
+--- kdeui/util/knotificationmanager.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdeui/util/knotificationmanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -134,8 +134,8 @@
+ 
+     QList<QVariant>  args;
+     args << n->eventId() << (appname.isEmpty() ? KGlobal::mainComponent().componentName() : appname);
+-    args.append( contextList); // not the operator<< or it will concatenate the two list.
+-    args << n->text() <<  pixmapData << actions << qlonglong(winId) ;
++    args.append(QVariant(contextList)); 
++    args << n->text() <<  pixmapData << QVariant(actions) << qlonglong(winId) ;
+     return d->knotify->callWithCallback( "event", args, n, SLOT(slotReceivedId(int)), SLOT(slotReceivedIdError(QDBusError)));
+ }
+ 
 Index: dnssd/remoteservice.h
 ===================================================================
---- dnssd/remoteservice.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ dnssd/remoteservice.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- dnssd/remoteservice.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ dnssd/remoteservice.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -89,7 +89,7 @@
  	void resolveAsync();
  
@@ -5604,10 +7591,130 @@ Index: dnssd/remoteservice.h
  	 *
  	 * The host name is not resolved into an IP address - use KResolver
  	 * for that.
+Index: kutils/kpluginselector.cpp
+===================================================================
+--- kutils/kpluginselector.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kutils/kpluginselector.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -283,6 +283,7 @@
+ 
+ KPluginSelector::~KPluginSelector()
+ {
++    delete d->listView; // depends on some other things in d, make sure this dies first.
+     delete d;
+ }
+ 
+@@ -303,10 +304,10 @@
+     if (!config)
+         config = KSharedConfig::openConfig(componentName);
+ 
+-    KConfigGroup *cfgGroup = new KConfigGroup(config, "KParts Plugins");
+-    kDebug( 702 ) << "cfgGroup = " << cfgGroup;
++    KConfigGroup cfgGroup(config, "KParts Plugins");
++    kDebug( 702 ) << "cfgGroup = " << &cfgGroup;
+ 
+-    d->pluginModel->addPlugins(pluginInfoList, categoryName, categoryKey, *cfgGroup);
++    d->pluginModel->addPlugins(pluginInfoList, categoryName, categoryKey, cfgGroup);
+ }
+ 
+ void KPluginSelector::addPlugins(const KComponentData &instance,
+@@ -326,10 +327,10 @@
+     if (pluginInfoList.isEmpty())
+         return;
+ 
+-    KConfigGroup *cfgGroup = new KConfigGroup(config ? config : KGlobal::config(), "Plugins");
+-    kDebug( 702 ) << "cfgGroup = " << cfgGroup;
++    KConfigGroup cfgGroup(config ? config : KGlobal::config(), "Plugins");
++    kDebug( 702 ) << "cfgGroup = " << &cfgGroup;
+ 
+-    d->pluginModel->addPlugins(pluginInfoList, categoryName, categoryKey, *cfgGroup, pluginLoadMethod, true /* manually added */);
++    d->pluginModel->addPlugins(pluginInfoList, categoryName, categoryKey, cfgGroup, pluginLoadMethod, true /* manually added */);
+ }
+ 
+ void KPluginSelector::load()
+Index: kutils/kemoticons/providers/adium/emoticonstheme_adium.desktop
+===================================================================
+--- kutils/kemoticons/providers/adium/emoticonstheme_adium.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kutils/kemoticons/providers/adium/emoticonstheme_adium.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -47,6 +47,7 @@
+ Name[pt_BR]=Tema emoticons Adium
+ Name[ro]=Tematică de emoticoni Adium
+ Name[ru]=Набор смайликов Adium
++Name[se]=Adium mojánfáddá
+ Name[sk]=Adium téma emotikonov
+ Name[sr]=Адијумова тема емотикона
+ Name[sr@latin]=Adiumova tema emotikona
+@@ -107,6 +108,7 @@
+ Comment[pt_BR]=Biblioteca para utilização do tema emoticons Adium
+ Comment[ro]=Bibliotecă de utilizat tematica de emoticoni Adium
+ Comment[ru]=Библиотека набора смайликов Adium
++Comment[se]=Bibliotehka mii dulko Adium mojánfáttáid
+ Comment[sk]=Knižnica na použitie Adium témy emotikonov
+ Comment[sr]=Библиотека за Адијумову тему емотикона
+ Comment[sr@latin]=Biblioteka za Adiumovu temu emotikona
+Index: kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop
+===================================================================
+--- kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -47,6 +47,7 @@
+ Name[pt_BR]=Tema emoticons Adium
+ Name[ro]=Tematică de emoticoni KDE
+ Name[ru]=Набор смайликов KDE
++Name[se]=KDE mojánfáddá
+ Name[sk]=Kde téma emotikonov
+ Name[sr]=КДЕ‑ова тема емотикона
+ Name[sr@latin]=KDE‑ova tema emotikona
+@@ -107,6 +108,7 @@
+ Comment[pt_BR]=Biblioteca para utilização do tema emoticons Adium
+ Comment[ro]=Bibliotecă de utilizat tematica de emoticoni KDE
+ Comment[ru]=Библиотека набора смайликов KDE
++Comment[se]=Bibliotehka mii dulko KDE mojánfáttáid
+ Comment[sk]=Knižnica na použitie KDE témy emotikonov
+ Comment[sr]=Библиотека за КДЕ‑ову тему емотикона
+ Comment[sr@latin]=Biblioteka za KDE‑ovu temu emotikona
+Index: kutils/kemoticons/providers/xmpp/emoticonstheme_xmpp.desktop
+===================================================================
+--- kutils/kemoticons/providers/xmpp/emoticonstheme_xmpp.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kutils/kemoticons/providers/xmpp/emoticonstheme_xmpp.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -46,6 +46,7 @@
+ Name[pt_BR]=Tema emoticons XMPP
+ Name[ro]=Tematică de emoticoni XMPP
+ Name[ru]=Набор смайликов XMPP
++Name[se]=XMPP mojánfáddá
+ Name[sk]=XMPP téma emotikonov
+ Name[sr]=ИксМПП тема емотикона
+ Name[sr@latin]=XMPP tema emotikona
+@@ -106,6 +107,7 @@
+ Comment[pt_BR]=Biblioteca para utilização do tema emoticons XMPP
+ Comment[ro]=Bibliotecă de utilizat tematica de emoticoni XMPP
+ Comment[ru]=Библиотека набора смайликов XMPP
++Comment[se]=Bibliotehka mii dulko XMPP mojánfáttáid
+ Comment[sk]=Knižnica na použitie XMPP témy emotikonov
+ Comment[sr]=Библиотека за ИксМПП тему емотикона
+ Comment[sr@latin]=Biblioteka za XMPP temu emotikona
+Index: kutils/kemoticons/providers/pidgin/emoticonstheme_pidgin.desktop
+===================================================================
+--- kutils/kemoticons/providers/pidgin/emoticonstheme_pidgin.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kutils/kemoticons/providers/pidgin/emoticonstheme_pidgin.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -47,6 +47,7 @@
+ Name[pt_BR]=Tema emoticons do Pidgin
+ Name[ro]=Tematică de emoticoni Pidgin
+ Name[ru]=Набор смайликов Pidgin
++Name[se]=Piding mojánfáddá
+ Name[sk]=Pidgin téma emotikonov
+ Name[sr]=Пиџинова тема емотикона
+ Name[sr@latin]=Pidginova tema emotikona
+@@ -107,6 +108,7 @@
+ Comment[pt_BR]=Biblioteca para utilização do tema emoticons do Pidgin
+ Comment[ro]=Bibliotecă de utilizat tematica de emoticoni Pidgin
+ Comment[ru]=Библиотека набора смайликов Pidgin
++Comment[se]=Bibliotehkta mii dulko Pidgin mojánfáttáid
+ Comment[sk]=Knižnica na použitie Pidgin témy emotikonov
+ Comment[sr]=Библиотека за Пиџинову тему емотикона
+ Comment[sr@latin]=Biblioteka za Pidginovu temu emotikona
 Index: kdecore/kernel/kglobal.cpp
 ===================================================================
---- kdecore/kernel/kglobal.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/kernel/kglobal.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/kernel/kglobal.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/kernel/kglobal.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1,6 +1,7 @@
  /* This file is part of the KDE libraries
     Copyright (C) 1999 Sirtaj Singh Kanq <taj@kde.org>
@@ -5676,10 +7783,136 @@ Index: kdecore/kernel/kglobal.cpp
              return d->mainComponent.aboutData()->programName();
          } else {
              // Last resort : application name
+Index: kdecore/sycoca/ksycocaentry_p.h
+===================================================================
+--- kdecore/sycoca/ksycocaentry_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/ksycocaentry_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -23,7 +23,7 @@
+ 
+ #define K_SYCOCATYPE( type, baseclass ) \
+  virtual bool isType(KSycocaType t) const { if (t == type) return true; return baseclass::isType(t);} \
+- virtual KSycocaType sycocaType() const { return type; } 
++ virtual KSycocaType sycocaType() const { return type; }
+ 
+ 
+ class KSycocaEntryPrivate
+@@ -68,6 +68,8 @@
+ 
+     virtual QString name() const = 0;
+ 
++    virtual QString storageId() const { return name(); }
++
+     int offset;
+     bool deleted;
+     QString path;
+Index: kdecore/sycoca/ksycocaentry.cpp
+===================================================================
+--- kdecore/sycoca/ksycocaentry.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/ksycocaentry.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -106,6 +106,12 @@
+     return d->path;
+ }
+ 
++QString KSycocaEntry::storageId() const
++{
++    Q_D(const KSycocaEntry);
++    return d->storageId();
++}
++
+ bool KSycocaEntry::isDeleted() const
+ {
+     Q_D(const KSycocaEntry);
+@@ -164,5 +170,3 @@
+     Q_D(const KSycocaEntry);
+     return d->property(name);
+ }
+-
+-
+Index: kdecore/sycoca/ksycocaentry.h
+===================================================================
+--- kdecore/sycoca/ksycocaentry.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/ksycocaentry.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -86,6 +86,13 @@
+    QString entryPath() const;
+ 
+    /**
++    * @return the unique ID for this entry
++    * In practice, this is storageId() for KService and name() for everything else.
++    * \since 4.2.1
++    */
++   QString storageId() const;
++
++    /**
+     * @return true if valid
+     */
+    bool isValid() const;
+@@ -117,7 +124,7 @@
+     */
+    void setDeleted( bool deleted );
+ 
+-   
++
+    /*
+     * @returns true, if this is a separator
+     */
+Index: kdecore/sycoca/ksycocafactory.cpp
+===================================================================
+--- kdecore/sycoca/ksycocafactory.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/ksycocafactory.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -150,12 +150,8 @@
+ 
+     if (!d->m_sycocaDict) return; // Error!
+ 
+-    // Note that we use a QMultiHash since there can be several entries
+-    // with the same name (e.g. kfmclient.desktop and konqbrowser.desktop both
+-    // have Name=Konqueror).
+-
+-    const QString name = newEntry->name();
+-    m_entryDict->insertMulti( name, newEntry );
++    const QString name = newEntry->storageId();
++    m_entryDict->insert( name, newEntry );
+     d->m_sycocaDict->add( name, newEntry );
+ }
+ 
+Index: kdecore/sycoca/kprotocolinfo.cpp
+===================================================================
+--- kdecore/sycoca/kprotocolinfo.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/kprotocolinfo.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -66,7 +66,7 @@
+   m_defaultMimetype = config.readEntry( "defaultMimetype" );
+   m_determineMimetypeFromExtension = config.readEntry( "determineMimetypeFromExtension", true );
+   d->archiveMimetype = config.readEntry("archiveMimetype", QStringList());
+-  m_icon = config.readEntry( "Icon", "unknown" );
++  m_icon = config.readEntry( "Icon" );
+   m_config = config.readEntry( "config", m_name );
+   m_maxSlaves = config.readEntry( "maxInstances", 1);
+ 
+@@ -258,7 +258,7 @@
+   // We call the findProtocol directly (not via KProtocolManager) to bypass any proxy settings.
+   KProtocolInfo::Ptr prot = KProtocolInfoFactory::self()->findProtocol(_protocol);
+   if ( !prot )
+-    return QLatin1String("unknown");
++    return QString();
+ 
+   return prot->m_icon;
+ }
+Index: kdecore/sycoca/ksycoca.cpp
+===================================================================
+--- kdecore/sycoca/ksycoca.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/ksycoca.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -43,7 +43,7 @@
+  * If the existing file is outdated, it will not get read
+  * but instead we'll ask kded to regenerate a new one...
+  */
+-#define KSYCOCA_VERSION 130
++#define KSYCOCA_VERSION 131
+ 
+ /**
+  * Sycoca file name, used internally (by kbuildsycoca)
 Index: kdecore/sycoca/kprotocolinfo.h
 ===================================================================
---- kdecore/sycoca/kprotocolinfo.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/sycoca/kprotocolinfo.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/sycoca/kprotocolinfo.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/sycoca/kprotocolinfo.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -187,7 +187,7 @@
     * This corresponds to the "Icon=" field in the protocol description file.
     *
@@ -5716,10 +7949,52 @@ Index: kdecore/sycoca/kprotocolinfo.h
     */
    static QString protocolClass( const QString& protocol );
  
+Index: kdecore/services/kservice_p.h
+===================================================================
+--- kdecore/services/kservice_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/services/kservice_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -51,6 +51,13 @@
+         return m_strName;
+     }
+ 
++    virtual QString storageId() const
++    {
++        if (!menuId.isEmpty())
++            return menuId;
++        return path;
++    }
++
+     virtual bool isValid() const
+     {
+         return m_bValid;
+Index: kdecore/services/kservice.cpp
+===================================================================
+--- kdecore/services/kservice.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/services/kservice.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -704,7 +704,7 @@
+             return QString();
+         }
+     }
+-    
++
+     return it->toString();
+ }
+ 
+@@ -736,9 +736,7 @@
+ QString KService::storageId() const
+ {
+     Q_D(const KService);
+-    if (!d->menuId.isEmpty())
+-        return d->menuId;
+-    return entryPath();
++    return d->storageId();
+ }
+ 
+ QString KService::locateLocal() const
 Index: kdecore/services/kservicegroup.cpp
 ===================================================================
---- kdecore/services/kservicegroup.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/services/kservicegroup.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/services/kservicegroup.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/services/kservicegroup.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1,4 +1,3 @@
 -// -*- c-basic-offset: 3 -*-
  /*  This file is part of the KDE libraries
@@ -5759,10 +8034,84 @@ Index: kdecore/services/kservicegroup.cpp
          }
          list.insert(key,KServiceGroup::SPtr(p));
      }
+Index: kdecore/kdebugrc
+===================================================================
+--- kdecore/kdebugrc	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/kdebugrc	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -72,10 +72,6 @@
+ [1002]
+ InfoOutput=4
+ 
+-# KDesktop icons
+-[1214]
+-InfoOutput=4
+-
+ # KHotKeys
+ [1217]
+ InfoOutput=4
+@@ -108,6 +104,10 @@
+ [5901]
+ InfoOutput=4
+ 
++# KDirWatch is quite verbose
++[7001]
++InfoOutput=4
++
+ # kio_http_debug debug info off
+ [7113]
+ InfoOutput=4
+Index: kdecore/localization/ktranscript.cpp
+===================================================================
+--- kdecore/localization/ktranscript.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/localization/ktranscript.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -711,7 +711,7 @@
+ 
+ KJS_DEFINE_PROTOTYPE(ScriptfaceProto)
+ KJS_IMPLEMENT_PROTOFUNC(ScriptfaceProtoFunc)
+-KJS_IMPLEMENT_PROTOTYPE("Scriptface", ScriptfaceProto, ScriptfaceProtoFunc)
++KJS_IMPLEMENT_PROTOTYPE("Scriptface", ScriptfaceProto, ScriptfaceProtoFunc, ObjectPrototype)
+ 
+ const ClassInfo Scriptface::info = {"Scriptface", 0, &ScriptfaceTable, 0};
+ 
+Index: kdecore/localization/kuitsemantics.cpp
+===================================================================
+--- kdecore/localization/kuitsemantics.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/localization/kuitsemantics.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -1287,18 +1287,20 @@
+             }
+         }
+         else if (xml.isCharacters()) {
+-            // Stream reader will automatically reslove entities, which is
+-            // not desired in this case, as the final text may be rich.
+-            // The text element will be broken at the resolved entity, so
+-            // the first character may be one of those resolved.
+-            // Convert it back into an entity.
++            // Stream reader will automatically resolve default XML entities,
++            // which is not desired in this case, as the final text may
++            // be rich. Convert them back into entities.
+             QString text = xml.text().toString();
+-            QString firstChar = text.left(1);
+-            if (s->xmlEntitiesInverse.contains(firstChar)) {
+-                QString entname = s->xmlEntitiesInverse[firstChar];
+-                text = '&' + entname + ';' + text.mid(1);
++            QString ntext;
++            foreach (const QChar &c, text) {
++                if (s->xmlEntitiesInverse.contains(c)) {
++                    QString entname = s->xmlEntitiesInverse[c];
++                    ntext += '&' + entname + ';';
++                } else {
++                    ntext += c;
++                }
+             }
+-            openEls.top().formattedText += text;
++            openEls.top().formattedText += ntext;
+         }
+     }
+ 
 Index: kdecore/localization/kcatalog.cpp
 ===================================================================
---- kdecore/localization/kcatalog.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/localization/kcatalog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/localization/kcatalog.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/localization/kcatalog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -37,6 +37,10 @@
  # endif
  #endif
@@ -5812,8 +8161,8 @@ Index: kdecore/localization/kcatalog.cpp
  
 Index: kdecore/jobs/kjob.cpp
 ===================================================================
---- kdecore/jobs/kjob.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/jobs/kjob.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/jobs/kjob.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/jobs/kjob.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -192,7 +192,7 @@
               &loop, SLOT( quit() ) );
      start();
@@ -5825,8 +8174,8 @@ Index: kdecore/jobs/kjob.cpp
      return ( d->error == NoError );
 Index: kdecore/tests/kservicetest.cpp
 ===================================================================
---- kdecore/tests/kservicetest.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/tests/kservicetest.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/tests/kservicetest.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/tests/kservicetest.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -29,6 +29,7 @@
  
  #include <kprotocolinfo.h>
@@ -5862,8 +8211,8 @@ Index: kdecore/tests/kservicetest.cpp
 +}
 Index: kdecore/tests/kservicetest.h
 ===================================================================
---- kdecore/tests/kservicetest.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/tests/kservicetest.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/tests/kservicetest.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/tests/kservicetest.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -39,6 +39,7 @@
      void testDBUSStartupType();
      void testByStorageId();
@@ -5872,10 +8221,22 @@ Index: kdecore/tests/kservicetest.h
  
  private:
      QString m_firstOffer;
+Index: kdecore/config/kconfigbackend.desktop
+===================================================================
+--- kdecore/config/kconfigbackend.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/config/kconfigbackend.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -50,6 +50,7 @@
+ Comment[pt_BR]=Infraestrutura de armazenamento para o KConfig
+ Comment[ro]=Suport de stocare pentru KConfig
+ Comment[ru]=Модуль хранения параметров KConfig
++Comment[se]=KConfig vurkenduogáš
+ Comment[sk]=Úložisko backendu KConfig
+ Comment[sl]=Ozadje za shranjevanje v KConfigu
+ Comment[sr]=Складишна позадина за К‑конфиг
 Index: kdecore/all_languages.desktop
 ===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/all_languages.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/all_languages.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -798,6 +798,7 @@
  Name[fi]=Valkovenäjä (Latin)
  Name[fr]=Biélorusse (Latin)
@@ -5884,7 +8245,15 @@ Index: kdecore/all_languages.desktop
  Name[gl]=Bielorruso (Latino)
  Name[gu]=બેલારશિયન (લેટિન)
  Name[he]=בלרוסית (לטינית)
-@@ -2302,6 +2303,7 @@
+@@ -1733,6 +1734,7 @@
+ Name[pt_BR]=Tártaros da Criméia
+ Name[ro]=Tătară din Crimeea
+ Name[ru]=Крымско-татарский
++Name[se]=Krimtataralašgiella
+ Name[sk]=Krimeánsky tatársky
+ Name[sl]=Krimsko tatarsko
+ Name[sr]=кримски татарски
+@@ -2302,6 +2304,7 @@
  Name[fi]=Alasorbi
  Name[fr]=Bas-Sorabe
  Name[fy]=Leech Sorbysk
@@ -5892,7 +8261,7 @@ Index: kdecore/all_languages.desktop
  Name[gl]=Baixo sórabo
  Name[gu]=લોઅર સોર્બિયન
  Name[he]=סורבית תחתית
-@@ -6460,6 +6462,7 @@
+@@ -6460,6 +6463,7 @@
  Name[el]=Μαϊθίλι
  Name[eu]=Maithiliera
  Name[fr]=Maïthili
@@ -5900,10 +8269,183 @@ Index: kdecore/all_languages.desktop
  Name[gu]=મૈથિલિ
  Name[ja]=マイティリー語
  Name[kk]=Майтили
+@@ -11711,6 +11715,7 @@
+ Name[pt_BR]=Uzbeque (Cirílico)
+ Name[ro]=Uzbekă (Chirilic)
+ Name[ru]=Узбекский (Кириллица)
++Name[se]=Usbekalaš (Kyrillalaš)
+ Name[sk]=Uzbecký (Cyrillic)
+ Name[sl]=Uzbeško (cirilica)
+ Name[sr]=узбечки (ћирилица)
+Index: kdecore/io/kautosavefile.cpp
+===================================================================
+--- kdecore/io/kautosavefile.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/io/kautosavefile.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -106,9 +106,9 @@
+ {
+     if (d->lock && d->lock->isLocked()) {
+         d->lock.clear();
+-    }
+-    if (!fileName().isEmpty()) {
++        if (!fileName().isEmpty()) {
+         remove();
++        }
+     }
+ }
+ 
+@@ -179,6 +179,8 @@
+ 
+     // contruct a KAutoSaveFile for each stale file
+     foreach(const QString &file, files) {
++        if (file.endsWith(".lock"))
++            continue;
+         // sets managedFile
+         asFile = new KAutoSaveFile(filename);
+         asFile->setFileName(file);
+@@ -209,6 +211,8 @@
+ 
+     // contruct a KAutoSaveFile for each stale file
+     foreach(file, files) {
++        if (file.endsWith(".lock"))
++            continue;
+         sep = file.right(3);
+         file.chop(KAutoSaveFilePrivate::padding);
+ 
+Index: kdecore/io/klockfile_unix.cpp
+===================================================================
+--- kdecore/io/klockfile_unix.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/io/klockfile_unix.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -230,13 +230,16 @@
+       linkCountSupport = testLinkCountSupport(tmpFile);
+    }
+ 
+-   if (!linkCountSupport &&
+-       (KDE_lstat(lckFile, &st_buf2) == 0) && st_buf == st_buf2)
++   if (!linkCountSupport)
+    {
+       // Without support for link counts we will have a little race condition
+       qWarning("WARNING: deleting stale lockfile %s", lckFile.data());
+-      ::unlink(lckFile);
+       ::unlink(tmpFile);
++      if (::unlink(lckFile) < 0) {
++          qWarning("WARNING: Problem deleting stale lockfile %s: %s", lckFile.data(),
++                  strerror(errno));
++          return KLockFile::LockFail;
++      }
+       return KLockFile::LockOK;
+    }
+ 
+@@ -272,54 +275,13 @@
+            break;
+         }
+      }
+-     else // KLockFile::Fail
++     else // KLockFile::Fail -- there is already such a file present (e.g. left by a crashed app)
+      {
+         if (!d->staleTimer.isNull() && d->statBuf != st_buf)
+            d->staleTimer = QTime();
+ 
+-        if (!d->staleTimer.isNull())
++        if (d->staleTimer.isNull())
+         {
+-           bool isStale = false;
+-           if ((d->pid > 0) && !d->hostname.isEmpty())
+-           {
+-              // Check if hostname is us
+-              char hostname[256];
+-              hostname[0] = 0;
+-              gethostname(hostname, 255);
+-              hostname[255] = 0;
+-
+-              if (d->hostname == QLatin1String(hostname))
+-              {
+-                 // Check if pid still exists
+-                 int res = ::kill(d->pid, 0);
+-                 if ((res == -1) && (errno == ESRCH))
+-                    isStale = true;
+-              }
+-           }
+-           if (d->staleTimer.elapsed() > (d->staleTime*1000))
+-              isStale = true;
+-
+-           if (isStale)
+-           {
+-              if ((options & ForceFlag) == 0)
+-                 return KLockFile::LockStale;
+-
+-              result = deleteStaleLock(d->file, d->statBuf, d->linkCountSupport, d->componentData);
+-
+-              if (result == KLockFile::LockOK)
+-              {
+-                 // Lock deletion successful
+-                 d->staleTimer = QTime();
+-                 continue; // Now try to get the new lock
+-              }
+-              else if (result != KLockFile::LockFail)
+-              {
+-                 return result;
+-              }
+-           }
+-        }
+-        else
+-        {
+            memcpy(&(d->statBuf), &st_buf, sizeof(KDE_struct_stat));
+            d->staleTimer.start();
+ 
+@@ -339,9 +301,48 @@
+                  d->hostname = ts.readLine();
+            }
+         }
++
++        bool isStale = false;
++        if ((d->pid > 0) && !d->hostname.isEmpty())
++        {
++           // Check if hostname is us
++           char hostname[256];
++           hostname[0] = 0;
++           gethostname(hostname, 255);
++           hostname[255] = 0;
++
++           if (d->hostname == QLatin1String(hostname))
++           {
++              // Check if pid still exists
++              int res = ::kill(d->pid, 0);
++              if ((res == -1) && (errno == ESRCH))
++                 isStale = true;
++           }
++        }
++        if (d->staleTimer.elapsed() > (d->staleTime*1000))
++           isStale = true;
++
++        if (isStale)
++        {
++           if ((options & ForceFlag) == 0)
++              return KLockFile::LockStale;
++
++           result = deleteStaleLock(d->file, d->statBuf, d->linkCountSupport, d->componentData);
++
++           if (result == KLockFile::LockOK)
++           {
++              // Lock deletion successful
++              d->staleTimer = QTime();
++              continue; // Now try to get the new lock
++           }
++           else if (result != KLockFile::LockFail)
++           {
++              return result;
++           }
++        }
+      }
+ 
+-     if ((options & NoBlockFlag) != 0)
++     if (options & NoBlockFlag)
+         break;
+ 
+      struct timeval tv;
 Index: kdecore/io/kurl.cpp
 ===================================================================
---- kdecore/io/kurl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ kdecore/io/kurl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- kdecore/io/kurl.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ kdecore/io/kurl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -1323,6 +1323,13 @@
      return result;
    }
@@ -5920,8 +8462,8 @@ Index: kdecore/io/kurl.cpp
    else
 Index: plasma/dataengine.cpp
 ===================================================================
---- plasma/dataengine.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/dataengine.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/dataengine.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/dataengine.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -636,9 +636,10 @@
  void DataEnginePrivate::trimQueue()
  {
@@ -5934,11 +8476,31 @@ Index: plasma/dataengine.cpp
      }
  }
  
+Index: plasma/servicetypes/plasma-packagestructure.desktop
+===================================================================
+--- plasma/servicetypes/plasma-packagestructure.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-packagestructure.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -15,6 +15,7 @@
+ Comment[eu]=Plassma paketearen egituraren definizioa
+ Comment[fi]=Plasma-pakettirakenteen määritelmä
+ Comment[fr]=Définition de la structure des paquetages Plasma
++Comment[ga]=Sainmhíniú ar struchtúr pacáiste Plasma
+ Comment[gl]=Definición da estrutura do paquete de Plasma
+ Comment[gu]=પ્લાઝમા પેકેજ માળખાંની વ્યાખ્યા
+ Comment[he]=הגדרת מבנה של חבילת Plasma
 Index: plasma/servicetypes/plasma-containment.desktop
 ===================================================================
---- plasma/servicetypes/plasma-containment.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-containment.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -26,6 +26,7 @@
+--- plasma/servicetypes/plasma-containment.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-containment.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -16,6 +16,7 @@
+ Comment[eu]=Plasma appletaren edukontzia eta atzeko planoaren margolaria
+ Comment[fi]=Plasma sovelmasisällyttäjä ja taustapiirtäjä
+ Comment[fr]=Conteneur d'applet Plasma et affichage d'arrière-plan
++Comment[ga]=Coimeádán feidhmchláiríní Plasma agus péintéir cúlra
+ Comment[gl]=Un contedor de applet de Plasma e pintor do fondo
+ Comment[gu]=પ્લાઝમા એપ્લેટ ધરાવનાર અને પાશ્ચભાગ રંગનાર
+ Comment[he]=תוחם של יישומון Plasma וצובע הרקע
+@@ -26,6 +27,7 @@
  Comment[ja]=Plasma アプレットの入れ物、背景の描画
  Comment[km]=ឧបករណ៍​ផ្ទុក​អាប់ភ្លេត​ប្លាស្មា និង​កម្មវិធី​គូរ​ផ្ទៃខាងក្រោយ
  Comment[ku]=Embarvanê sepanoka Plasma û nexşevanê rûerdê
@@ -5946,7 +8508,7 @@ Index: plasma/servicetypes/plasma-containment.desktop
  Comment[lv]=Plasma apletu turis un fona zīmētājs
  Comment[mai]=प्लाजमा एप्पलेट कंटेनर आओर पृष्ठभूमि पेंटर
  Comment[ml]=പ്ലാസ്മ ലഘുപ്രയോഗം കണ്ടൈനറും പശ്ചാത്തല പെയിന്ററും
-@@ -38,7 +39,7 @@
+@@ -38,7 +40,7 @@
  Comment[pt]=Contentor de 'applets' do Plasma e pintor do fundo
  Comment[pt_BR]=Recipiente de miniaplicativos do Plasma e pintor de plano de fundo
  Comment[ro]=Container de miniaplicații Plasma și desenator de fundal
@@ -5957,9 +8519,17 @@ Index: plasma/servicetypes/plasma-containment.desktop
  Comment[sr]=Садржалац плазма аплетâ и исцртавач позадине
 Index: plasma/servicetypes/plasma-dataengine.desktop
 ===================================================================
---- plasma/servicetypes/plasma-dataengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-dataengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -41,7 +41,7 @@
+--- plasma/servicetypes/plasma-dataengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-dataengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -17,6 +17,7 @@
+ Comment[eu]=Plasma datu motorra
+ Comment[fi]=Plasma-tietomoottori
+ Comment[fr]=Moteur de données Plasma
++Comment[ga]=Inneall Sonraí Plasma
+ Comment[gl]=Motor de dados de plasma
+ Comment[gu]=પ્લાઝમા માહિતી એન્જિન
+ Comment[he]=מנוע מידע עבור Plasma
+@@ -41,7 +42,7 @@
  Comment[pt]=Motor de Dados do Plasma
  Comment[pt_BR]=Mecanismo de dados do Plasma
  Comment[ro]=Motor de date Plasma
@@ -5970,8 +8540,8 @@ Index: plasma/servicetypes/plasma-dataengine.desktop
  Comment[sr@latin]=Plasma datomotor
 Index: plasma/servicetypes/plasma-applet.desktop
 ===================================================================
---- plasma/servicetypes/plasma-applet.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-applet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/servicetypes/plasma-applet.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-applet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -19,6 +19,7 @@
  Comment[fi]=Plasma-sovelma
  Comment[fr]=Applet Plasma
@@ -5990,9 +8560,17 @@ Index: plasma/servicetypes/plasma-applet.desktop
  Comment[ml]=പ്ലാസ്മ ലഘുപ്രയോഗം
 Index: plasma/servicetypes/plasma-applet-extenderapplet.desktop
 ===================================================================
---- plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -31,7 +31,7 @@
+--- plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -11,6 +11,7 @@
+ Name[eu]=Barne edukiontzia hedatua
+ Name[fi]=Sisäinen laajennussisällyttäjä
+ Name[fr]=Extenseur de conteneur interne
++Name[ga]=Gabhdán Sínteoirí Inmheánacha
+ Name[gl]=Continente de extensor interno
+ Name[gu]=આંતરિક વિસ્તારક ધરાવનાર
+ Name[he]=תוחם מרחיב פנימי
+@@ -31,7 +32,7 @@
  Name[pt]=Contentor de Extensão Interno
  Name[pt_BR]=Recipiente de extensão interna
  Name[ro]=Container extensibil intern
@@ -6003,9 +8581,17 @@ Index: plasma/servicetypes/plasma-applet-extenderapplet.desktop
  Name[sr]=унутрашњи садржалац проширивача
 Index: plasma/servicetypes/plasma-wallpaper.desktop
 ===================================================================
---- plasma/servicetypes/plasma-wallpaper.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-wallpaper.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -29,6 +29,7 @@
+--- plasma/servicetypes/plasma-wallpaper.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-wallpaper.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -18,6 +18,7 @@
+ Comment[eu]=Plasma horma papera
+ Comment[fi]=Plasma-taustakuva
+ Comment[fr]=Fond d'écran Plasma
++Comment[ga]=Cúlbhrat Plasma
+ Comment[gl]=Fondo de escritorio de Plasma
+ Comment[gu]=પ્લાઝમા વોલપેપર
+ Comment[he]=תמונת רקע של Plasma
+@@ -29,6 +30,7 @@
  Comment[km]=ផ្ទាំង​រូបភាព​ប្លាស្មា
  Comment[ko]=Plasma 배경 그림
  Comment[ku]=Wêne-rûerdê Plasma 
@@ -6015,8 +8601,8 @@ Index: plasma/servicetypes/plasma-wallpaper.desktop
  Comment[ml]=പ്ലാസ്മ ചുമര്‍ച്ചിത്രം
 Index: plasma/servicetypes/plasma-runner.desktop
 ===================================================================
---- plasma/servicetypes/plasma-runner.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-runner.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/servicetypes/plasma-runner.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-runner.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -19,6 +19,7 @@
  Comment[eu]=KRnner plugin-a
  Comment[fi]=KRunner-liitännäinen
@@ -6027,9 +8613,17 @@ Index: plasma/servicetypes/plasma-runner.desktop
  Comment[he]=תוסף KRunner
 Index: plasma/servicetypes/plasma-animator.desktop
 ===================================================================
---- plasma/servicetypes/plasma-animator.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-animator.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -41,7 +41,7 @@
+--- plasma/servicetypes/plasma-animator.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-animator.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -17,6 +17,7 @@
+ Comment[eu]=Plasma animazio motorra
+ Comment[fi]=Plasma-animointimoottori
+ Comment[fr]=Moteur d'animation Plasma
++Comment[ga]=Inneall Beochana Plasma
+ Comment[gl]=Motor de animación de Plasma
+ Comment[gu]=પ્લાઝમા એનિમેશન એન્જિન
+ Comment[he]=מנוע אנימציה של Plasma
+@@ -41,7 +42,7 @@
  Comment[pt]=Motor de Animação do Plasma
  Comment[pt_BR]=Mecanismo de animação do Plasma
  Comment[ro]=Motor de animație Plasma
@@ -6040,9 +8634,17 @@ Index: plasma/servicetypes/plasma-animator.desktop
  Comment[sr]=Плазма мотор анимација
 Index: plasma/servicetypes/plasma-scriptengine.desktop
 ===================================================================
---- plasma/servicetypes/plasma-scriptengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/servicetypes/plasma-scriptengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -27,6 +27,7 @@
+--- plasma/servicetypes/plasma-scriptengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/servicetypes/plasma-scriptengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -16,6 +16,7 @@
+ Comment[eu]=Plasmarako script lengoaien gehigarria
+ Comment[fi]=Skriptauskielituki Plasmalle
+ Comment[fr]=Langage de script d'extension pour Plasma
++Comment[ga]=Eisínteacht teanga scriptithe le haghaidh Plasma
+ Comment[gl]=Extensicón de linguaxe de scripting para Plasma
+ Comment[gu]=પ્લાઝમા માટે સ્ક્રિપ્ટીંગ ભાષા એક્સટેન્શન
+ Comment[he]=הרחבת שפת תסריטים של Plasma
+@@ -27,6 +28,7 @@
  Comment[km]=ផ្នែក​បន្ថែម​ភាសា​ស្គ្រីប​សម្រាប់​ប្លាស្មា
  Comment[ko]=Plasma 스크립트 언어 확장
  Comment[ku]=Pêveka zimanê skrîpt kirinê ji bo Plasma
@@ -6052,8 +8654,8 @@ Index: plasma/servicetypes/plasma-scriptengine.desktop
  Comment[ml]=പ്ലാസ്മയ്ക്കുള്ള സ്ക്രിപ്റ്റിങ്ങ് ഭാഷാ എക്സ്റ്റന്‍ഷന്‍
 Index: plasma/corona.cpp
 ===================================================================
---- plasma/corona.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/corona.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/corona.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/corona.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -152,9 +152,9 @@
              containment->setFormFactor(Plasma::Planar);
          }
@@ -6075,8 +8677,8 @@ Index: plasma/corona.cpp
      }
 Index: plasma/applet.h
 ===================================================================
---- plasma/applet.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/applet.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/applet.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/applet.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -609,6 +609,11 @@
           */
          void activate();
@@ -6091,9 +8693,24 @@ Index: plasma/applet.h
           * Sets the immutability type for this applet (not immutable,
 Index: plasma/popupapplet.cpp
 ===================================================================
---- plasma/popupapplet.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/popupapplet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -435,7 +435,7 @@
+--- plasma/popupapplet.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/popupapplet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -131,14 +131,6 @@
+ 
+ void PopupAppletPrivate::popupConstraintsEvent(Plasma::Constraints constraints)
+ {
+-    if (constraints & Plasma::StartupCompletedConstraint) {
+-        startupComplete = true;
+-    }
+-
+-    if (!startupComplete) {
+-        return;
+-    }
+-
+     Plasma::FormFactor f = q->formFactor();
+ 
+     if (constraints & Plasma::LocationConstraint) {
+@@ -435,7 +427,7 @@
  
  bool PopupApplet::isPopupShowing() const
  {
@@ -6102,10 +8719,18 @@ Index: plasma/popupapplet.cpp
  }
  
  PopupAppletPrivate::PopupAppletPrivate(PopupApplet *applet)
+@@ -446,7 +438,6 @@
+           popupPlacement(Plasma::FloatingPopup),
+           savedAspectRatio(Plasma::InvalidAspectRatioMode),
+           timer(0),
+-          startupComplete(false),
+           popupLostFocus(false),
+           passive(false)
+ {
 Index: plasma/widgets/busywidget.cpp
 ===================================================================
---- plasma/widgets/busywidget.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/widgets/busywidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/widgets/busywidget.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/widgets/busywidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -36,7 +36,9 @@
  public:
      BusyWidgetPrivate()
@@ -6119,8 +8744,8 @@ Index: plasma/widgets/busywidget.cpp
  
 Index: plasma/widgets/webview.cpp
 ===================================================================
---- plasma/widgets/webview.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/widgets/webview.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/widgets/webview.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/widgets/webview.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -232,9 +232,16 @@
  
      QContextMenuEvent ce(static_cast<QContextMenuEvent::Reason>(event->reason()),
@@ -6142,8 +8767,8 @@ Index: plasma/widgets/webview.cpp
  
 Index: plasma/widgets/tabbar.cpp
 ===================================================================
---- plasma/widgets/tabbar.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/widgets/tabbar.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/widgets/tabbar.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/widgets/tabbar.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -360,18 +360,23 @@
          return;
      }
@@ -6174,8 +8799,8 @@ Index: plasma/widgets/tabbar.cpp
  }
 Index: plasma/applet.cpp
 ===================================================================
---- plasma/applet.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/applet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/applet.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/applet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -133,6 +133,9 @@
  
  Applet::~Applet()
@@ -6188,8 +8813,8 @@ Index: plasma/applet.cpp
      } else if (d->extender) {
 Index: plasma/private/containment_p.h
 ===================================================================
---- plasma/private/containment_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/private/containment_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/private/containment_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/private/containment_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -75,7 +75,7 @@
      void positionContainments();
      void setLockToolText();
@@ -6199,10 +8824,22 @@ Index: plasma/private/containment_p.h
      void containmentAppletAnimationComplete(QGraphicsItem *item, Plasma::Animator::Animation anim);
      void zoomIn();
      void zoomOut();
+Index: plasma/private/popupapplet_p.h
+===================================================================
+--- plasma/private/popupapplet_p.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/private/popupapplet_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -46,7 +46,6 @@
+     Plasma::AspectRatioMode savedAspectRatio;
+     QTimer *timer;
+     QPoint clicked;
+-    bool startupComplete : 1;
+     bool popupLostFocus : 1;
+     bool passive : 1;
+ };
 Index: plasma/extenderitem.cpp
 ===================================================================
---- plasma/extenderitem.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/extenderitem.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/extenderitem.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/extenderitem.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -449,10 +449,12 @@
  
  void ExtenderItem::returnToSource()
@@ -6220,9 +8857,17 @@ Index: plasma/extenderitem.cpp
  void ExtenderItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 Index: plasma/tests/packagemetadatatest.desktop
 ===================================================================
---- plasma/tests/packagemetadatatest.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/tests/packagemetadatatest.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -21,6 +21,7 @@
+--- plasma/tests/packagemetadatatest.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/tests/packagemetadatatest.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -11,6 +11,7 @@
+ Name[et]=Plasma metaandmete testfail
+ Name[eu]=Paketeen metadatuen proba fitxategia
+ Name[fr]=Fichier de test des métadonnées de paquetage
++Name[ga]=Comhad tástála le haghaidh PackageMetaData
+ Name[gl]=Ficheiro de proba de metadatos de paquete
+ Name[gu]=પેકેજ મેટાડેટા ચકાસણી ફાઇલ
+ Name[he]=חבילת בדיקה של מטה־מידע
+@@ -21,6 +22,7 @@
  Name[km]=ឯកសារ​សាកល្បង​ទិន្នន័យ​មេតា​កញ្ចប់
  Name[ko]=패키지 메타데이터 테스트 파일
  Name[ku]=Pela ceribandinê ya serdana yê pakêtê 
@@ -6230,7 +8875,7 @@ Index: plasma/tests/packagemetadatatest.desktop
  Name[lv]=Pakotņu metadatu testa fails
  Name[mai]=संकुलक मेटाडाटा जाँचि फाइल
  Name[ml]=പാക്കേജ് മെറ്റാഡാറ്റാ പരിശോധനാ ഫയല്‍
-@@ -33,7 +34,7 @@
+@@ -33,7 +35,7 @@
  Name[pt]=Ficheiro de testes de meta-dados dos pacotes
  Name[pt_BR]=Arquivo de teste dos metadados do pacote
  Name[ro]=Fișier de testat metadatele pachetelor
@@ -6239,7 +8884,15 @@ Index: plasma/tests/packagemetadatatest.desktop
  Name[sk]=Balík metadát testovacieho súboru
  Name[sl]=Datoteka za test metapodatkov paketa
  Name[sr]=Пробни фајл метаподатака пакета
-@@ -81,7 +82,7 @@
+@@ -59,6 +61,7 @@
+ Comment[et]=Testtöölauafail klassi PackageMetaData testimiseks.
+ Comment[eu]=PackageMetaData klasea probatzeko probako mahaigain fitxategia.
+ Comment[fr]=Un fichier de bureau de démonstration pour tester la classe PackageMetaData.
++Comment[ga]=Comhad tástála deisce a úsáidtear chun aicme PackageMetaData a thástáil.
+ Comment[gl]=Un ficheiro de escritorio de proba para probar a clase PackageMetaData.
+ Comment[gu]=પેકેજમેટાડેટા વર્ગ ચકાસવા માટે ચકાસણી ડેસ્કટોપ ફાઇલ.
+ Comment[he]=קובץ desktop לבדיקה של מחלקה PackageMetaData.
+@@ -81,7 +84,7 @@
  Comment[pt]=Um ficheiro 'desktop' de testes da classe PackageMetaData.
  Comment[pt_BR]=Um arquivo desktop de testes para a classe PackageMetaData.
  Comment[ro]=Un fișier de probă pentru a verifica clasa PackageMetadata.
@@ -6250,9 +8903,25 @@ Index: plasma/tests/packagemetadatatest.desktop
  Comment[sr]=Пробни .десктоп фајл за класу PackageMetaData.
 Index: plasma/tests/testengine/plasma-dataengine-testengine.desktop
 ===================================================================
---- plasma/tests/testengine/plasma-dataengine-testengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/tests/testengine/plasma-dataengine-testengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
-@@ -23,6 +23,7 @@
+--- plasma/tests/testengine/plasma-dataengine-testengine.desktop	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/tests/testengine/plasma-dataengine-testengine.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
+@@ -6,6 +6,7 @@
+ Name[bn]=টেস্ট ডাটা ইঞ্জিন
+ Name[bn_IN]=টেস্ট ডাটা ইঞ্জিন
+ Name[ca]=Motor de dades de prova
++Name[cs]=Testovací datový nástroj
+ Name[da]=Test datamotor
+ Name[de]=Test-Datentreiber
+ Name[el]=Μηχανή δεδομένων ελέγχου
+@@ -14,6 +15,7 @@
+ Name[eu]=Proba datuen motorra
+ Name[fi]=Testitietomoottori
+ Name[fr]=Moteur de données de test
++Name[ga]=Inneall Sonraí Tástála
+ Name[gl]=Motor de datos de probas
+ Name[gu]=ચકાસણી માહિતી એન્જિન
+ Name[he]=בדיקה למנוע מידע
+@@ -23,6 +25,7 @@
  Name[km]=សាកល្បង​ម៉ាស៊ីន​ទិន្នន័យ
  Name[ko]=테스트 데이터 엔진
  Name[ku]=Motora Dane Ceribandinê
@@ -6260,7 +8929,7 @@ Index: plasma/tests/testengine/plasma-dataengine-testengine.desktop
  Name[lv]=Testēšanas datu dzinējs
  Name[mai]=जाँचि डाटा इंडन
  Name[ml]=പരിശോധനാ ഡാറ്റാ എഞ്ചിന്‍
-@@ -35,7 +36,7 @@
+@@ -35,7 +38,7 @@
  Name[pt]=Motor de Dados de Teste
  Name[pt_BR]=Mecanismo de dados de teste
  Name[ro]=Motor de date pentru teste
@@ -6271,8 +8940,8 @@ Index: plasma/tests/testengine/plasma-dataengine-testengine.desktop
  Name[sr]=пробни датомотор података
 Index: plasma/containment.h
 ===================================================================
---- plasma/containment.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/containment.h	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/containment.h	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/containment.h	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -507,7 +507,7 @@
          const QGraphicsItem *toolBoxItem() const;
  
@@ -6284,8 +8953,8 @@ Index: plasma/containment.h
          Q_PRIVATE_SLOT(d, void triggerShowAddWidgets())
 Index: plasma/containment.cpp
 ===================================================================
---- plasma/containment.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 920543)
-+++ plasma/containment.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 920543)
+--- plasma/containment.cpp	(.../tags/KDE/4.2.0/kdelibs)	(wersja 923963)
++++ plasma/containment.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 923963)
 @@ -742,7 +742,7 @@
  
      connect(applet, SIGNAL(configNeedsSaving()), this, SIGNAL(configNeedsSaving()));

@@ -6,7 +6,7 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		_qtver		4.4.3
+%define		qtver		4.4.3
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -27,17 +27,17 @@ Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
-BuildRequires:	Qt3Support-devel >= %{_qtver}
-BuildRequires:	QtCore-devel >= %{_qtver}
-BuildRequires:	QtDBus-devel >= %{_qtver}
-BuildRequires:	QtDesigner-devel >= %{_qtver}
-BuildRequires:	QtGui-devel >= %{_qtver}
-BuildRequires:	QtScript-devel >= %{_qtver}
-BuildRequires:	QtSvg-devel >= %{_qtver}
-BuildRequires:	QtTest-devel >= %{_qtver}
-BuildRequires:	QtUiTools-devel >= %{_qtver}
-BuildRequires:	QtWebKit-devel >= %{_qtver}
-BuildRequires:	QtXml-devel >= %{_qtver}
+BuildRequires:	Qt3Support-devel >= %{qtver}
+BuildRequires:	QtCore-devel >= %{qtver}
+BuildRequires:	QtDBus-devel >= %{qtver}
+BuildRequires:	QtDesigner-devel >= %{qtver}
+BuildRequires:	QtGui-devel >= %{qtver}
+BuildRequires:	QtScript-devel >= %{qtver}
+BuildRequires:	QtSvg-devel >= %{qtver}
+BuildRequires:	QtTest-devel >= %{qtver}
+BuildRequires:	QtUiTools-devel >= %{qtver}
+BuildRequires:	QtWebKit-devel >= %{qtver}
+BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 %{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
@@ -80,9 +80,9 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.3.0
 BuildRequires:	pkgconfig
-BuildRequires:	qt4-build >= %{_qtver}
-%{?with_apidocs:BuildRequires:	qt4-doc >= %{_qtver}}
-BuildRequires:	qt4-qmake >= %{_qtver}
+BuildRequires:	qt4-build >= %{qtver}
+%{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
+BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.1.64
@@ -93,7 +93,7 @@ BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
 Requires:	%{name}-libs = %{version}-%{release}
-Requires:	QtCore >= %{_qtver}
+Requires:	QtCore >= %{qtver}
 Requires:	docbook-dtd412-xml
 Requires:	docbook-dtd42-xml
 Requires:	docbook-style-xsl

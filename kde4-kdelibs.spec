@@ -250,6 +250,7 @@ cd build
 	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
 	-DHTML_INSTALL_DIR=%{_kdedocdir} \
 	-DCMAKE_BUILD_TYPE=%{!?debug:release}%{?debug:debug} \
+	-DKDE_DISTRIBUTION_TEXT="PLD-Linux" \
 %if "%{_lib}" == "lib64"
 	-DLIB_SUFFIX=64 \
 %endif

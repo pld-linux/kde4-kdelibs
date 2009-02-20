@@ -91,7 +91,7 @@ BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
-BuildConflicts: kdelibs-devel
+BuildConflicts:	kdelibs-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{_qtver}
 Requires:	docbook-dtd412-xml
@@ -441,7 +441,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
-%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so 
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so
 %dir %{_libdir}/kde4/plugins/imageformats
 %attr(755,root,root) %{_libdir}/kde4/plugins/imageformats/kimg*.so
 %dir %{_libdir}/kde4/plugins/script

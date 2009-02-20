@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.2.0
-Release:	8
+Release:	9
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -247,6 +247,7 @@ cd build
 	-DMIME_INSTALL_DIR=/nogo \
 	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
 	-DHTML_INSTALL_DIR=%{_kdedocdir} \
+	-DCMAKE_BUILD_TYPE=release \
 %if "%{_lib}" == "lib64"
 	-DLIB_SUFFIX=64 \
 %endif

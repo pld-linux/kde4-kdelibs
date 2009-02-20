@@ -90,6 +90,8 @@ BuildRequires:	strigi-devel >= 0.6.3
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	zlib-devel
+BuildConflicts:	kdelibs
+BuildConflicts: kdelibs-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{_qtver}
 Requires:	docbook-dtd412-xml

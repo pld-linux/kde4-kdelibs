@@ -79,7 +79,7 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.3.0
+BuildRequires:	phonon-devel >= 4.3.1
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= %{qtver}
 %{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}

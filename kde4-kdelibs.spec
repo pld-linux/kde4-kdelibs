@@ -336,6 +336,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
+%{_datadir}/apps/kconf_update/*.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
 %{_datadir}/apps/kcertpart

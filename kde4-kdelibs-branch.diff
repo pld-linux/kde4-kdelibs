@@ -1,7 +1,7 @@
 Index: khtml/khtml_part.cpp
 ===================================================================
---- khtml/khtml_part.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/khtml_part.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -90,6 +90,7 @@
  #include <klocale.h>
  #include <kmessagebox.h>
@@ -55,8 +55,8 @@ Index: khtml/khtml_part.cpp
      {
 Index: khtml/html/html_formimpl.cpp
 ===================================================================
---- khtml/html/html_formimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/html/html_formimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/html/html_formimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/html/html_formimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -2314,6 +2314,12 @@
          setRecalcListItems();
  }
@@ -72,8 +72,8 @@ Index: khtml/html/html_formimpl.cpp
      NodeImpl* const result = HTMLGenericFormElementImpl::appendChild(newChild, exceptioncode);
 Index: khtml/html/html_tableimpl.h
 ===================================================================
---- khtml/html/html_tableimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/html/html_tableimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/html/html_tableimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/html/html_tableimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -216,6 +216,10 @@
          //else things are unchanged.
      }
@@ -95,8 +95,8 @@ Index: khtml/html/html_tableimpl.h
      virtual void parseAttribute(AttributeImpl *attr);
 Index: khtml/html/html_formimpl.h
 ===================================================================
---- khtml/html/html_formimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/html/html_formimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/html/html_formimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/html/html_formimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -419,6 +419,7 @@
      virtual NodeImpl *insertBefore ( NodeImpl *newChild, NodeImpl *refChild, int &exceptioncode );
      virtual void      replaceChild ( NodeImpl *newChild, NodeImpl *oldChild, int &exceptioncode );
@@ -107,8 +107,8 @@ Index: khtml/html/html_formimpl.h
  
 Index: khtml/html/html_tableimpl.cpp
 ===================================================================
---- khtml/html/html_tableimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/html/html_tableimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/html/html_tableimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/html/html_tableimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -395,7 +395,16 @@
      handleChildRemove( oldChild );
      HTMLElementImpl::removeChild( oldChild, exceptioncode);
@@ -129,8 +129,8 @@ Index: khtml/html/html_tableimpl.cpp
      return n->id() == ID_THEAD || n->id() == ID_TBODY ||
 Index: khtml/xml/dom_nodeimpl.h
 ===================================================================
---- khtml/xml/dom_nodeimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/xml/dom_nodeimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/xml/dom_nodeimpl.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/xml/dom_nodeimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -545,7 +545,7 @@
      virtual bool hasChildNodes (  ) const;
  
@@ -142,8 +142,8 @@ Index: khtml/xml/dom_nodeimpl.h
      virtual void setFirstChild(NodeImpl *child);
 Index: khtml/xml/dom_docimpl.cpp
 ===================================================================
---- khtml/xml/dom_docimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ khtml/xml/dom_docimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- khtml/xml/dom_docimpl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ khtml/xml/dom_docimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -2828,8 +2828,8 @@
  
      m_imageLoadEventDispatchingList = m_imageLoadEventDispatchSoonList;
@@ -157,8 +157,8 @@ Index: khtml/xml/dom_docimpl.cpp
  
 Index: kate/plugins/insertfile/ktexteditor_insertfile.desktop
 ===================================================================
---- kate/plugins/insertfile/ktexteditor_insertfile.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/plugins/insertfile/ktexteditor_insertfile.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/plugins/insertfile/ktexteditor_insertfile.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/plugins/insertfile/ktexteditor_insertfile.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -42,7 +42,7 @@
  Name[gu]=ફાઇલ ઉમેરો
  Name[he]=הוספת קובץ
@@ -179,8 +179,8 @@ Index: kate/plugins/insertfile/ktexteditor_insertfile.desktop
  Comment[hu]=Tetszőleges olvasható fájl beszúrása a kurzorpozíciónál
 Index: kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop
 ===================================================================
---- kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -150,6 +150,7 @@
  Comment[pt_BR]=Complementação direcional ou baseada em popup, a partir de palavras do documento
  Comment[ro]=Propune completarea cuvintelor din document dintr-o listă popup sau direcțională
@@ -191,8 +191,8 @@ Index: kate/plugins/wordcompletion/ktexteditor_docwordcompletion.desktop
  Comment[sr]=Дирекционо или искачуће допуњавање према речима из документа
 Index: kate/plugins/timedate/ktexteditor_timedate.desktop
 ===================================================================
---- kate/plugins/timedate/ktexteditor_timedate.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/plugins/timedate/ktexteditor_timedate.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/plugins/timedate/ktexteditor_timedate.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/plugins/timedate/ktexteditor_timedate.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -117,7 +117,7 @@
  Comment[gu]=હાલનો સમય & તારીખ ઉમેરો
  Comment[he]=הוספת התאריך והשעה הנוכחיים
@@ -204,8 +204,8 @@ Index: kate/plugins/timedate/ktexteditor_timedate.desktop
  Comment[hy]=Մտցրեք ընթացիք Ժամը և Ամսաթիվը
 Index: kate/syntax/data/lilypond.xml
 ===================================================================
---- kate/syntax/data/lilypond.xml	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/syntax/data/lilypond.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/syntax/data/lilypond.xml	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/syntax/data/lilypond.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -14,7 +14,7 @@
    <!ENTITY markupwithtextargs "markup|bold|(rounded-)?box|bracket|caps|(center|general|left|right)-align|circle|((center|dir|left|right)-)?column|combine|concat|dynamic|fill-line|finger|fontCaps|(abs-)?fontsize|fraction|halign|hbracket|hcenter-in|hcenter|hspace|huge|italic|justify|larger?|line|lower|magnify|medium|normal-size-(sub|super)|normal-text|normalsize|number|on-the-fly|override|pad-(around|markup|to-box|x)|page-ref|postscript|put-adjacent|raise|roman|rotate|sans|small(er)?|smallCaps|sub|super|teeny|text|tiny|translate(-scaled)?|transparent|typewriter|underline|upright|vcenter|whiteout|with-(color|dimensions|url)|wordwrap|(markup|column-|justified-|override-|wordwrap-)lines|wordwrap-(string-)?internal">
    <!ENTITY deprecatedmarkup "bigger|h?center">
@@ -217,8 +217,8 @@ Index: kate/syntax/data/lilypond.xml
    <!ENTITY performer "Beam|Control_track|Drum_note|Dynamic|Key|Lyric|Note|Piano_pedal|Slur|Staff|Swallow|Tempo|Tie|Time_signature">
 Index: kate/syntax/data/ruby.xml
 ===================================================================
---- kate/syntax/data/ruby.xml	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/syntax/data/ruby.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/syntax/data/ruby.xml	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/syntax/data/ruby.xml	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -327,8 +327,8 @@
  			
  			<!-- Internal context used by check_div_2 -->
@@ -253,8 +253,8 @@ Index: kate/syntax/data/ruby.xml
  			
 Index: kate/tests/highlight.rb
 ===================================================================
---- kate/tests/highlight.rb	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/tests/highlight.rb	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/tests/highlight.rb	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/tests/highlight.rb	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -422,10 +422,17 @@
  10 % 4          # modulo
  
@@ -287,8 +287,8 @@ Index: kate/tests/highlight.rb
  %w(one two three)
 Index: kate/completion/katecompletionmodel.cpp
 ===================================================================
---- kate/completion/katecompletionmodel.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/completion/katecompletionmodel.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/completion/katecompletionmodel.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/completion/katecompletionmodel.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -573,7 +573,9 @@
  
  void KateCompletionModel::createGroups()
@@ -300,17 +300,138 @@ Index: kate/completion/katecompletionmodel.cpp
  
    bool has_groups=false;
    foreach (CodeCompletionModel* sourceModel, m_completionModels) {
-@@ -945,6 +947,9 @@
+@@ -945,8 +947,10 @@
      updateBestMatches();
    }
  
 +  if(changeType == Broaden)
-+    reset(); //There seems to be a bug in the notification code of the "Broaden" operation, so just reset
++    reset(); //There is a bug in changeCompletions() notification code of the "Broaden" operation, so just reset
 +
    clearExpanding(); //We need to do this, or be aware of expanding-widgets while filtering.
- // reset();
+-// reset();
    emit contentGeometryChanged();
-@@ -1997,6 +2002,7 @@
+ }
+ 
+@@ -974,7 +978,7 @@
+ #define COMPLETE_DELETE \
+   if (rowDeleteStart != -1) { \
+     if (!g->isEmpty) \
+-      deleteRows(g, filtered, index - rowDeleteStart, rowDeleteStart); \
++      deleteRows(g, filtered, index - rowDeleteStart, rowDeleteStart, changeType != Broaden); \
+     filterIndex -= index - rowDeleteStart + 1; \
+     index -= index - rowDeleteStart; \
+     rowDeleteStart = -1; \
+@@ -982,7 +986,7 @@
+ 
+ #define COMPLETE_ADD \
+   if (rowAddStart != -1) { \
+-    addRows(g, filtered, rowAddStart, rowAdd); \
++    addRows(g, filtered, rowAddStart, rowAdd, changeType != Broaden); \
+     filterIndex += rowAdd.count(); \
+     index += rowAdd.count(); \
+     rowAddStart = -1; \
+@@ -1116,7 +1120,9 @@
+   COMPLETE_DELETE
+   COMPLETE_ADD
+ 
+-  hideOrShowGroup(g);
++  //Only notify the model if the changetype is not broaden, else it will barf on it
++  //because the code above has a bug in that case. We do a reset() anyway afterwards in that case.
++  hideOrShowGroup(g, changeType != Broaden);
+ }
+ 
+ int KateCompletionModel::Group::orderNumber() const {
+@@ -1150,7 +1156,7 @@
+     return orderNumber() < other->orderNumber();
+ }
+ 
+-void KateCompletionModel::hideOrShowGroup(Group* g)
++void KateCompletionModel::hideOrShowGroup(Group* g, bool notifyModel)
+ {
+   if( g == m_argumentHints ) {
+     emit argumentHintsChanged();
+@@ -1164,10 +1170,10 @@
+       g->isEmpty = true;
+       int row = m_rowTable.indexOf(g);
+       if (row != -1) {
+-        if (hasGroups())
++        if (hasGroups() && notifyModel)
+           beginRemoveRows(QModelIndex(), row, row);
+         m_rowTable.removeAt(row);
+-        if (hasGroups())
++        if (hasGroups() && notifyModel)
+           endRemoveRows();
+         m_emptyGroups.append(g);
+       } else {
+@@ -1190,23 +1196,27 @@
+         row = a+1;
+       }
+ 
+-      if (hasGroups())
+-        beginInsertRows(QModelIndex(), row, row);
+-      else
+-        beginInsertRows(QModelIndex(), 0, g->filtered.count());
++      if(notifyModel) {
++        if (hasGroups())
++          beginInsertRows(QModelIndex(), row, row);
++        else
++          beginInsertRows(QModelIndex(), 0, g->filtered.count());
++      }
+       m_rowTable.insert(row, g);
+-      endInsertRows();
++      if(notifyModel)
++        endInsertRows();
+       m_emptyGroups.removeAll(g);
+     }
+   }
+ }
+ 
+-void KateCompletionModel::deleteRows( Group* g, QMutableListIterator<Item> & filtered, int countBackwards, int startRow )
++void KateCompletionModel::deleteRows( Group* g, QMutableListIterator<Item> & filtered, int countBackwards, int startRow, bool notify )
+ {
+   QModelIndex groupIndex = indexForGroup(g);
+   Q_ASSERT(!hasGroups() || groupIndex.isValid());
+ 
+-  beginRemoveRows(groupIndex, startRow, startRow + countBackwards - 1);
++  if(notify)
++    beginRemoveRows(groupIndex, startRow, startRow + countBackwards - 1);
+ 
+   for (int i = 0; i < countBackwards; ++i) {
+     filtered.remove();
+@@ -1221,12 +1231,13 @@
+ 
+     filtered.previous();
+   }
+-
+-  endRemoveRows();
++  
++  if(notify)
++    endRemoveRows();
+ }
+ 
+ 
+-void KateCompletionModel::addRows( Group * g, QMutableListIterator<Item> & filtered, int startRow, const QList<Item> & newItems )
++void KateCompletionModel::addRows( Group * g, QMutableListIterator<Item> & filtered, int startRow, const QList<Item> & newItems, bool notify )
+ {
+   //bool notify = true;
+ 
+@@ -1237,13 +1248,13 @@
+ 
+   kDebug( 13035 ) << "Group" << g->title << "addRows" << startRow << "to " << (startRow + newItems.count() - 1);
+ 
+-  //if (notify)
++  if (notify)
+     beginInsertRows(groupIndex, startRow, startRow + newItems.count() - 1);
+ 
+   for (int i = 0; i < newItems.count(); ++i)
+     filtered.insert(newItems[i]);
+ 
+-  //if (notify)
++  if (notify)
+     endInsertRows();
+ }
+ 
+@@ -1997,6 +2008,7 @@
  
  //Updates the best-matches group
  void KateCompletionModel::updateBestMatches() {
@@ -318,7 +439,7 @@ Index: kate/completion/katecompletionmodel.cpp
  
    m_updateBestMatchesTimer->stop();
    //Maps match-qualities to ModelRows paired together with the BestMatchesCount returned by the items.
-@@ -2020,6 +2026,9 @@
+@@ -2020,6 +2032,9 @@
        }
        
        ++row;
@@ -328,7 +449,7 @@ Index: kate/completion/katecompletionmodel.cpp
      }
      
      if(!rowsForQuality.isEmpty()) {
-@@ -2043,7 +2052,6 @@
+@@ -2043,7 +2058,6 @@
    }
    
    ///@todo Cache the CodeCompletionModel::BestMatchesCount
@@ -336,10 +457,34 @@ Index: kate/completion/katecompletionmodel.cpp
    foreach (Group* g, m_rowTable) {
      if( g == m_bestMatches )
        continue;
+Index: kate/completion/katecompletionmodel.h
+===================================================================
+--- kate/completion/katecompletionmodel.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/completion/katecompletionmodel.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -282,7 +282,7 @@
+     QSet<Group*> deleteItems(const QModelIndex& i);
+     Group* createItem(const HierarchicalModelHandler&, const QModelIndex& i, bool notifyModel = false);
+     void clearGroups(bool reset = true);
+-    void hideOrShowGroup(Group* g);
++    void hideOrShowGroup(Group* g, bool notifyModel = true);
+     /// When forceGrouping is enabled, all given attributes will be used for grouping, regardless of the completion settings.
+     Group* fetchGroup(int attribute, const QString& scope = QString(), bool forceGrouping = false);
+     //If this returns nonzero on an index, the index is the header of the returned group
+@@ -300,8 +300,8 @@
+ 
+     void changeCompletions(Group* g, changeTypes changeType);
+ 
+-    void deleteRows(Group* g, QMutableListIterator<Item>& filtered, int countBackwards, int startRow);
+-    void addRows(Group* g, QMutableListIterator<Item>& filtered, int startRow, const QList<Item>& newItems);
++    void deleteRows(Group* g, QMutableListIterator<Item>& filtered, int countBackwards, int startRow, bool notify);
++    void addRows(Group* g, QMutableListIterator<Item>& filtered, int startRow, const QList<Item>& newItems, bool notify);
+ 
+     bool hasGroups() const;
+     bool hasCompletionModel() const;
 Index: kate/completion/katecompletionwidget.cpp
 ===================================================================
---- kate/completion/katecompletionwidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kate/completion/katecompletionwidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kate/completion/katecompletionwidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/completion/katecompletionwidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -203,6 +203,9 @@
  void KateCompletionWidget::rowsInserted(const QModelIndex& parent, int rowFrom, int rowEnd)
  {
@@ -436,10 +581,26 @@ Index: kate/completion/katecompletionwidget.cpp
            m_presentationModel->removeCompletionModel(model);
          }
        } else {
+Index: kate/view/kateviewinternal.cpp
+===================================================================
+--- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -1201,11 +1201,6 @@
+ 
+ void KateViewInternal::end( bool sel )
+ {
+-  if (m_view->isCompletionActive()) {
+-    view()->completionWidget()->bottom();
+-    return;
+-  }
+-
+   QMutexLocker lock(m_doc->smartMutex());
+ 
+   KateTextLayout layout = currentLayout();
 Index: kfile/kfilewidget.cpp
 ===================================================================
---- kfile/kfilewidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kfile/kfilewidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kfile/kfilewidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kfile/kfilewidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -836,12 +836,13 @@
      } else if (locationEditCurrentTextList.count()) {
          // if we are on file or files mode, and we have an absolute url written by
@@ -458,10 +619,68 @@ Index: kfile/kfilewidget.cpp
              bool res = KIO::NetAccess::synchronousRun(statJob, 0);
              if (res) {
                  if (!statJob->statResult().isDir()) {
+Index: kioslave/file/file.cpp
+===================================================================
+--- kioslave/file/file.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kioslave/file/file.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -139,6 +139,16 @@
+ {
+ }
+ 
++#ifdef HAVE_POSIX_ACL
++static QString aclToText(acl_t acl) {
++    ssize_t size = 0;
++    char* txt = acl_to_text(acl, &size);
++    const QString ret = QString::fromLatin1(txt, size);
++    acl_free(txt);
++    return ret;
++}
++#endif
++
+ int FileProtocol::setACL( const char *path, mode_t perm, bool directoryDefault )
+ {
+     int ret = 0;
+@@ -157,8 +167,7 @@
+         acl = acl_from_text( ACLString.toLatin1() );
+         if ( acl_valid( acl ) == 0 ) { // let's be safe
+             ret = acl_set_file( path, ACL_TYPE_ACCESS, acl );
+-            ssize_t size = acl_size( acl );
+-            kDebug(7101) << "Set ACL on: " << path << " to: " << acl_to_text( acl, &size );
++            kDebug(7101) << "Set ACL on: " << path << " to: " << aclToText(acl);
+         }
+         acl_free( acl );
+         if ( ret != 0 ) return ret; // better stop trying right away
+@@ -172,8 +181,7 @@
+             acl_t acl = acl_from_text( defaultACLString.toLatin1() );
+             if ( acl_valid( acl ) == 0 ) { // let's be safe
+                 ret += acl_set_file( path, ACL_TYPE_DEFAULT, acl );
+-                ssize_t size = acl_size( acl );
+-                kDebug(7101) << "Set Default ACL on: " << path << " to: " << acl_to_text( acl, &size );
++                kDebug(7101) << "Set Default ACL on: " << path << " to: " << aclToText(acl);
+             }
+             acl_free( acl );
+         }
+@@ -1343,14 +1351,12 @@
+     }
+     if ( withACL ) {
+         if ( acl ) {
+-            ssize_t size = acl_size( acl );
+-            const QString str = QString::fromLatin1( acl_to_text( acl, &size ) );
++            const QString str = aclToText(acl);
+             entry.insert( KIO::UDSEntry::UDS_ACL_STRING, str );
+             kDebug(7101) << path.data() << "ACL: " << str;
+         }
+         if ( defaultAcl ) {
+-            ssize_t size = acl_size( defaultAcl );
+-            const QString str = QString::fromLatin1( acl_to_text( defaultAcl, &size ) );
++            const QString str = aclToText(defaultAcl);
+             entry.insert( KIO::UDSEntry::UDS_DEFAULT_ACL_STRING, str );
+             kDebug(7101) << path.data() << "DEFAULT ACL: " << str;
+         }
 Index: kinit/klauncher.cpp
 ===================================================================
---- kinit/klauncher.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kinit/klauncher.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kinit/klauncher.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kinit/klauncher.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -971,9 +971,9 @@
         KService::Ptr service = KService::serviceByDesktopName(desktopName);
         if (service)
@@ -485,8 +704,8 @@ Index: kinit/klauncher.cpp
      QString arg2 = mConnectionServer.address();
 Index: kio/kio/kfileitem.cpp
 ===================================================================
---- kio/kio/kfileitem.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kio/kio/kfileitem.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kio/kio/kfileitem.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kio/kio/kfileitem.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -420,10 +420,22 @@
      // even though it's not really part of the permissions per se.
      if (m_bLink)
@@ -513,10 +732,108 @@ Index: kio/kio/kfileitem.cpp
  
      buffer[1] = ((( perm & S_IRUSR ) == S_IRUSR ) ? 'r' : '-' );
      buffer[2] = ((( perm & S_IWUSR ) == S_IWUSR ) ? 'w' : '-' );
+Index: kio/kio/kacl.cpp
+===================================================================
+--- kio/kio/kacl.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kio/kio/kacl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -177,8 +177,9 @@
+ #if 0
+ static void printACL( acl_t acl, const QString &comment )
+ {
+-    ssize_t size = acl_size( acl );
+-    kDebug() << comment << acl_to_text( acl, &size );
++    const char* txt = acl_to_text(acl);
++    kDebug() << comment << txt;
++    acl_free(txt);
+ }
+ #endif
+ #endif
+@@ -609,8 +610,11 @@
+ QString KACL::asString() const
+ {
+ #ifdef HAVE_POSIX_ACL
+-    ssize_t size = acl_size( d->m_acl );
+-    return QString::fromLatin1( acl_to_text( d->m_acl, &size ) );
++    ssize_t size = 0;
++    char* txt = acl_to_text(d->m_acl, &size);
++    const QString ret = QString::fromLatin1(txt, size);
++    acl_free(txt);
++    return ret;
+ #else
+     return QString();
+ #endif
+Index: kio/kfile/kpropertiesdialog.cpp
+===================================================================
+--- kio/kfile/kpropertiesdialog.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kio/kfile/kpropertiesdialog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -1732,7 +1732,6 @@
+    */
+   int i, maxEntries = 1000;
+   struct passwd *user;
+-  struct group *ge;
+ 
+   /* File owner: For root, offer a KLineEdit with autocompletion.
+    * For a user, who can never chown() a file, offer a QLabel.
+@@ -1768,38 +1767,27 @@
+     strUser = user->pw_name;
+ 
+ #ifdef Q_OS_UNIX
+-  setgrent();
+-  for (i=0; ((ge = getgrent()) != 0L) && (i < maxEntries); ++i)
+-  {
+-    if (IamRoot)
+-      groupList += QString::fromLatin1(ge->gr_name);
+-    else
+-    {
+-      /* pick the groups to which the user belongs */
+-      char ** members = ge->gr_mem;
+-      char * member;
+-      while ((member = *members) != 0L) {
+-        if (strUser == member) {
+-          groupList += QString::fromLocal8Bit(ge->gr_name);
+-          break;
++    // pick the groups to which the user belongs
++    int groupCount = 0;
++    gid_t *groups = NULL;
++    if (getgrouplist(strUser, user->pw_gid, NULL, &groupCount) < 0) {
++        groups = new gid_t[groupCount];
++        if (groups) {
++            getgrouplist(strUser, user->pw_gid, groups, &groupCount);
++        } else {
++            groupCount = 0;
+         }
+-        ++members;
+-      }
+     }
+-  }
+-  endgrent();
+-#endif //Q_OS_UNIX
+ 
+-  /* add the effective Group to the list .. */
+-  ge = getgrgid (getegid());
+-  if (ge) {
+-    QString name = QString::fromLatin1(ge->gr_name);
+-    if (name.isEmpty())
+-      name.setNum(ge->gr_gid);
+-    if (groupList.indexOf(name) == -1)
+-      groupList += name;
+-  }
++    for (i = 0; i < groupCount; i++) {
++        struct group *mygroup = getgrgid(groups[i]);
++        if (mygroup)
++            groupList += QString::fromLocal8Bit(mygroup->gr_name);
++    }
+ 
++    delete[] groups;
++#endif //Q_OS_UNIX
++
+   bool isMyGroup = groupList.contains(d->strGroup);
+ 
+   /* add the group the file currently belongs to ..
 Index: kio/misc/kpac/proxyscout.notifyrc
 ===================================================================
---- kio/misc/kpac/proxyscout.notifyrc	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kio/misc/kpac/proxyscout.notifyrc	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kio/misc/kpac/proxyscout.notifyrc	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kio/misc/kpac/proxyscout.notifyrc	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -334,7 +334,7 @@
  Comment[gu]=પ્રોક્સી રૂપરેખાંકન સ્ક્રિપ્ટ ડાઉનલોડ કરી શકાતી નથી
  Comment[he]=אין אפשרות להוריד את תסריט הגדרות שרת המתווך
@@ -528,8 +845,8 @@ Index: kio/misc/kpac/proxyscout.notifyrc
  Comment[hu]=A proxyszkriptet nem sikerült letölteni
 Index: kdeui/dialogs/kdialog.cpp
 ===================================================================
---- kdeui/dialogs/kdialog.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdeui/dialogs/kdialog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdeui/dialogs/kdialog.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdeui/dialogs/kdialog.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -149,6 +149,10 @@
    mButtonList.insert( key, button );
    mButtonSignalMapper.setMapping( button, key );
@@ -543,8 +860,8 @@ Index: kdeui/dialogs/kdialog.cpp
  }
 Index: kdeui/widgets/ktextedit.cpp
 ===================================================================
---- kdeui/widgets/ktextedit.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdeui/widgets/ktextedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdeui/widgets/ktextedit.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdeui/widgets/ktextedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -19,6 +19,7 @@
  */
  
@@ -623,8 +940,8 @@ Index: kdeui/widgets/ktextedit.cpp
    } else if (event->modifiers() == Qt::ControlModifier &&
 Index: kdeui/widgets/kkeysequencewidget.cpp
 ===================================================================
---- kdeui/widgets/kkeysequencewidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdeui/widgets/kkeysequencewidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdeui/widgets/kkeysequencewidget.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdeui/widgets/kkeysequencewidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -248,7 +248,7 @@
      QString conflictingShortcuts;
      Q_FOREACH(const KAction *action, actions) {
@@ -636,8 +953,8 @@ Index: kdeui/widgets/kkeysequencewidget.cpp
      QString message = i18n(
 Index: kdeui/findreplace/kfind_p.h
 ===================================================================
---- kdeui/findreplace/kfind_p.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdeui/findreplace/kfind_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdeui/findreplace/kfind_p.h	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdeui/findreplace/kfind_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -47,7 +47,9 @@
  
      ~Private()
@@ -651,8 +968,8 @@ Index: kdeui/findreplace/kfind_p.h
          emptyMatch = 0;
 Index: kdecore/kernel/kcmdlineargs.cpp
 ===================================================================
---- kdecore/kernel/kcmdlineargs.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/kernel/kcmdlineargs.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdecore/kernel/kcmdlineargs.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/kernel/kcmdlineargs.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -83,13 +83,13 @@
  // Helper classes
  //
@@ -1305,8 +1622,8 @@ Index: kdecore/kernel/kcmdlineargs.cpp
  }
 Index: kdecore/services/yacc.y
 ===================================================================
---- kdecore/services/yacc.y	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/services/yacc.y	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdecore/services/yacc.y	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/services/yacc.y	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -137,4 +137,5 @@
  {
    KTraderParse_initFlex( _code );
@@ -1315,8 +1632,8 @@ Index: kdecore/services/yacc.y
  }
 Index: kdecore/services/kservicetypeprofile.cpp
 ===================================================================
---- kdecore/services/kservicetypeprofile.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/services/kservicetypeprofile.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdecore/services/kservicetypeprofile.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/services/kservicetypeprofile.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -84,7 +84,7 @@
              const QString serviceId = config.readEntry( "Entry" + num + "_Service", QString() );
              Q_ASSERT(!serviceId.isEmpty());
@@ -1340,21 +1657,22 @@ Index: kdecore/services/kservicetypeprofile.cpp
  void KServiceTypeProfile::setConfigurationMode()
 Index: kdecore/all_languages.desktop
 ===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
-@@ -4154,6 +4154,8 @@
+--- kdecore/all_languages.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/all_languages.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
+@@ -4154,6 +4154,9 @@
  Name[ca]=Chattisgarbi
  Name[es]=Chhattisgarhí
  Name[hu]=Cshattíszgarhi
 +Name[ja]=チャッティースガリー語
++Name[ru]=Чхаттисгархи
 +Name[se]=Čattisgarhigiella
  Name[sr]=чатисгархи
  Name[sr@latin]=чатисгархи
  Name[uk]=Чхатісгархі
 Index: kdecore/sonnet/sonnetspeller.desktop
 ===================================================================
---- kdecore/sonnet/sonnetspeller.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/sonnet/sonnetspeller.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdecore/sonnet/sonnetspeller.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/sonnet/sonnetspeller.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -45,6 +45,7 @@
  Comment[mk]=Sonnet-клиент за правопис
  Comment[ml]=സോണറ്റ് സ്പെല്‍ ക്ലയന്റ്
@@ -1365,8 +1683,8 @@ Index: kdecore/sonnet/sonnetspeller.desktop
  Comment[ne]=सोनेट स्पेल क्लाइन्ट
 Index: kdecore/kconfig_compiler/kconfig_compiler.cpp
 ===================================================================
---- kdecore/kconfig_compiler/kconfig_compiler.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ kdecore/kconfig_compiler/kconfig_compiler.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- kdecore/kconfig_compiler/kconfig_compiler.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ kdecore/kconfig_compiler/kconfig_compiler.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -442,8 +442,9 @@
  
      } else if ( type == "Path" && !defaultValue.isEmpty() ) {
@@ -1399,8 +1717,8 @@ Index: kdecore/kconfig_compiler/kconfig_compiler.cpp
  
 Index: plasma/servicetypes/plasma-containment.desktop
 ===================================================================
---- plasma/servicetypes/plasma-containment.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ plasma/servicetypes/plasma-containment.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- plasma/servicetypes/plasma-containment.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ plasma/servicetypes/plasma-containment.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -20,7 +20,7 @@
  Comment[gl]=Un contedor de applet de Plasma e pintor do fondo
  Comment[gu]=પ્લાઝમા એપ્લેટ ધરાવનાર અને પાશ્ચભાગ રંગનાર
@@ -1412,8 +1730,8 @@ Index: plasma/servicetypes/plasma-containment.desktop
  Comment[is]=Grunnur fyrir Plasma smáforrit og bakgrunnslitun
 Index: plasma/servicetypes/plasma-applet-extenderapplet.desktop
 ===================================================================
---- plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ plasma/servicetypes/plasma-applet-extenderapplet.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -50,6 +50,7 @@
  Name[zh_TW]=內部延伸容器
  Type=Service
@@ -1424,8 +1742,8 @@ Index: plasma/servicetypes/plasma-applet-extenderapplet.desktop
  X-KDE-PluginInfo-EnabledByDefault=false
 Index: plasma/abstractrunner.cpp
 ===================================================================
---- plasma/abstractrunner.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ plasma/abstractrunner.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- plasma/abstractrunner.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ plasma/abstractrunner.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -132,14 +132,13 @@
  {
  }
@@ -1445,8 +1763,8 @@ Index: plasma/abstractrunner.cpp
      const int runtime = d->runtime.elapsed();
 Index: plasma/runnercontext.cpp
 ===================================================================
---- plasma/runnercontext.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ plasma/runnercontext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- plasma/runnercontext.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ plasma/runnercontext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -142,8 +142,15 @@
  {
      // We will detach if we are a copy of someone. But we will reset
@@ -1511,8 +1829,8 @@ Index: plasma/runnercontext.cpp
  }
 Index: plasma/runnermanager.cpp
 ===================================================================
---- plasma/runnermanager.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935632)
-+++ plasma/runnermanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935632)
+--- plasma/runnermanager.cpp	(.../tags/KDE/4.2.1/kdelibs)	(wersja 935993)
++++ plasma/runnermanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 935993)
 @@ -138,19 +138,23 @@
  
      int priority() const;

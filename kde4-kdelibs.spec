@@ -104,7 +104,6 @@ Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Provides:	%{name}-shared
-Suggests:	kde4-icons
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs

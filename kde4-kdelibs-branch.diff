@@ -1,7 +1,7 @@
 Index: khtml/khtmlview.cpp
 ===================================================================
---- khtml/khtmlview.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/khtmlview.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/khtmlview.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/khtmlview.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -559,7 +559,10 @@
              }
              node = node->parentNode();
@@ -55,8 +55,8 @@ Index: khtml/khtmlview.cpp
  
 Index: khtml/kmultipart/README
 ===================================================================
---- khtml/kmultipart/README	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/kmultipart/README	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/kmultipart/README	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/kmultipart/README	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -2,12 +2,24 @@
  it handles the multipart/mixed and multipart/x-mixed-replace
  mimetype, embedding the appropriate component (part).
@@ -86,8 +86,8 @@ Index: khtml/kmultipart/README
  * Use the new streaming API of KParts to pipe data into the part,
 Index: khtml/kmultipart/kmultipart.cpp
 ===================================================================
---- khtml/kmultipart/kmultipart.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/kmultipart/kmultipart.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/kmultipart/kmultipart.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/kmultipart/kmultipart.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -28,7 +28,7 @@
  #include <QtCore/QFile>
  #include <ktemporaryfile.h>
@@ -182,8 +182,8 @@ Index: khtml/kmultipart/kmultipart.cpp
          }
 Index: khtml/test_regression_fontoverload.cpp
 ===================================================================
---- khtml/test_regression_fontoverload.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/test_regression_fontoverload.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/test_regression_fontoverload.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/test_regression_fontoverload.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -274,7 +274,7 @@
  #ifdef QT_45
      int cnt = si.glyphs.numGlyphs;
@@ -201,10 +201,134 @@ Index: khtml/test_regression_fontoverload.cpp
 +
 +void KLineEdit::setClearButtonShown(bool /*show*/)
 +{}
+Index: khtml/platform/SharedBuffer.cpp
+===================================================================
+--- khtml/platform/SharedBuffer.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/SharedBuffer.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -1,119 +0,0 @@
+-/*
+- * Copyright (C) 2006, 2008 Apple Inc. All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+- */
+-
+-#include "config.h"
+-#include "SharedBuffer.h"
+-
+-namespace WebCore {
+-
+-SharedBuffer::SharedBuffer()
+-{
+-}
+-
+-SharedBuffer::SharedBuffer(const char* data, int size)
+-{
+-    m_buffer.append(data, size);
+-}
+-
+-SharedBuffer::SharedBuffer(const unsigned char* data, int size)
+-{
+-    m_buffer.append(data, size);
+-}
+-
+-PassRefPtr<SharedBuffer> SharedBuffer::adoptVector(Vector<char>& vector)
+-{
+-    RefPtr<SharedBuffer> buffer = create();
+-    buffer->m_buffer.swap(vector);
+-    return buffer.release();
+-}
+-
+-unsigned SharedBuffer::size() const
+-{
+-    if (hasPlatformData())
+-        return platformDataSize();
+-    
+-    return m_buffer.size();
+-}
+-
+-const char* SharedBuffer::data() const
+-{
+-    if (hasPlatformData())
+-        return platformData();
+-    
+-    return m_buffer.data();
+-}
+-
+-void SharedBuffer::append(const char* data, int len)
+-{
+-    maybeTransferPlatformData();
+-    
+-    m_buffer.append(data, len);
+-}
+-
+-void SharedBuffer::clear()
+-{
+-    clearPlatformData();
+-    
+-    m_buffer.clear();
+-}
+-
+-PassRefPtr<SharedBuffer> SharedBuffer::copy() const
+-{
+-    return SharedBuffer::create(data(), size());
+-}
+-
+-
+-#if !PLATFORM(CF)
+-
+-inline void SharedBuffer::clearPlatformData()
+-{
+-}
+-
+-inline void SharedBuffer::maybeTransferPlatformData()
+-{
+-}
+-
+-inline bool SharedBuffer::hasPlatformData() const
+-{
+-    return false;
+-}
+-
+-inline const char* SharedBuffer::platformData() const
+-{
+-    ASSERT_NOT_REACHED();
+-
+-    return 0;
+-}
+-
+-inline unsigned SharedBuffer::platformDataSize() const
+-{
+-    ASSERT_NOT_REACHED();
+-    
+-    return 0;
+-}
+-
+-#endif
+-
+-}
 Index: khtml/platform/MIMETypeRegistry.cpp
 ===================================================================
---- khtml/platform/MIMETypeRegistry.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/MIMETypeRegistry.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/MIMETypeRegistry.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/MIMETypeRegistry.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,334 +0,0 @@
 -/*
 - * Copyright (C) 2006, 2008 Apple Inc.  All rights reserved.
@@ -540,10 +664,112 @@ Index: khtml/platform/MIMETypeRegistry.cpp
 -}
 -
 -} // namespace WebCore
+Index: khtml/platform/SharedBuffer.h
+===================================================================
+--- khtml/platform/SharedBuffer.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/SharedBuffer.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -1,97 +0,0 @@
+-/*
+- * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+- */
+-#ifndef SharedBuffer_h
+-#define SharedBuffer_h
+-
+-#include "PlatformString.h"
+-#include <wtf/RefCounted.h>
+-#include <wtf/Forward.h>
+-#include <wtf/Vector.h>
+-
+-#if PLATFORM(CF)
+-#include <wtf/RetainPtr.h>
+-#endif
+-
+-#if PLATFORM(MAC)
+-#ifdef __OBJC__
+-@class NSData;
+-#else
+-class NSData;
+-#endif
+-
+-#endif
+-
+-namespace WebCore {
+-
+-class SharedBuffer : public RefCounted<SharedBuffer> {
+-public:
+-    static PassRefPtr<SharedBuffer> create() { return adoptRef(new SharedBuffer); }
+-    static PassRefPtr<SharedBuffer> create(const char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
+-    static PassRefPtr<SharedBuffer> create(const unsigned char* c, int i) { return adoptRef(new SharedBuffer(c, i)); }
+-
+-    static PassRefPtr<SharedBuffer> createWithContentsOfFile(const String& filePath);
+-
+-    static PassRefPtr<SharedBuffer> adoptVector(Vector<char>& vector);
+-    
+-#if PLATFORM(MAC)
+-    NSData *createNSData();
+-    static PassRefPtr<SharedBuffer> wrapNSData(NSData *data);
+-#endif
+-#if PLATFORM(CF)
+-    CFDataRef createCFData();
+-#endif
+-
+-    const char* data() const;
+-    unsigned size() const;
+-    const Vector<char> &buffer() { return m_buffer; }
+-
+-    bool isEmpty() const { return size() == 0; }
+-
+-    void append(const char*, int);
+-    void clear();
+-    const char* platformData() const;
+-    unsigned platformDataSize() const;
+-
+-    PassRefPtr<SharedBuffer> copy() const;
+-    
+-private:
+-    SharedBuffer();
+-    SharedBuffer(const char*, int);
+-    SharedBuffer(const unsigned char*, int);
+-    
+-    void clearPlatformData();
+-    void maybeTransferPlatformData();
+-    bool hasPlatformData() const;
+-    
+-    Vector<char> m_buffer;
+-#if PLATFORM(CF)
+-    SharedBuffer(CFDataRef);
+-    RetainPtr<CFDataRef> m_cfData;
+-#endif
+-};
+-    
+-}
+-
+-#endif
 Index: khtml/platform/MIMETypeRegistry.h
 ===================================================================
---- khtml/platform/MIMETypeRegistry.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/MIMETypeRegistry.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/MIMETypeRegistry.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/MIMETypeRegistry.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,77 +0,0 @@
 -/*
 - * Copyright (C) 2006 Apple Computer, Inc.  All rights reserved.
@@ -624,8 +850,8 @@ Index: khtml/platform/MIMETypeRegistry.h
 -#endif // MIMETypeRegistry_h
 Index: khtml/platform/graphics/ImageSource.h
 ===================================================================
---- khtml/platform/graphics/ImageSource.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/ImageSource.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/ImageSource.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/ImageSource.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,104 +0,0 @@
 -/*
 - * Copyright (C) 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
@@ -733,8 +959,8 @@ Index: khtml/platform/graphics/ImageSource.h
 -#endif
 Index: khtml/platform/graphics/FontFamily.cpp
 ===================================================================
---- khtml/platform/graphics/FontFamily.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/FontFamily.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/FontFamily.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FontFamily.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,55 +0,0 @@
 -/*
 - * Copyright (C) 2004 Apple Computer, Inc.  All rights reserved.
@@ -791,10 +1017,314 @@ Index: khtml/platform/graphics/FontFamily.cpp
 -}
 -
 -}
+Index: khtml/platform/graphics/GraphicsContext.h
+===================================================================
+--- khtml/platform/graphics/GraphicsContext.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/GraphicsContext.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -1,299 +0,0 @@
+-/*
+- * Copyright (C) 2003, 2006, 2007 Apple Inc.  All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+- */
+-
+-#ifndef GraphicsContext_h
+-#define GraphicsContext_h
+-
+-#include "FloatRect.h"
+-//#include "Image.h"
+-#include "IntRect.h"
+-#include "Path.h"
+-//#include "TextDirection.h"
+-#include <wtf/Noncopyable.h>
+-#include <wtf/Platform.h>
+-
+-#if PLATFORM(CG)
+-typedef struct CGContext PlatformGraphicsContext;
+-#elif PLATFORM(CAIRO)
+-typedef struct _cairo PlatformGraphicsContext;
+-#elif PLATFORM(QT)
+-QT_BEGIN_NAMESPACE
+-class QPainter;
+-QT_END_NAMESPACE
+-typedef QPainter PlatformGraphicsContext;
+-#elif PLATFORM(WX)
+-class wxGCDC;
+-class wxWindowDC;
+-
+-// wxGraphicsContext allows us to support Path, etc. 
+-// but on some platforms, e.g. Linux, it requires fairly 
+-// new software.
+-#if USE(WXGC)
+-// On OS X, wxGCDC is just a typedef for wxDC, so use wxDC explicitly to make
+-// the linker happy.
+-#ifdef __APPLE__
+-    class wxDC;
+-    typedef wxDC PlatformGraphicsContext;
+-#else
+-    typedef wxGCDC PlatformGraphicsContext;
+-#endif
+-#else
+-    typedef wxWindowDC PlatformGraphicsContext;
+-#endif
+-#else
+-typedef void PlatformGraphicsContext;
+-#endif
+-
+-#if PLATFORM(GTK)
+-typedef struct _GdkDrawable GdkDrawable;
+-typedef struct _GdkEventExpose GdkEventExpose;
+-#endif
+-
+-#if PLATFORM(WIN)
+-typedef struct HDC__* HDC;
+-#endif
+-
+-namespace WebCore {
+-
+-    const int cMisspellingLineThickness = 3;
+-    const int cMisspellingLinePatternWidth = 4;
+-    const int cMisspellingLinePatternGapWidth = 1;
+-
+-    class AffineTransform;
+-    //class Font;
+-    class Generator;
+-    class GraphicsContextPrivate;
+-    class GraphicsContextPlatformPrivate;
+-    //class ImageBuffer;
+-    //class KURL;
+-    class Path;
+-    //class TextRun;
+-
+-    // These bits can be ORed together for a total of 8 possible text drawing modes.
+-    const int cTextInvisible = 0;
+-    const int cTextFill = 1;
+-    const int cTextStroke = 2;
+-    const int cTextClip = 4;
+-    
+-    enum StrokeStyle {
+-        NoStroke,
+-        SolidStroke,
+-        DottedStroke,
+-        DashedStroke
+-    };
+-
+-    class GraphicsContext : Noncopyable {
+-    public:
+-        GraphicsContext(PlatformGraphicsContext*);
+-        ~GraphicsContext();
+-       
+-        PlatformGraphicsContext* platformContext() const;
+-
+-        /*const Font& font() const;
+-        void setFont(const Font&);*/
+-        
+-        /*float strokeThickness() const;
+-        void setStrokeThickness(float);
+-        StrokeStyle strokeStyle() const;
+-        void setStrokeStyle(const StrokeStyle& style);
+-        Color strokeColor() const;
+-        void setStrokeColor(const Color&);
+-
+-        Color fillColor() const;
+-        void setFillColor(const Color&);*/
+-        
+-        void save();
+-        void restore();
+-        
+-        // These draw methods will do both stroking and filling.
+-        void drawRect(const IntRect&);
+-        void drawLine(const IntPoint&, const IntPoint&);
+-        void drawEllipse(const IntRect&);
+-        void drawConvexPolygon(size_t numPoints, const FloatPoint*, bool shouldAntialias = false);
+-
+-        // Arc drawing (used by border-radius in CSS) just supports stroking at the moment.
+-        void strokeArc(const IntRect&, int startAngle, int angleSpan);
+-        
+-        /*void fillRect(const IntRect&, const Color&);
+-        void fillRect(const FloatRect&, const Color&);
+-        void fillRect(const FloatRect&, Generator&);
+-        void fillRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color&);
+-        void clearRect(const FloatRect&);
+-        void strokeRect(const FloatRect&, float lineWidth);*/
+-
+-        /*void drawImage(Image*, const IntPoint&, CompositeOperator = CompositeSourceOver);
+-        void drawImage(Image*, const IntRect&, CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);
+-        void drawImage(Image*, const IntPoint& destPoint, const IntRect& srcRect, CompositeOperator = CompositeSourceOver);
+-        void drawImage(Image*, const IntRect& destRect, const IntRect& srcRect, CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);
+-        void drawImage(Image*, const FloatRect& destRect, const FloatRect& srcRect = FloatRect(0, 0, -1, -1),
+-                       CompositeOperator = CompositeSourceOver, bool useLowQualityScale = false);
+-        void drawTiledImage(Image*, const IntRect& destRect, const IntPoint& srcPoint, const IntSize& tileSize,
+-                       CompositeOperator = CompositeSourceOver);
+-        void drawTiledImage(Image*, const IntRect& destRect, const IntRect& srcRect, 
+-                            Image::TileRule hRule = Image::StretchTile, Image::TileRule vRule = Image::StretchTile,
+-                            CompositeOperator = CompositeSourceOver);*/
+-
+-/*#if PLATFORM(CG)
+-        void setUseLowQualityImageInterpolation(bool = true);
+-        bool useLowQualityImageInterpolation() const;
+-#else
+-        void setUseLowQualityImageInterpolation(bool = true) {}
+-        bool useLowQualityImageInterpolation() const { return false; }
+-#endif*/
+-
+-        void clip(const FloatRect&);
+-        void addRoundedRectClip(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight);
+-        void addInnerRoundedRectClip(const IntRect&, int thickness);
+-        void clipOut(const IntRect&);
+-        void clipOutEllipseInRect(const IntRect&);
+-        /*void clipOutRoundedRect(const IntRect&, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight);
+-        void clipToImageBuffer(const FloatRect&, const ImageBuffer*);*/
+-
+-        /*int textDrawingMode();
+-        void setTextDrawingMode(int);
+-
+-        void drawText(const TextRun&, const IntPoint&, int from = 0, int to = -1);
+-        void drawBidiText(const TextRun&, const IntPoint&);
+-        void drawHighlightForText(const TextRun&, const IntPoint&, int h, const Color& backgroundColor, int from = 0, int to = -1);*/
+-
+-        FloatRect roundToDevicePixels(const FloatRect&);
+-        
+-        void drawLineForText(const IntPoint&, int width, bool printing);
+-        void drawLineForMisspellingOrBadGrammar(const IntPoint&, int width, bool grammar);
+-        
+-        bool paintingDisabled() const;
+-        void setPaintingDisabled(bool);
+-        
+-        bool updatingControlTints() const;
+-        void setUpdatingControlTints(bool);
+-
+-        void beginTransparencyLayer(float opacity);
+-        void endTransparencyLayer();
+-
+-        /*void setShadow(const IntSize&, int blur, const Color&);
+-        void getShadow(IntSize&, int&, Color&);
+-        void clearShadow();*/
+-
+-        void initFocusRing(int width, int offset);
+-        void addFocusRingRect(const IntRect&);
+-        //void drawFocusRing(const Color&);
+-        void clearFocusRing();
+-        IntRect focusRingBoundingRect();
+-
+-        /*void setLineCap(LineCap);
+-        void setLineJoin(LineJoin);*/
+-        void setMiterLimit(float);
+-
+-        void setAlpha(float);
+-
+-        //void setCompositeOperation(CompositeOperator);
+-
+-        void beginPath();
+-        void addPath(const Path&);
+-
+-        void clip(const Path&);
+-        void clipOut(const Path&);
+-
+-        void scale(const FloatSize&);
+-        void rotate(float angleInRadians);
+-        void translate(float x, float y);
+-        IntPoint origin();
+-        
+-        /*void setURLForRect(const KURL&, const IntRect&);*/
+-
+-        void concatCTM(const AffineTransform&);
+-        AffineTransform getCTM() const;
+-
+-        void setUseAntialiasing(bool = true);
+-
+-#if PLATFORM(WIN)
+-        GraphicsContext(HDC); // FIXME: To be removed.
+-        bool inTransparencyLayer() const;
+-        HDC getWindowsContext(const IntRect&, bool supportAlphaBlend = true, bool mayCreateBitmap = true); // The passed in rect is used to create a bitmap for compositing inside transparency layers.
+-        void releaseWindowsContext(HDC, const IntRect&, bool supportAlphaBlend = true, bool mayCreateBitmap = true);    // The passed in HDC should be the one handed back by getWindowsContext.
+-
+-        class WindowsBitmap : public Noncopyable {
+-        public:
+-            WindowsBitmap(HDC, IntSize);
+-            ~WindowsBitmap();
+-
+-            HDC hdc() const { return m_hdc; }
+-            UInt8* buffer() const { return m_bitmapBuffer; }
+-            unsigned bufferLength() const { return m_bitmapBufferLength; }
+-            IntSize size() const { return m_size; }
+-            unsigned bytesPerRow() const { return m_bytesPerRow; }
+-
+-        private:
+-            HDC m_hdc;
+-            HBITMAP m_bitmap;
+-            UInt8* m_bitmapBuffer;
+-            unsigned m_bitmapBufferLength;
+-            IntSize m_size;
+-            unsigned m_bytesPerRow;
+-        };
+-
+-        WindowsBitmap* createWindowsBitmap(IntSize);
+-        // The bitmap should be non-premultiplied.
+-        void drawWindowsBitmap(WindowsBitmap*, const IntPoint&);
+-#endif
+-
+-#if PLATFORM(QT)
+-        void setFillRule(WindRule);
+-        PlatformPath* currentPath();
+-#endif
+-
+-#if PLATFORM(GTK)
+-        void setGdkExposeEvent(GdkEventExpose*);
+-        GdkDrawable* gdkDrawable() const;
+-        GdkEventExpose* gdkExposeEvent() const;
+-        IntPoint translatePoint(const IntPoint&) const;
+-#endif
+-
+-    private:
+-        void savePlatformState();
+-        void restorePlatformState();
+-        void setPlatformTextDrawingMode(int);
+-        /*void setPlatformStrokeColor(const Color&);
+-        void setPlatformStrokeStyle(const StrokeStyle&);*/
+-        void setPlatformStrokeThickness(float);
+-        /*void setPlatformFillColor(const Color&);
+-        void setPlatformFont(const Font& font);
+-        void setPlatformShadow(const IntSize&, int blur, const Color&);*/
+-        void clearPlatformShadow();
+-
+-        int focusRingWidth() const;
+-        int focusRingOffset() const;
+-        const Vector<IntRect>& focusRingRects() const;
+-
+-        static GraphicsContextPrivate* createGraphicsContextPrivate();
+-        static void destroyGraphicsContextPrivate(GraphicsContextPrivate*);
+-
+-        GraphicsContextPrivate* m_common;
+-        GraphicsContextPlatformPrivate* m_data; // Deprecated; m_commmon can just be downcasted. To be removed.
+-    };
+-
+-} // namespace WebCore
+-
+-#endif // GraphicsContext_h
 Index: khtml/platform/graphics/FontDescription.h
 ===================================================================
---- khtml/platform/graphics/FontDescription.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/FontDescription.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/FontDescription.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FontDescription.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,136 +0,0 @@
 -/*
 - * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
@@ -934,8 +1464,8 @@ Index: khtml/platform/graphics/FontDescription.h
 -#endif
 Index: khtml/platform/graphics/Image.cpp
 ===================================================================
---- khtml/platform/graphics/Image.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/Image.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/Image.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/Image.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,191 +0,0 @@
 -/*
 - * Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
@@ -1130,8 +1660,8 @@ Index: khtml/platform/graphics/Image.cpp
 -}
 Index: khtml/platform/graphics/GraphicsContext.cpp
 ===================================================================
---- khtml/platform/graphics/GraphicsContext.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/GraphicsContext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/GraphicsContext.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/GraphicsContext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,448 +0,0 @@
 -/*
 - * Copyright (C) 2003, 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
@@ -1583,8 +2113,8 @@ Index: khtml/platform/graphics/GraphicsContext.cpp
 -}
 Index: khtml/platform/graphics/GraphicsContextPrivate.h
 ===================================================================
---- khtml/platform/graphics/GraphicsContextPrivate.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/GraphicsContextPrivate.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/GraphicsContextPrivate.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/GraphicsContextPrivate.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,76 +0,0 @@
 -/*
 - * Copyright (C) 2003, 2004, 2005, 2006 Apple Computer, Inc.  All rights reserved.
@@ -1664,8 +2194,8 @@ Index: khtml/platform/graphics/GraphicsContextPrivate.h
 -#endif // GraphicsContextPrivate_h
 Index: khtml/platform/graphics/FontDescription.cpp
 ===================================================================
---- khtml/platform/graphics/FontDescription.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/FontDescription.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/FontDescription.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FontDescription.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,92 +0,0 @@
 -/*
 - * Copyright (C) 2007 Nicholas Shanks <contact@nickshanks.com>
@@ -1761,8 +2291,8 @@ Index: khtml/platform/graphics/FontDescription.cpp
 -} // namespace WebCore
 Index: khtml/platform/graphics/Font.h
 ===================================================================
---- khtml/platform/graphics/Font.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/Font.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/Font.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/Font.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,299 +0,0 @@
 -/*
 - * This file is part of the html renderer for KDE.
@@ -2065,8 +2595,8 @@ Index: khtml/platform/graphics/Font.h
 -#endif
 Index: khtml/platform/graphics/FontFamily.h
 ===================================================================
---- khtml/platform/graphics/FontFamily.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/FontFamily.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/FontFamily.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FontFamily.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,61 +0,0 @@
 -/*
 - * Copyright (C) 2003, 2006 Apple Computer, Inc.  All rights reserved.
@@ -2131,8 +2661,8 @@ Index: khtml/platform/graphics/FontFamily.h
 -#endif
 Index: khtml/platform/graphics/FontRenderingMode.h
 ===================================================================
---- khtml/platform/graphics/FontRenderingMode.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/FontRenderingMode.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/FontRenderingMode.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FontRenderingMode.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,37 +0,0 @@
 -/*
 - * Copyright (C) 2008 Apple Inc. All rights reserved.
@@ -2173,8 +2703,8 @@ Index: khtml/platform/graphics/FontRenderingMode.h
 -#endif // FontRenderingMode_h
 Index: khtml/platform/graphics/Image.h
 ===================================================================
---- khtml/platform/graphics/Image.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/Image.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/Image.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/Image.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,169 +0,0 @@
 -/*
 - * Copyright (C) 2006 Samuel Weinig (sam.weinig@gmail.com)
@@ -2347,8 +2877,8 @@ Index: khtml/platform/graphics/Image.h
 -#endif
 Index: khtml/platform/graphics/Generator.h
 ===================================================================
---- khtml/platform/graphics/Generator.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/graphics/Generator.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/graphics/Generator.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/Generator.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,45 +0,0 @@
 -/*
 - * Copyright (C) 2008 Apple Computer, Inc.  All rights reserved.
@@ -2395,10 +2925,940 @@ Index: khtml/platform/graphics/Generator.h
 -} //namespace
 -
 -#endif
+Index: khtml/platform/graphics/qt/GraphicsContextQt.cpp
+===================================================================
+--- khtml/platform/graphics/qt/GraphicsContextQt.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/qt/GraphicsContextQt.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -1,913 +0,0 @@
+-/*
+- * Copyright (C) 2006 Dirk Mueller <mueller@kde.org>
+- * Copyright (C) 2006 Zack Rusin <zack@kde.org>
+- * Copyright (C) 2006 George Staikos <staikos@kde.org>
+- * Copyright (C) 2006 Simon Hausmann <hausmann@kde.org>
+- * Copyright (C) 2006 Allan Sandfeld Jensen <sandfeld@kde.org>
+- * Copyright (C) 2006 Nikolas Zimmermann <zimmermann@kde.org>
+- *
+- * All rights reserved.
+- *
+- * Redistribution and use in source and binary forms, with or without
+- * modification, are permitted provided that the following conditions
+- * are met:
+- * 1. Redistributions of source code must retain the above copyright
+- *    notice, this list of conditions and the following disclaimer.
+- * 2. Redistributions in binary form must reproduce the above copyright
+- *    notice, this list of conditions and the following disclaimer in the
+- *    documentation and/or other materials provided with the distribution.
+- *
+- * THIS SOFTWARE IS PROVIDED BY APPLE COMPUTER, INC. ``AS IS'' AND ANY
+- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE COMPUTER, INC. OR
+- * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+- * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+- * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+- * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+- */
+-
+-#include "config.h"
+-#include "wtf/Platform.h"
+-
+-#include "AffineTransform.h"
+-#include "Path.h"
+-//#include "Color.h"
+-#include "GraphicsContext.h"
+-//#include "ImageBuffer.h"
+-//#include "Font.h"
+-//#include "Pen.h"
+-//#include "NotImplemented.h"
+-
+-#include <QStack>
+-#include <QPainter>
+-#include <QPolygonF>
+-#include <QPainterPath>
+-#include <QPaintDevice>
+-#include <QPixmap>
+-#include <QDebug>
+-
+-#ifndef M_PI
+-#define M_PI 3.14159265358979323846
+-#endif
+-
+-namespace WebCore {
+-
+-/*static inline QPainter::CompositionMode toQtCompositionMode(CompositeOperator op)
+-{
+-    switch (op) {
+-        case CompositeClear:
+-            return QPainter::CompositionMode_Clear;
+-        case CompositeCopy:
+-            return QPainter::CompositionMode_Source;
+-        case CompositeSourceOver:
+-            return QPainter::CompositionMode_SourceOver;
+-        case CompositeSourceIn:
+-            return QPainter::CompositionMode_SourceIn;
+-        case CompositeSourceOut:
+-            return QPainter::CompositionMode_SourceOut;
+-        case CompositeSourceAtop:
+-            return QPainter::CompositionMode_SourceAtop;
+-        case CompositeDestinationOver:
+-            return QPainter::CompositionMode_DestinationOver;
+-        case CompositeDestinationIn:
+-            return QPainter::CompositionMode_DestinationIn;
+-        case CompositeDestinationOut:
+-            return QPainter::CompositionMode_DestinationOut;
+-        case CompositeDestinationAtop:
+-            return QPainter::CompositionMode_DestinationAtop;
+-        case CompositeXOR:
+-            return QPainter::CompositionMode_Xor;
+-        case CompositePlusDarker:
+-            return QPainter::CompositionMode_SourceOver;
+-        case CompositeHighlight:
+-            return QPainter::CompositionMode_SourceOver;
+-        case CompositePlusLighter:
+-            return QPainter::CompositionMode_SourceOver;
+-    }
+-
+-    return QPainter::CompositionMode_SourceOver;
+-}*/
+-
+-/*static inline Qt::PenCapStyle toQtLineCap(LineCap lc)
+-{
+-    switch (lc) {
+-        case ButtCap:
+-            return Qt::FlatCap;
+-        case RoundCap:
+-            return Qt::RoundCap;
+-        case SquareCap:
+-            return Qt::SquareCap;
+-    }
+-
+-    return Qt::FlatCap;
+-}
+-
+-static inline Qt::PenJoinStyle toQtLineJoin(LineJoin lj)
+-{
+-    switch (lj) {
+-        case MiterJoin:
+-            return Qt::SvgMiterJoin;
+-        case RoundJoin:
+-            return Qt::RoundJoin;
+-        case BevelJoin:
+-            return Qt::BevelJoin;
+-    }
+-
+-    return Qt::MiterJoin;
+-}
+-
+-static Qt::PenStyle toQPenStyle(StrokeStyle style)
+-{
+-    switch (style) {
+-    case NoStroke:
+-        return Qt::NoPen;
+-        break;
+-    case SolidStroke:
+-        return Qt::SolidLine;
+-        break;
+-    case DottedStroke:
+-        return Qt::DotLine;
+-        break;
+-    case DashedStroke:
+-        return Qt::DashLine;
+-        break;
+-    }
+-    qWarning("couldn't recognize the pen style");
+-    return Qt::NoPen;
+-}*/
+-
+-struct TransparencyLayer
+-{
+-    TransparencyLayer(const QPainter* p, const QRect &rect)
+-        : pixmap(rect.width(), rect.height())
+-    {
+-        offset = rect.topLeft();
+-        pixmap.fill(Qt::transparent);
+-        painter.begin(&pixmap);
+-        painter.translate(-offset);
+-        painter.setPen(p->pen());
+-        painter.setBrush(p->brush());
+-        painter.setTransform(p->transform(), true);
+-        painter.setOpacity(p->opacity());
+-        painter.setFont(p->font());
+-        painter.setCompositionMode(p->compositionMode());
+-        painter.setClipPath(p->clipPath());
+-    }
+-
+-    TransparencyLayer()
+-    {
+-    }
+-
+-    QPixmap pixmap;
+-    QPoint offset;
+-    QPainter painter;
+-    qreal opacity;
+-private:
+-    TransparencyLayer(const TransparencyLayer &) {}
+-    TransparencyLayer & operator=(const TransparencyLayer &) { return *this; }
+-};
+-
+-struct TextShadow
+-{
+-    TextShadow()
+-        : x(0)
+-        , y(0)
+-        , blur(0)
+-    {
+-    }
+-
+-    bool isNull() { return !x && !y && !blur; }
+-
+-    int x;
+-    int y;
+-    int blur;
+-
+-    //Color color;
+-};
+-
+-class GraphicsContextPlatformPrivate
+-{
+-public:
+-    GraphicsContextPlatformPrivate(QPainter* painter);
+-    ~GraphicsContextPlatformPrivate();
+-
+-    inline QPainter* p()
+-    {
+-        if (layers.isEmpty()) {
+-            if (redirect)
+-                return redirect;
+-
+-            return painter;
+-        } else
+-            return &layers.top()->painter;
+-    }
+-
+-    QPaintDevice* device;
+-
+-    QStack<TransparencyLayer *> layers;
+-    QPainter* redirect;
+-
+-    TextShadow shadow;
+-
+-    // Only used by SVG for now.
+-    QPainterPath currentPath;
+-
+-private:
+-    QPainter* painter;
+-};
+-
+-
+-GraphicsContextPlatformPrivate::GraphicsContextPlatformPrivate(QPainter* p)
+-{
+-    painter = p;
+-    device = painter ? painter->device() : 0;
+-    redirect = 0;
+-
+-    // FIXME: Maybe only enable in SVG mode?
+-    if (painter)
+-        painter->setRenderHint(QPainter::Antialiasing);
+-}
+-
+-GraphicsContextPlatformPrivate::~GraphicsContextPlatformPrivate()
+-{
+-}
+-
+-GraphicsContext::GraphicsContext(PlatformGraphicsContext* context)
+-    : m_common(createGraphicsContextPrivate())
+-    , m_data(new GraphicsContextPlatformPrivate(context))
+-{
+-    setPaintingDisabled(!context);
+-    if (context) {
+-        // Make sure the context starts in sync with our state.
+-        /*setPlatformFillColor(fillColor());
+-        setPlatformStrokeColor(strokeColor());*/
+-    }
+-}
+-
+-GraphicsContext::~GraphicsContext()
+-{
+-    while(!m_data->layers.isEmpty())
+-        endTransparencyLayer();
+-
+-    destroyGraphicsContextPrivate(m_common);
+-    delete m_data;
+-}
+-
+-PlatformGraphicsContext* GraphicsContext::platformContext() const
+-{
+-    return m_data->p();
+-}
+-
+-AffineTransform GraphicsContext::getCTM() const
+-{
+-    return platformContext()->combinedMatrix();
+-}
+-
+-void GraphicsContext::savePlatformState()
+-{
+-    m_data->p()->save();
+-}
+-
+-void GraphicsContext::restorePlatformState()
+-{
+-    m_data->p()->restore();
+-}
+-
+-/* FIXME: DISABLED WHILE MERGING BACK FROM UNITY
+-void GraphicsContext::drawTextShadow(const TextRun& run, const IntPoint& point, const FontStyle& style)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    if (m_data->shadow.isNull())
+-        return;
+-
+-    TextShadow* shadow = &m_data->shadow;
+-
+-    if (shadow->blur <= 0) {
+-        Pen p = pen();
+-        setPen(shadow->color);
+-        font().drawText(this, run, style, IntPoint(point.x() + shadow->x, point.y() + shadow->y));
+-        setPen(p);
+-    } else {
+-        const int thickness = shadow->blur;
+-        // FIXME: OPTIMIZE: limit the area to only the actually painted area + 2*thickness
+-        const int w = m_data->p()->device()->width();
+-        const int h = m_data->p()->device()->height();
+-        const QRgb color = qRgb(255, 255, 255);
+-        const QRgb bgColor = qRgb(0, 0, 0);
+-        QImage image(QSize(w, h), QImage::Format_ARGB32);
+-        image.fill(bgColor);
+-        QPainter p;
+-
+-        Pen curPen = pen();
+-        p.begin(&image);
+-        setPen(color);
+-        m_data->redirect = &p;
+-        font().drawText(this, run, style, IntPoint(point.x() + shadow->x, point.y() + shadow->y));
+-        m_data->redirect = 0;
+-        p.end();
+-        setPen(curPen);
+-
+-        int md = thickness * thickness; // max-dist^2
+-
+-        // blur map/precalculated shadow-decay
+-        float* bmap = (float*) alloca(sizeof(float) * (md + 1));
+-        for (int n = 0; n <= md; n++) {
+-            float f;
+-            f = n / (float) (md + 1);
+-            f = 1.0 - f * f;
+-            bmap[n] = f;
+-        }
+-
+-        float factor = 0.0; // maximal potential opacity-sum
+-        for (int n = -thickness; n <= thickness; n++) {
+-            for (int m = -thickness; m <= thickness; m++) {
+-                int d = n * n + m * m;
+-                if (d <= md)
+-                    factor += bmap[d];
+-            }
+-        }
+-
+-        // alpha map
+-        float* amap = (float*) alloca(sizeof(float) * (h * w));
+-        memset(amap, 0, h * w * (sizeof(float)));
+-
+-        for (int j = thickness; j<h-thickness; j++) {
+-            for (int i = thickness; i<w-thickness; i++) {
+-                QRgb col = image.pixel(i,j);
+-                if (col == bgColor)
+-                    continue;
+-
+-                float g = qAlpha(col);
+-                g = g / 255;
+-
+-                for (int n = -thickness; n <= thickness; n++) {
+-                    for (int m = -thickness; m <= thickness; m++) {
+-                        int d = n * n + m * m;
+-                        if (d > md)
+-                            continue;
+-
+-                        float f = bmap[d];
+-                        amap[(i + m) + (j + n) * w] += (g * f);
+-                    }
+-                }
+-            }
+-        }
+-
+-        QImage res(QSize(w,h),QImage::Format_ARGB32);
+-        int r = shadow->color.red();
+-        int g = shadow->color.green();
+-        int b = shadow->color.blue();
+-        int a1 = shadow->color.alpha();
+-
+-        // arbitratry factor adjustment to make shadows more solid.
+-        factor = 1.333 / factor;
+-
+-        for (int j = 0; j < h; j++) {
+-            for (int i = 0; i < w; i++) {
+-                int a = (int) (amap[i + j * w] * factor * a1);
+-                if (a > 255)
+-                    a = 255;
+-
+-                res.setPixel(i,j, qRgba(r, g, b, a));
+-            }
+-        }
+-
+-        m_data->p()->drawImage(0, 0, res, 0, 0, -1, -1, Qt::DiffuseAlphaDither | Qt::ColorOnly | Qt::PreferDither);
+-    }
+-}
+-*/
+-
+-// Draws a filled rectangle with a stroked border.
+-void GraphicsContext::drawRect(const IntRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->drawRect(rect);
+-}
+-
+-// FIXME: Now that this is refactored, it should be shared by all contexts.
+-static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth,
+-                                        const StrokeStyle& penStyle)
+-{
+-    // For odd widths, we add in 0.5 to the appropriate x/y so that the float arithmetic
+-    // works out.  For example, with a border width of 3, KHTML will pass us (y1+y2)/2, e.g.,
+-    // (50+53)/2 = 103/2 = 51 when we want 51.5.  It is always true that an even width gave
+-    // us a perfect position, but an odd width gave us a position that is off by exactly 0.5.
+-    if (penStyle == DottedStroke || penStyle == DashedStroke) {
+-        if (p1.x() == p2.x()) {
+-            p1.setY(p1.y() + strokeWidth);
+-            p2.setY(p2.y() - strokeWidth);
+-        } else {
+-            p1.setX(p1.x() + strokeWidth);
+-            p2.setX(p2.x() - strokeWidth);
+-        }
+-    }
+-
+-    if (((int) strokeWidth) % 2) {
+-        if (p1.x() == p2.x()) {
+-            // We're a vertical line.  Adjust our x.
+-            p1.setX(p1.x() + 0.5);
+-            p2.setX(p2.x() + 0.5);
+-        } else {
+-            // We're a horizontal line. Adjust our y.
+-            p1.setY(p1.y() + 0.5);
+-            p2.setY(p2.y() + 0.5);
+-        }
+-    }
+-}
+-
+-// This is only used to draw borders.
+-void GraphicsContext::drawLine(const IntPoint& point1, const IntPoint& point2)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    FloatPoint p1 = point1;
+-    FloatPoint p2 = point2;
+-
+-    /*adjustLineToPixelBoundaries(p1, p2, strokeThickness(), strokeStyle());*/
+-    m_data->p()->drawLine(p1, p2);
+-}
+-
+-// This method is only used to draw the little circles used in lists.
+-void GraphicsContext::drawEllipse(const IntRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->drawEllipse(rect);
+-}
+-
+-void GraphicsContext::strokeArc(const IntRect& rect, int startAngle, int angleSpan)
+-{
+-    /*if (paintingDisabled() || strokeStyle() == NoStroke || strokeThickness() <= 0.0f || !strokeColor().alpha())
+-        return;*/
+-
+-    m_data->p()->drawArc(rect, startAngle * 16, angleSpan * 16);
+-}
+-
+-void GraphicsContext::drawConvexPolygon(size_t npoints, const FloatPoint* points, bool shouldAntialias)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    if (npoints <= 1)
+-        return;
+-
+-    QPolygonF polygon(npoints);
+-
+-    for (size_t i = 0; i < npoints; i++)
+-        polygon[i] = points[i];
+-
+-    QPainter *p = m_data->p();
+-    p->save();
+-    p->setRenderHint(QPainter::Antialiasing, shouldAntialias);
+-    p->drawConvexPolygon(polygon);
+-    p->restore();
+-}
+-
+-/*void GraphicsContext::fillRect(const IntRect& rect, const Color& c)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->fillRect(rect, QColor(c));
+-}
+-
+-void GraphicsContext::fillRect(const FloatRect& rect, const Color& c)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->fillRect(rect, QColor(c));
+-}
+-
+-void GraphicsContext::fillRoundedRect(const IntRect& rect, const IntSize& topLeft, const IntSize& topRight, const IntSize& bottomLeft, const IntSize& bottomRight, const Color& color)
+-{
+-    if (paintingDisabled() || !color.alpha())
+-        return;
+-
+-    Path path = Path::createRoundedRectangle(rect, topLeft, topRight, bottomLeft, bottomRight);
+-    m_data->p()->fillPath(*path.platformPath(), QColor(color));
+-}*/
+-
+-void GraphicsContext::beginPath()
+-{
+-    m_data->currentPath = QPainterPath();
+-}
+-
+-void GraphicsContext::addPath(const Path& path)
+-{
+-    m_data->currentPath = *(path.platformPath());
+-}
+-
+-void GraphicsContext::setFillRule(WindRule rule)
+-{
+-    m_data->currentPath.setFillRule(rule == RULE_EVENODD ? Qt::OddEvenFill : Qt::WindingFill);
+-}
+-
+-PlatformPath* GraphicsContext::currentPath()
+-{
+-    return &m_data->currentPath;
+-}
+-
+-void GraphicsContext::clip(const FloatRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    if (p->clipRegion().isEmpty())
+-        p->setClipRect(rect);
+-    else p->setClipRect(rect, Qt::IntersectClip);
+-}
+-
+-/**
+- * Focus ring handling is not handled here. Qt style in 
+- * RenderTheme handles drawing focus on widgets which 
+- * need it.
+- */
+-void setFocusRingColorChangeFunction(void (*)()) { }
+-/*Color focusRingColor() { return Color(0, 0, 0); }
+-void GraphicsContext::drawFocusRing(const Color& color)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    const Vector<IntRect>& rects = focusRingRects();
+-    unsigned rectCount = rects.size();
+-
+-    if (rects.size() == 0)
+-        return;
+-
+-    QPainter *p = m_data->p();
+-
+-    const QPen oldPen = p->pen();
+-    const QBrush oldBrush = p->brush();
+-
+-    QPen nPen = p->pen();
+-    nPen.setColor(color);
+-    p->setBrush(Qt::NoBrush);
+-    nPen.setStyle(Qt::DotLine);
+-    p->setPen(nPen);
+-#if 0
+-    // FIXME How do we do a bounding outline with Qt?
+-    QPainterPath path;
+-    for (int i = 0; i < rectCount; ++i)
+-        path.addRect(QRectF(rects[i]));
+-    QPainterPathStroker stroker;
+-    QPainterPath newPath = stroker.createStroke(path);
+-    p->strokePath(newPath, nPen);
+-#else
+-    for (int i = 0; i < rectCount; ++i)
+-        p->drawRect(QRectF(rects[i]));
+-#endif
+-    p->setPen(oldPen);
+-    p->setBrush(oldBrush);
+-}*/
+-
+-void GraphicsContext::drawLineForText(const IntPoint& origin, int width, bool printing)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    IntPoint endPoint = origin + IntSize(width, 0);
+-    drawLine(origin, endPoint);
+-}
+-
+-void GraphicsContext::drawLineForMisspellingOrBadGrammar(const IntPoint&,
+-                                                         int width, bool grammar)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    //notImplemented();
+-}
+-
+-FloatRect GraphicsContext::roundToDevicePixels(const FloatRect& frect)
+-{
+-    QRectF rect(frect);
+-    rect = m_data->p()->deviceMatrix().mapRect(rect);
+-
+-    QRect result = rect.toRect(); //round it
+-    return FloatRect(QRectF(result));
+-}
+-
+-/*void GraphicsContext::setPlatformShadow(const IntSize& pos, int blur, const Color &color)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->shadow.x = pos.width();
+-    m_data->shadow.y = pos.height();
+-    m_data->shadow.blur = blur;
+-    m_data->shadow.color = color;
+-}*/
+-
+-void GraphicsContext::clearPlatformShadow()
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->shadow = TextShadow();
+-}
+-
+-void GraphicsContext::beginTransparencyLayer(float opacity)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    int x, y, w, h;
+-    x = y = 0;
+-    w = m_data->device->width();
+-    h = m_data->device->height();
+-
+-    QPainter *p = m_data->p();
+-    QRectF clip = p->clipPath().boundingRect();
+-    bool ok;
+-    QTransform transform = p->transform().inverted(&ok);
+-    if (ok) {
+-        QRectF deviceClip = transform.mapRect(clip);
+-        x = int(qBound(qreal(0), deviceClip.x(), (qreal)w));
+-        y = int(qBound(qreal(0), deviceClip.y(), (qreal)h));
+-        w = int(qBound(qreal(0), deviceClip.width(), (qreal)w) + 2);
+-        h = int(qBound(qreal(0), deviceClip.height(), (qreal)h) + 2);
+-    }
+-    TransparencyLayer * layer = new TransparencyLayer(m_data->p(), QRect(x, y, w, h));
+-
+-    layer->opacity = opacity;
+-    m_data->layers.push(layer);
+-}
+-
+-void GraphicsContext::endTransparencyLayer()
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    TransparencyLayer *layer = m_data->layers.pop();
+-    layer->painter.end();
+-
+-    QPainter *p = m_data->p();
+-    p->save();
+-    p->resetTransform();
+-    p->setOpacity(layer->opacity);
+-    p->drawPixmap(layer->offset, layer->pixmap);
+-    p->restore();
+-
+-    delete layer;
+-}
+-
+-/*void GraphicsContext::clearRect(const FloatRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QPainter::CompositionMode currentCompositionMode = p->compositionMode();
+-    p->setCompositionMode(QPainter::CompositionMode_Source);
+-    p->eraseRect(rect);
+-    p->setCompositionMode(currentCompositionMode);
+-}
+-
+-void GraphicsContext::strokeRect(const FloatRect& rect, float width)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QPainterPath path;
+-    path.addRect(rect);
+-    QPen nPen = p->pen();
+-    nPen.setWidthF(width);
+-    p->strokePath(path, nPen);
+-}
+-
+-void GraphicsContext::setLineCap(LineCap lc)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QPen nPen = p->pen();
+-    nPen.setCapStyle(toQtLineCap(lc));
+-    p->setPen(nPen);
+-}
+-
+-void GraphicsContext::setLineJoin(LineJoin lj)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QPen nPen = p->pen();
+-    nPen.setJoinStyle(toQtLineJoin(lj));
+-    p->setPen(nPen);
+-}*/
+-
+-void GraphicsContext::setMiterLimit(float limit)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QPen nPen = p->pen();
+-    nPen.setMiterLimit(limit);
+-    p->setPen(nPen);
+-}
+-
+-void GraphicsContext::setAlpha(float opacity)
+-{
+-    if (paintingDisabled())
+-        return;
+-    QPainter *p = m_data->p();
+-    p->setOpacity(opacity);
+-}
+-
+-/*void GraphicsContext::setCompositeOperation(CompositeOperator op)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->setCompositionMode(toQtCompositionMode(op));
+-}*/
+-
+-void GraphicsContext::clip(const Path& path)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->setClipPath(*path.platformPath(), Qt::IntersectClip);
+-}
+-
+-void GraphicsContext::clipOut(const Path& path)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    QPainter *p = m_data->p();
+-    QRectF clipBounds = p->clipPath().boundingRect();
+-    QPainterPath clippedOut = *path.platformPath();
+-    QPainterPath newClip;
+-    newClip.setFillRule(Qt::OddEvenFill);
+-    newClip.addRect(clipBounds);
+-    newClip.addPath(clippedOut);
+-
+-    p->setClipPath(newClip, Qt::IntersectClip);
+-}
+-
+-void GraphicsContext::translate(float x, float y)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->translate(x, y);
+-}
+-
+-IntPoint GraphicsContext::origin()
+-{
+-    if (paintingDisabled())
+-        return IntPoint();
+-    const QTransform &transform = m_data->p()->transform();
+-    return IntPoint(qRound(transform.dx()), qRound(transform.dy()));
+-}
+-
+-void GraphicsContext::rotate(float radians)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->rotate(radians);
+-}
+-
+-void GraphicsContext::scale(const FloatSize& s)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->scale(s.width(), s.height());
+-}
+-
+-void GraphicsContext::clipOut(const IntRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-        
+-    QPainter *p = m_data->p();
+-    QRectF clipBounds = p->clipPath().boundingRect();
+-    QPainterPath newClip;
+-    newClip.setFillRule(Qt::OddEvenFill);
+-    newClip.addRect(clipBounds);
+-    newClip.addRect(QRect(rect));
+-
+-    p->setClipPath(newClip, Qt::IntersectClip);
+-}
+-
+-void GraphicsContext::clipOutEllipseInRect(const IntRect& rect)
+-{
+-    if (paintingDisabled())
+-        return;
+-    
+-    QPainter *p = m_data->p();
+-    QRectF clipBounds = p->clipPath().boundingRect();
+-    QPainterPath newClip;
+-    newClip.setFillRule(Qt::OddEvenFill);
+-    newClip.addRect(clipBounds);
+-    newClip.addEllipse(QRect(rect));
+-
+-    p->setClipPath(newClip, Qt::IntersectClip);
+-}
+-
+-void GraphicsContext::addInnerRoundedRectClip(const IntRect& rect,
+-                                              int thickness)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    clip(rect);
+-    QPainterPath path;
+-
+-    // Add outer ellipse
+-    path.addEllipse(QRectF(rect.x(), rect.y(), rect.width(), rect.height()));
+-
+-    // Add inner ellipse.
+-    path.addEllipse(QRectF(rect.x() + thickness, rect.y() + thickness,
+-                           rect.width() - (thickness * 2), rect.height() - (thickness * 2)));
+-
+-    path.setFillRule(Qt::OddEvenFill);
+-    m_data->p()->setClipPath(path, Qt::IntersectClip);
+-}
+-
+-void GraphicsContext::concatCTM(const AffineTransform& transform)
+-{
+-    if (paintingDisabled())
+-        return;
+-
+-    m_data->p()->setMatrix(transform, true);
+-}
+-
+-/*void GraphicsContext::setURLForRect(const KURL& link, const IntRect& destRect)
+-{
+-    //notImplemented();
+-}
+-
+-void GraphicsContext::setPlatformFont(const Font& aFont)
+-{
+-    if (paintingDisabled())
+-        return;
+-    m_data->p()->setFont(aFont.font());
+-}
+-
+-void GraphicsContext::setPlatformStrokeColor(const Color& color)
+-{
+-    if (paintingDisabled())
+-        return;
+-    QPainter *p = m_data->p();
+-    QPen newPen(p->pen());
+-    newPen.setColor(color);
+-    p->setPen(newPen);
+-}
+-
+-void GraphicsContext::setPlatformStrokeStyle(const StrokeStyle& strokeStyle)
+-{   
+-    if (paintingDisabled())
+-        return;
+-    QPainter *p = m_data->p();
+-    QPen newPen(p->pen());
+-    newPen.setStyle(toQPenStyle(strokeStyle));
+-    p->setPen(newPen);
+-}*/
+-
+-void GraphicsContext::setPlatformStrokeThickness(float thickness)
+-{
+-    if (paintingDisabled())
+-        return;
+-    QPainter *p = m_data->p();
+-    QPen newPen(p->pen());
+-    newPen.setWidthF(thickness);
+-    p->setPen(newPen);
+-}
+-
+-/*void GraphicsContext::setPlatformFillColor(const Color& color)
+-{
+-    if (paintingDisabled())
+-        return;
+-    m_data->p()->setBrush(QBrush(color));
+-}*/
+-
+-void GraphicsContext::setUseAntialiasing(bool enable)
+-{
+-    if (paintingDisabled())
+-        return;
+-    m_data->p()->setRenderHint(QPainter::Antialiasing, enable);
+-}
+-
+-}
+-
+-// vim: ts=4 sw=4 et
+Index: khtml/platform/graphics/FloatRect.h
+===================================================================
+--- khtml/platform/graphics/FloatRect.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/graphics/FloatRect.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -28,6 +28,7 @@
+ #define FloatRect_h
+ 
+ #include "FloatPoint.h"
++#include "IntRect.h"
+ 
+ #if PLATFORM(CG)
+ typedef struct CGRect CGRect;
 Index: khtml/platform/qt/MIMETypeRegistryQt.cpp
 ===================================================================
---- khtml/platform/qt/MIMETypeRegistryQt.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/qt/MIMETypeRegistryQt.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/qt/MIMETypeRegistryQt.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/qt/MIMETypeRegistryQt.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,81 +0,0 @@
 -/*
 - * Copyright (C) 2006 Zack Rusin <zack@kde.org>
@@ -2483,8 +3943,8 @@ Index: khtml/platform/qt/MIMETypeRegistryQt.cpp
 -}
 Index: khtml/platform/text/BidiResolver.h
 ===================================================================
---- khtml/platform/text/BidiResolver.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/BidiResolver.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/BidiResolver.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/BidiResolver.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,849 +0,0 @@
 -/*
 - * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
@@ -3337,8 +4797,8 @@ Index: khtml/platform/text/BidiResolver.h
 -#endif // BidiResolver_h
 Index: khtml/platform/text/StringHash.h
 ===================================================================
---- khtml/platform/text/StringHash.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/StringHash.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/StringHash.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/StringHash.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,6 +0,0 @@
 -#ifndef StringHash_h
 -#define StringHash_h
@@ -3348,8 +4808,8 @@ Index: khtml/platform/text/StringHash.h
 -#endif // StringHash_h
 Index: khtml/platform/text/BidiContext.h
 ===================================================================
---- khtml/platform/text/BidiContext.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/BidiContext.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/BidiContext.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/BidiContext.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,97 +0,0 @@
 -/*
 - * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
@@ -3450,8 +4910,8 @@ Index: khtml/platform/text/BidiContext.h
 -#endif // BidiContext_h
 Index: khtml/platform/text/AtomicString.h
 ===================================================================
---- khtml/platform/text/AtomicString.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/AtomicString.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/AtomicString.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/AtomicString.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,12 +0,0 @@
 -#ifndef AtomicString_h
 -#define AtomicString_h
@@ -3467,8 +4927,8 @@ Index: khtml/platform/text/AtomicString.h
 -#endif // AtomicString_h
 Index: khtml/platform/text/TextDirection.h
 ===================================================================
---- khtml/platform/text/TextDirection.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/TextDirection.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/TextDirection.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/TextDirection.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,35 +0,0 @@
 -/*
 - * Copyright (C) 2003, 2006 Apple Computer, Inc.  All rights reserved.
@@ -3507,8 +4967,8 @@ Index: khtml/platform/text/TextDirection.h
 -#endif
 Index: khtml/platform/text/BidiContext.cpp
 ===================================================================
---- khtml/platform/text/BidiContext.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/platform/text/BidiContext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/platform/text/BidiContext.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/platform/text/BidiContext.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1,38 +0,0 @@
 -/*
 - * Copyright (C) 2000 Lars Knoll (knoll@kde.org)
@@ -3550,8 +5010,8 @@ Index: khtml/platform/text/BidiContext.cpp
 -} // namespace WebCore
 Index: khtml/khtml_part.cpp
 ===================================================================
---- khtml/khtml_part.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/khtml_part.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/khtml_part.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -2135,7 +2135,8 @@
        d->m_bFirstData = false;
  
@@ -3578,10 +5038,22 @@ Index: khtml/khtml_part.cpp
          // We recreated the document, so propagate domain again.
          d->propagateInitialDomainTo( p );
          p->write( res.toString() );
+Index: khtml/svg/graphics/qt/SVGPaintServerSolidQt.cpp
+===================================================================
+--- khtml/svg/graphics/qt/SVGPaintServerSolidQt.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/svg/graphics/qt/SVGPaintServerSolidQt.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -25,7 +25,6 @@
+ #if ENABLE(SVG)
+ #include "SVGPaintServerSolid.h"
+ 
+-#include "GraphicsContext.h"
+ #include "RenderPath.h"
+ 
+ #include <QPainter>
 Index: khtml/rendering/render_form.h
 ===================================================================
---- khtml/rendering/render_form.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_form.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_form.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_form.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -287,6 +287,7 @@
  private:
      virtual bool isEditable() const { return true; }
@@ -3592,8 +5064,8 @@ Index: khtml/rendering/render_form.h
  // -------------------------------------------------------------------------
 Index: khtml/rendering/bidi.cpp
 ===================================================================
---- khtml/rendering/bidi.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/bidi.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/bidi.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/bidi.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -297,6 +297,7 @@
                  && next->isInlineFlow()))
              break;
@@ -3638,10 +5110,26 @@ Index: khtml/rendering/bidi.cpp
          }
      }
  
+Index: khtml/rendering/RenderSVGContainer.cpp
+===================================================================
+--- khtml/rendering/RenderSVGContainer.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/RenderSVGContainer.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -402,11 +402,6 @@
+ 	return IntRect();
+ }
+ 
+-void RenderSVGContainer::addFocusRingRects(GraphicsContext* graphicsContext, int tx, int ty)
+-{
+-    //FIXME graphicsContext->addFocusRingRect(m_absoluteBounds);
+-}
+-
+ void RenderSVGContainer::absoluteRects(Vector<IntRect>& rects, int, int, bool)
+ {
+     //FIXME rects.append(absoluteClippedOverflowRect());
 Index: khtml/rendering/render_table.cpp
 ===================================================================
---- khtml/rendering/render_table.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_table.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_table.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_table.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -815,8 +815,11 @@
      return RenderBlock::borderBottom();
  }
@@ -3720,10 +5208,23 @@ Index: khtml/rendering/render_table.cpp
      int effCol = colToEffCol(cell->col()+cell->colSpan());
      if (effCol >= numEffCols())
          return 0;
+Index: khtml/rendering/SVGRenderSupport.cpp
+===================================================================
+--- khtml/rendering/SVGRenderSupport.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/SVGRenderSupport.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -103,7 +103,7 @@
+         svgElement->document()->accessSVGExtensions()->addPendingResource(maskerId, styledElement);*/
+ }
+ 
+-void finishRenderSVGContent(RenderObject* object, RenderObject::PaintInfo& paintInfo, const FloatRect& boundingBox, SVGResourceFilter*& filter, GraphicsContext* savedContext)
++void finishRenderSVGContent(RenderObject* object, RenderObject::PaintInfo& paintInfo, const FloatRect& boundingBox, SVGResourceFilter*& filter, QPainter* savedContext)
+ {
+ /*    ASSERT(object);
+ 
 Index: khtml/rendering/render_flow.cpp
 ===================================================================
---- khtml/rendering/render_flow.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_flow.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_flow.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_flow.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -319,7 +319,8 @@
  void RenderFlow::detach()
  {
@@ -3734,10 +5235,44 @@ Index: khtml/rendering/render_flow.cpp
  
      // Make sure to destroy anonymous children first while they are still connected to the rest of the tree, so that they will
      // properly dirty line boxes that they are removed from.  Effects that do :before/:after only on hover could crash otherwise.
+Index: khtml/rendering/RenderSVGContainer.h
+===================================================================
+--- khtml/rendering/RenderSVGContainer.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/RenderSVGContainer.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -78,7 +78,6 @@
+ 
+     virtual IntRect absoluteClippedOverflowRect();
+     virtual void absoluteRects(Vector<IntRect>& rects, int tx, int ty, bool topLevel = true);
+-    virtual void addFocusRingRects(GraphicsContext*, int tx, int ty);
+ 
+     FloatRect relativeBBox(bool includeStroke = true) const;
+ 
+Index: khtml/rendering/SVGInlineTextBox.cpp
+===================================================================
+--- khtml/rendering/SVGInlineTextBox.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/SVGInlineTextBox.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -450,7 +450,7 @@
+         //paintInfo.context->concatCTM(ctm.inverse());
+ }
+ 
+-void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar, const UChar* chars, int length, GraphicsContext* p, RenderStyle* style, const Font* f)
++void SVGInlineTextBox::paintSelection(int boxStartOffset, const SVGChar& svgChar, const UChar* chars, int length, khtml::RenderObject::PaintInfo& p, RenderStyle* style, const Font* f)
+ {
+     /*if (selectionState() == RenderObject::SelectionNone)
+         return;
+@@ -512,7 +512,7 @@
+     return Path::createRectangle(FloatRect(x + halfThickness, y, width - 2.0f * halfThickness, thickness));
+ }
+ 
+-void SVGInlineTextBox::paintDecoration(ETextDecoration decoration, GraphicsContext* context, int tx, int ty, int width, const SVGChar& svgChar, const SVGTextDecorationInfo& info)
++void SVGInlineTextBox::paintDecoration(ETextDecoration decoration, khtml::RenderObject::PaintInfo& pI, int tx, int ty, int width, const SVGChar& svgChar, const SVGTextDecorationInfo& info)
+ {
+     /*FIXME if (object()->style()->visibility() != VISIBLE)
+         return;
 Index: khtml/rendering/render_table.h
 ===================================================================
---- khtml/rendering/render_table.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_table.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_table.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_table.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -148,13 +148,13 @@
  
      virtual RenderObject* removeChildNode(RenderObject* child);
@@ -3758,10 +5293,23 @@ Index: khtml/rendering/render_table.h
  
      CollapsedBorderValue* currentBorderStyle() { return m_currentBorder; }
  
+Index: khtml/rendering/SVGRenderSupport.h
+===================================================================
+--- khtml/rendering/SVGRenderSupport.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/SVGRenderSupport.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -29,7 +29,7 @@
+ 
+ class SVGResourceFilter;
+ void prepareToRenderSVGContent(RenderObject*, RenderObject::PaintInfo&, const FloatRect& boundingBox, SVGResourceFilter*&, SVGResourceFilter* rootFilter = 0);
+-void finishRenderSVGContent(RenderObject*, RenderObject::PaintInfo&, const FloatRect& boundingBox, SVGResourceFilter*&, GraphicsContext* savedContext);
++void finishRenderSVGContent(RenderObject*, RenderObject::PaintInfo&, const FloatRect& boundingBox, SVGResourceFilter*&, QPainter* savedContext);
+ 
+ // This offers a way to render parts of a WebKit rendering tree into a ImageBuffer.
+ /*class ImageBuffer;
 Index: khtml/rendering/render_form.cpp
 ===================================================================
---- khtml/rendering/render_form.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_form.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_form.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_form.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -405,7 +405,7 @@
      RenderButton::calcMinMaxWidth();
  }
@@ -3830,8 +5378,8 @@ Index: khtml/rendering/render_form.cpp
      widget()->setModified( true );
 Index: khtml/rendering/render_replaced.cpp
 ===================================================================
---- khtml/rendering/render_replaced.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_replaced.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_replaced.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_replaced.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -345,7 +345,7 @@
      if ( m_widget ) {
          resizeWidget( m_width-borderLeft()-borderRight()-paddingLeft()-paddingRight(),
@@ -3908,10 +5456,27 @@ Index: khtml/rendering/render_replaced.cpp
                  target = m_widget;
              view()->setMouseEventsTarget( target );
          } else {
+Index: khtml/rendering/SVGInlineTextBox.h
+===================================================================
+--- khtml/rendering/SVGInlineTextBox.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/SVGInlineTextBox.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -53,10 +53,10 @@
+         void paintCharacters(RenderObject::PaintInfo&, int tx, int ty, const SVGChar&, const UChar* chars, int length, SVGPaintServer*);
+ 
+         // SVGs custom paint selection method
+-        void paintSelection(int boxStartOffset, const SVGChar&, const UChar*, int length, GraphicsContext*, RenderStyle*, const Font*);
++        void paintSelection(int boxStartOffset, const SVGChar&, const UChar*, int length, RenderObject::PaintInfo&, RenderStyle*, const Font*);
+ 
+         // SVGs custom paint decoration method
+-        void paintDecoration(ETextDecoration, GraphicsContext*, int tx, int ty, int width, const SVGChar&, const SVGTextDecorationInfo&);
++        void paintDecoration(ETextDecoration, RenderObject::PaintInfo&, int tx, int ty, int width, const SVGChar&, const SVGTextDecorationInfo&);
+  
+         SVGRootInlineBox* svgRootInlineBox() const;
+ 
 Index: khtml/rendering/render_text.cpp
 ===================================================================
---- khtml/rendering/render_text.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/rendering/render_text.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/rendering/render_text.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/rendering/render_text.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1167,9 +1167,12 @@
  
          // If line-breaks survive to here they are preserved
@@ -3938,10 +5503,34 @@ Index: khtml/rendering/render_text.cpp
                  }
  
                  if(currMaxWidth > m_maxWidth) m_maxWidth = currMaxWidth;
+Index: khtml/compat/RenderObject.h
+===================================================================
+--- khtml/compat/RenderObject.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/compat/RenderObject.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -2,7 +2,6 @@
+ #define RenderObject_h
+ 
+ #include "render_object.h"
+-#include "GraphicsContext.h"
+ 
+ // stuff for khtml rendering compatibility
+ namespace WebCore
+Index: khtml/compat/RenderBox.h
+===================================================================
+--- khtml/compat/RenderBox.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/compat/RenderBox.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -3,7 +3,6 @@
+ 
+ #include "render_box.h"
+ #include "IntRect.h"
+-#include "GraphicsContext.h"
+ 
+ namespace WebCore {
+     using namespace khtml;
 Index: khtml/css/html4.css
 ===================================================================
---- khtml/css/html4.css	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/css/html4.css	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/css/html4.css	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/css/html4.css	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -353,6 +353,9 @@
          font-weight: normal;
          margin: 0__qem;
@@ -3965,8 +5554,8 @@ Index: khtml/css/html4.css
  }
 Index: khtml/css/cssparser.cpp
 ===================================================================
---- khtml/css/cssparser.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/css/cssparser.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/css/cssparser.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/css/cssparser.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -144,15 +144,44 @@
          return anyNamespace;
  }
@@ -4142,8 +5731,8 @@ Index: khtml/css/cssparser.cpp
          ok = true;
 Index: khtml/css/cssparser.h
 ===================================================================
---- khtml/css/cssparser.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/css/cssparser.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/css/cssparser.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/css/cssparser.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -226,7 +226,8 @@
  	int lex();
      private:
@@ -4156,8 +5745,8 @@ Index: khtml/css/cssparser.h
  
 Index: khtml/xml/dom2_eventsimpl.cpp
 ===================================================================
---- khtml/xml/dom2_eventsimpl.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/xml/dom2_eventsimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/xml/dom2_eventsimpl.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/xml/dom2_eventsimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -382,6 +382,7 @@
      {KeyEventBaseImpl::DOM_VK_META,         Qt::Key_Meta},
      {KeyEventBaseImpl::DOM_VK_CAPS_LOCK,    Qt::Key_CapsLock},
@@ -4166,10 +5755,27 @@ Index: khtml/xml/dom2_eventsimpl.cpp
      {KeyEventBaseImpl::DOM_VK_END,          Qt::Key_End},
      {KeyEventBaseImpl::DOM_VK_ESCAPE,       Qt::Key_Escape},
      {KeyEventBaseImpl::DOM_VK_HOME,         Qt::Key_Home},
+Index: khtml/xml/dom_elementimpl.cpp
+===================================================================
+--- khtml/xml/dom_elementimpl.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/xml/dom_elementimpl.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -318,6 +318,12 @@
+ void AttributeImpl::rewriteValue( const DOMString& newValue )
+ {
+     if (m_localName.id()) {
++	// We may have m_data.value == null if we were given a normalized value
++	// off a removeAttribute (which would call parseNullAttribute()). 
++	// Ignore such requests.
++	if (!m_data.value)
++	    return;
++	
+ 	DOMStringImpl* value = newValue.implementation();
+ 	if (m_data.value == value)
+ 	    return;
 Index: khtml/xml/dom2_eventsimpl.h
 ===================================================================
---- khtml/xml/dom2_eventsimpl.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ khtml/xml/dom2_eventsimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- khtml/xml/dom2_eventsimpl.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ khtml/xml/dom2_eventsimpl.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -291,6 +291,7 @@
        DOM_VK_META		     = 0x9D,
        DOM_VK_BACK_SPACE		     = 0x08,
@@ -4180,8 +5786,8 @@ Index: khtml/xml/dom2_eventsimpl.h
        DOM_VK_ENTER		     = 0x0D,
 Index: ConfigureChecks.cmake
 ===================================================================
---- ConfigureChecks.cmake	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ ConfigureChecks.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- ConfigureChecks.cmake	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ ConfigureChecks.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -102,6 +102,7 @@
  check_function_exists(backtrace        HAVE_BACKTRACE)                # kdecore, kio
  check_function_exists(getpagesize      HAVE_GETPAGESIZE)              # khtml
@@ -4192,8 +5798,8 @@ Index: ConfigureChecks.cmake
  if(NOT WIN32)
 Index: kate/dialogs/katedialogs.cpp
 ===================================================================
---- kate/dialogs/katedialogs.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kate/dialogs/katedialogs.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kate/dialogs/katedialogs.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/dialogs/katedialogs.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -890,7 +890,7 @@
    int i = 0;
    foreach (const KatePartPluginInfo &info, KatePartPluginManager::self()->pluginList())
@@ -4205,8 +5811,8 @@ Index: kate/dialogs/katedialogs.cpp
      i++;
 Index: kate/vimode/kateviinputmodemanager.cpp
 ===================================================================
---- kate/vimode/kateviinputmodemanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kate/vimode/kateviinputmodemanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kate/vimode/kateviinputmodemanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/vimode/kateviinputmodemanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -48,6 +48,7 @@
    delete m_viNormalMode;
    delete m_viInsertMode;
@@ -4215,10 +5821,25 @@ Index: kate/vimode/kateviinputmodemanager.cpp
  }
  
  bool KateViInputModeManager::handleKeypress(const QKeyEvent *e)
+Index: kate/smart/katesmartrange.h
+===================================================================
+--- kate/smart/katesmartrange.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/smart/katesmartrange.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -79,8 +79,10 @@
+     KateDocument* kateDocument() const;
+     /// Accessor for the start of the range (set in constructor)
+     inline KateSmartCursor& kStart() { return *static_cast<KateSmartCursor*>(m_start); }
++    inline const KateSmartCursor& kStart() const { return *static_cast<const KateSmartCursor*>(m_start); }
+     /// Accessor for the end of the range (set in constructor)
+     inline KateSmartCursor& kEnd() { return *static_cast<KateSmartCursor*>(m_end); }
++    inline const KateSmartCursor& kEnd() const { return *static_cast<const KateSmartCursor*>(m_end); }
+ 
+     bool isInternal() const { return m_isInternal; }
+     void setInternal();
 Index: kate/utils/katepartpluginmanager.cpp
 ===================================================================
---- kate/utils/katepartpluginmanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kate/utils/katepartpluginmanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kate/utils/katepartpluginmanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/utils/katepartpluginmanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -35,12 +35,16 @@
  #include <kservicetypetrader.h>
  #include <kdebug.h>
@@ -4291,8 +5912,8 @@ Index: kate/utils/katepartpluginmanager.cpp
      }
 Index: kate/utils/katepartpluginmanager.h
 ===================================================================
---- kate/utils/katepartpluginmanager.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kate/utils/katepartpluginmanager.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kate/utils/katepartpluginmanager.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/utils/katepartpluginmanager.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -24,6 +24,7 @@
  #ifndef KATEPARTPLUGINMANAGER_H
  #define KATEPARTPLUGINMANAGER_H
@@ -4318,10 +5939,216 @@ Index: kate/utils/katepartpluginmanager.h
  };
  
  typedef QList<KatePartPluginInfo> KatePartPluginList;
+Index: kate/completion/katecompletionwidget.cpp
+===================================================================
+--- kate/completion/katecompletionwidget.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/completion/katecompletionwidget.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -918,58 +918,88 @@
+ 
+ void KateCompletionWidget::cursorDown()
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList )
+     m_entryList->nextCompletion();
+   else {
+     if( !m_argumentHintTree->nextCompletion() )
+       switchList();
+   }
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::cursorUp()
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList ) {
+     if( !m_entryList->previousCompletion() )
+       switchList();
+   }else{
+     m_argumentHintTree->previousCompletion();
+   }
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::pageDown( )
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList )
+     m_entryList->pageDown();
+   else {
+     if( !m_argumentHintTree->pageDown() )
+       switchList();
+   }
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::pageUp( )
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList ) {
+     if( !m_entryList->pageUp() )
+       switchList();
+   }else{
+     m_argumentHintTree->pageUp();
+   }
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::top( )
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList )
+     m_entryList->top();
+   else
+     m_argumentHintTree->top();
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::bottom( )
+ {
++  bool wasPartiallyExpanded = model()->partiallyExpandedRow().isValid();
++
+   if( m_inCompletionList )
+     m_entryList->bottom();
+   else
+     m_argumentHintTree->bottom();
++
++  if(wasPartiallyExpanded != model()->partiallyExpandedRow().isValid())
++    updateHeight();
+ }
+ 
+ void KateCompletionWidget::switchList() {
+Index: kate/view/kateviewinternal.h
+===================================================================
+--- kate/view/kateviewinternal.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/view/kateviewinternal.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -108,12 +108,15 @@
+ 
+   Q_SIGNALS:
+     // Trigger this signal whenever you want to call updateView() and may not be in the same thread.
+-    void requestViewUpdate(bool changed);
++    // Make sure to set m_smartDirty = false before, else nothing will happen
++    void requestViewUpdateIfSmartDirty();
+   //END
+ 
+   private Q_SLOTS:
+     // Updates the view and requests a redraw.
+     void updateView (bool changed = false, int viewLinesScrolled = 0);
++    // This is used to prevent multiple unneeded view updates
++    void updateViewIfSmartDirty();
+ 
+   private:
+     // Actually performs the updating, but doesn't call update().
+@@ -244,6 +247,8 @@
+ 
+     void placeCursor( const QPoint& p, bool keepSelection = false, bool updateSelection = true );
+     bool isTargetSelected( const QPoint& p );
++    //Returns whether the given range affects the area currently visible in the view
++    bool rangeAffectsView(const KTextEditor::Range& range) const;
+ 
+     void doDrag();
+ 
+@@ -296,6 +301,9 @@
+     // These are now cursors to account for word-wrap.
+     // Start Position is a virtual cursor
+     KateSmartCursor m_startPos;
++    //Count of lines that are visible behind m_startPos.
++    //This does not respect dynamic word wrap, so take it as an approximation.
++    uint m_visibleLineCount;
+ 
+     // This is set to false on resize or scroll (other than that called by makeVisible),
+     // so that makeVisible is again called when a key is pressed and the cursor is in the same spot
+Index: kate/view/kateviewinternal.cpp
+===================================================================
+--- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -78,6 +78,7 @@
+ 
+   // stay on cursor will avoid that the view scroll around on press return at beginning
+   , m_startPos(doc, KTextEditor::SmartCursor::StayOnInsert)
++  , m_visibleLineCount(0)
+ 
+   , m_madeVisible(false)
+   , m_shiftKeyPressed (false)
+@@ -225,7 +226,7 @@
+   // but before any other kateviewinternal call
+ 
+   // Thread-safe updateView() mechanism
+-  connect(this, SIGNAL(requestViewUpdate(bool)), this, SLOT(updateView(bool)), Qt::QueuedConnection);
++  connect(this, SIGNAL(requestViewUpdateIfSmartDirty()), this, SLOT(updateViewIfSmartDirty()), Qt::QueuedConnection);
+ }
+ 
+ void KateViewInternal::removeWatcher(KTextEditor::SmartRange* range, KTextEditor::SmartRangeWatcher* watcher)
+@@ -539,6 +540,11 @@
+   m_columnScroll->blockSignals(blocked);
+ }
+ 
++void KateViewInternal::updateViewIfSmartDirty() {
++  if(m_smartDirty)
++    updateView(true);
++}
++
+ // If changed is true, the lines that have been set dirty have been updated.
+ void KateViewInternal::updateView(bool changed, int viewLinesScrolled)
+ {
+@@ -566,6 +572,7 @@
+      start allocating huge chunks of data, later. */
+   int newSize = (qMax (0, height()) / renderer()->fontHeight()) + 1;
+   cache()->updateViewCache(startPos(), newSize, viewLinesScrolled);
++  m_visibleLineCount = newSize;
+ 
+   KTextEditor::Cursor maxStart = maxStartPos(changed);
+   int maxLineScrollRange = maxStart.line();
+@@ -3564,6 +3571,16 @@
+   dynamicMoved(false);
+ }
+ 
++bool KateViewInternal::rangeAffectsView(const KTextEditor::Range& range) const
++{
++  if(range.end().line() < m_startPos.line())
++    return false;
++  if(range.start().line() > m_startPos.line() + m_visibleLineCount)
++    return false;
++  
++  return true;
++}
++
+ void KateViewInternal::relayoutRange( const KTextEditor::Range & range, bool realCursors )
+ {
+   int startLine = realCursors ? range.start().line() : toRealCursor(range.start()).line();
+@@ -3572,9 +3589,12 @@
+ //   kDebug( 13030 )<<"KateViewInternal::relayoutRange(): startLine:"<<startLine<<" endLine:"<<endLine;
+   cache()->relayoutLines(startLine, endLine);
+ 
+-  if (!m_smartDirty) {
++  const KateSmartRange* krange = dynamic_cast<const KateSmartRange*>(&range);
++  
++  if (!m_smartDirty && (rangeAffectsView(range) ||
++       (krange && rangeAffectsView(KTextEditor::Range(krange->kStart().lastPosition(), krange->kEnd().lastPosition()))))) {
+     m_smartDirty = true;
+-    emit requestViewUpdate(true);
++    emit requestViewUpdateIfSmartDirty();
+   }
+ }
+ 
 Index: kfile/kdiroperator.cpp
 ===================================================================
---- kfile/kdiroperator.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kfile/kdiroperator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kfile/kdiroperator.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kfile/kdiroperator.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -81,6 +81,10 @@
  
  template class QHash<QString, KFileItem>;
@@ -4627,8 +6454,8 @@ Index: kfile/kdiroperator.cpp
  
 Index: kioslave/http/http.cpp
 ===================================================================
---- kioslave/http/http.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kioslave/http/http.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kioslave/http/http.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kioslave/http/http.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -229,16 +229,12 @@
  }
  
@@ -4741,8 +6568,8 @@ Index: kioslave/http/http.cpp
                      return false;
 Index: kioslave/http/http.h
 ===================================================================
---- kioslave/http/http.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kioslave/http/http.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kioslave/http/http.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kioslave/http/http.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -259,6 +259,7 @@
    void cacheUpdate( const KUrl &url, bool nocache, time_t expireDate);
  
@@ -4762,8 +6589,8 @@ Index: kioslave/http/http.h
    int m_remoteRespTimeout;
 Index: kioslave/ftp/ftp.cpp
 ===================================================================
---- kioslave/ftp/ftp.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kioslave/ftp/ftp.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kioslave/ftp/ftp.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kioslave/ftp/ftp.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -878,6 +878,7 @@
  
    if (!m_server->isListening()) {
@@ -4780,10 +6607,63 @@ Index: kioslave/ftp/ftp.cpp
    return ERR_INTERNAL;
  }
  
+Index: kinit/kinit.cpp
+===================================================================
+--- kinit/kinit.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kinit/kinit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -184,6 +184,12 @@
+  */
+ static void close_fds()
+ {
++   while (struct child *child = children) {
++      close(child->sock);
++      children = child->next;
++      free(child);
++   }
++
+    if (d.deadpipe[0] != -1)
+    {
+       close(d.deadpipe[0]);
+@@ -248,10 +254,9 @@
+ /* Notify wrapper program that the child it started has finished. */
+ static void child_died(pid_t exit_pid, int exit_status)
+ {
+-   struct child *child = children;
+-   struct child *prev = NULL;
++   struct child *child, **childptr = &children;
+ 
+-   while (child)
++   while ((child = *childptr))
+    {
+       if (child->pid == exit_pid)
+       {
+@@ -266,20 +271,12 @@
+          write(child->sock, request_data, request_header.arg_length);
+          close(child->sock);
+ 
+-         if (prev)
+-         {
+-            prev->next = child->next;
+-         }
+-         else
+-         {
+-            child = NULL;
+-         }
++         *childptr = child->next;
+          free(child);
+          return;
+       }
+ 
+-      prev = child;
+-      child = child->next;
++      childptr = &child->next;
+    }
+ }
+ 
 Index: kdeui/jobs/kuiserverjobtracker.cpp
 ===================================================================
---- kdeui/jobs/kuiserverjobtracker.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/jobs/kuiserverjobtracker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/jobs/kuiserverjobtracker.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/jobs/kuiserverjobtracker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -35,13 +35,32 @@
  class KUiServerJobTracker::Private
  {
@@ -4832,8 +6712,8 @@ Index: kdeui/jobs/kuiserverjobtracker.cpp
          QObject::connect(jobView, SIGNAL(resumeRequested()), job,
 Index: kdeui/jobs/kuiserverjobtracker.h
 ===================================================================
---- kdeui/jobs/kuiserverjobtracker.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/jobs/kuiserverjobtracker.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/jobs/kuiserverjobtracker.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/jobs/kuiserverjobtracker.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -78,6 +78,8 @@
  private:
      class Private;
@@ -4845,8 +6725,8 @@ Index: kdeui/jobs/kuiserverjobtracker.h
  #endif
 Index: kdeui/windowmanagement/kwindowsystem_win.cpp
 ===================================================================
---- kdeui/windowmanagement/kwindowsystem_win.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/windowmanagement/kwindowsystem_win.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/windowmanagement/kwindowsystem_win.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/windowmanagement/kwindowsystem_win.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -418,7 +418,7 @@
  void KWindowSystem::forceActiveWindow( WId win, long time )
  {
@@ -4858,8 +6738,8 @@ Index: kdeui/windowmanagement/kwindowsystem_win.cpp
  
 Index: kdeui/widgets/kdatepicker.h
 ===================================================================
---- kdeui/widgets/kdatepicker.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/widgets/kdatepicker.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/widgets/kdatepicker.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/widgets/kdatepicker.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -171,7 +171,6 @@
      void yearBackwardClicked();
      void selectMonthClicked();
@@ -4868,10 +6748,48 @@ Index: kdeui/widgets/kdatepicker.h
      void lineEnterPressed();
      void todayButtonClicked();
      void weekSelected( int );
+Index: kdeui/widgets/klineedit.cpp
+===================================================================
+--- kdeui/widgets/klineedit.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/widgets/klineedit.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -669,7 +669,8 @@
+       // TODO:
+       // we should restore the original text (not autocompleted), otherwise the paste
+       // will get into troubles Bug: 134691
+-        paste();
++        if( !isReadOnly() )
++          paste();
+         return;
+     }
+     else if ( KStandardShortcut::pasteSelection().contains( key ) )
+@@ -682,17 +683,20 @@
+ 
+     else if ( KStandardShortcut::cut().contains( key ) )
+     {
+-        cut();
++        if( !isReadOnly() )
++           cut();
+         return;
+     }
+     else if ( KStandardShortcut::undo().contains( key ) )
+     {
+-        undo();
++        if( !isReadOnly() )
++          undo();
+         return;
+     }
+     else if ( KStandardShortcut::redo().contains( key ) )
+     {
+-        redo();
++        if( !isReadOnly() )
++           redo();
+         return;
+     }
+     else if ( KStandardShortcut::deleteWordBack().contains( key ) )
 Index: kdeui/widgets/kdatetable.cpp
 ===================================================================
---- kdeui/widgets/kdatetable.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/widgets/kdatetable.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/widgets/kdatetable.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/widgets/kdatetable.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -126,12 +126,8 @@
  class KPopupFrame::KPopupFramePrivate
  {
@@ -4958,8 +6876,8 @@ Index: kdeui/widgets/kdatetable.cpp
               &eventLoop, SLOT( quit() ) );
 Index: kdeui/widgets/kdatepicker.cpp
 ===================================================================
---- kdeui/widgets/kdatepicker.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/widgets/kdatepicker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/widgets/kdatepicker.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/widgets/kdatepicker.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -548,17 +548,11 @@
      picker->selectAll();
      popup->setMainWidget( picker );
@@ -4978,15 +6896,22 @@ Index: kdeui/widgets/kdatepicker.cpp
          newDate = d->validDateInYearMonth( picker->year(), calendar()->month( date() ) );
  
          // If we have succeeded in creating a date in the new month, then try to create the new
-@@ -570,6 +564,7 @@
+@@ -569,22 +563,17 @@
+                 qMin( calendar()->day( date() ), calendar()->daysInMonth( newDate ) )
              );
          }
+-    }
+ 
+-    // Set the date, if it's invalid in any way then alert user and don't update
+-    if ( ! setDate( newDate ) ) {
+-        KNotification::beep();
++        // Set the date, if it's invalid in any way then alert user and don't update
++        if ( ! setDate( newDate ) ) {
++            KNotification::beep();
++        }
      }
 +    delete popup;
  
-     // Set the date, if it's invalid in any way then alert user and don't update
-     if ( ! setDate( newDate ) ) {
-@@ -579,12 +574,6 @@
      d->selectYear->setChecked( false );
  }
  
@@ -5001,8 +6926,8 @@ Index: kdeui/widgets/kdatepicker.cpp
  void KDatePicker::setEnabled( bool enable )
 Index: kdeui/icons/kiconloader.cpp
 ===================================================================
---- kdeui/icons/kiconloader.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/icons/kiconloader.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/icons/kiconloader.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/icons/kiconloader.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -1271,7 +1271,8 @@
  #endif
      if (iconType == KIconLoader::Threshold && size != img->width())
@@ -5013,10 +6938,23 @@ Index: kdeui/icons/kiconloader.cpp
              *img = img->scaled(size, size, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
      }
      if (group >= 0)
+Index: kdeui/itemviews/kfilterproxysearchline.cpp
+===================================================================
+--- kdeui/itemviews/kfilterproxysearchline.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/itemviews/kfilterproxysearchline.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -62,7 +62,7 @@
+ 
+     proxy->setFilterKeyColumn( -1 );
+     proxy->setFilterCaseSensitivity( Qt::CaseInsensitive );
+-    proxy->setFilterRegExp( searchLine->text() );
++    proxy->setFilterFixedString( searchLine->text() );
+ }
+ //@endcond
+ 
 Index: kdeui/itemviews/kwidgetitemdelegate.cpp
 ===================================================================
---- kdeui/itemviews/kwidgetitemdelegate.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/itemviews/kwidgetitemdelegate.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/itemviews/kwidgetitemdelegate.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/itemviews/kwidgetitemdelegate.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -35,6 +35,7 @@
  #include <QPainter>
  #include <QScrollBar>
@@ -5039,8 +6977,8 @@ Index: kdeui/itemviews/kwidgetitemdelegate.cpp
  }
 Index: kdeui/itemviews/kwidgetitemdelegatepool_p.h
 ===================================================================
---- kdeui/itemviews/kwidgetitemdelegatepool_p.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdeui/itemviews/kwidgetitemdelegatepool_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdeui/itemviews/kwidgetitemdelegatepool_p.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdeui/itemviews/kwidgetitemdelegatepool_p.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -77,6 +77,7 @@
      void fullClear();
  
@@ -5051,8 +6989,8 @@ Index: kdeui/itemviews/kwidgetitemdelegatepool_p.h
  };
 Index: config.h.cmake
 ===================================================================
---- config.h.cmake	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ config.h.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- config.h.cmake	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ config.h.cmake	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -88,6 +88,7 @@
  #cmakedefine   HAVE_GETMNTINFO 1
  #cmakedefine   HAVE_GETPAGESIZE 1
@@ -5063,8 +7001,8 @@ Index: config.h.cmake
  #cmakedefine   HAVE_MKSTEMPS 1
 Index: kutils/kemoticons/kemoticonstheme.cpp
 ===================================================================
---- kutils/kemoticons/kemoticonstheme.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kutils/kemoticons/kemoticonstheme.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kutils/kemoticons/kemoticonstheme.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kutils/kemoticons/kemoticonstheme.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -25,6 +25,7 @@
  #include <QtCore/QFileInfo>
  #include <QtCore/QDir>
@@ -5109,10 +7047,24 @@ Index: kutils/kemoticons/kemoticonstheme.cpp
              bool found = false;
              for (it = emoticonList.constBegin(); it != emoticonList.constEnd(); ++it) {
                  // If this is an HTML, then search for the HTML form of the emoticon.
+Index: kdecore/kernel/ktoolinvocation.cpp
+===================================================================
+--- kdecore/kernel/ktoolinvocation.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdecore/kernel/ktoolinvocation.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -298,7 +298,8 @@
+             KMessage::message(KMessage::Error,
+                               i18n("Could not launch the KDE Help Center:\n\n%1", error),
+                               i18n("Could not Launch Help Center"));
+-            return;
++            delete iface;
++	    return;
+         }
+ 
+         delete iface;
 Index: kdecore/jobs/kjob.h
 ===================================================================
---- kdecore/jobs/kjob.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdecore/jobs/kjob.h	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdecore/jobs/kjob.h	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdecore/jobs/kjob.h	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -166,7 +166,8 @@
       * and ask uiserver to close the progress window.
       * @p verbosity is set to EmitResult for subjobs. Whether applications
@@ -5154,10 +7106,22 @@ Index: kdecore/jobs/kjob.h
       */
      void result(KJob *job);
  
+Index: kdecore/all_languages.desktop
+===================================================================
+--- kdecore/all_languages.desktop	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdecore/all_languages.desktop	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
+@@ -4762,6 +4762,7 @@
+ Name[ne]=इन्टरलिङ्गुवा
+ Name[pa]=ਇੰਟਰਈਨੂਗੂਈ
+ Name[ps]=اېنټرلېنګ
++Name[ru]=Окциденталь
+ Name[sl]=interlingue
+ Name[sr]=интерлингве
+ Name[sr@latin]=interlingve
 Index: kdecore/io/ksavefile.cpp
 ===================================================================
---- kdecore/io/ksavefile.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ kdecore/io/ksavefile.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- kdecore/io/ksavefile.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ kdecore/io/ksavefile.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -36,6 +36,9 @@
  #include <kconfiggroup.h>
  #include <kcomponentdata.h>
@@ -5246,8 +7210,8 @@ Index: kdecore/io/ksavefile.cpp
      // get backup type from config, by default use "simple"
 Index: plasma/popupapplet.cpp
 ===================================================================
---- plasma/popupapplet.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ plasma/popupapplet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- plasma/popupapplet.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ plasma/popupapplet.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -275,8 +275,7 @@
                  //stuff out of your Dialog (extenders). Monitor WindowDeactivate events so we can
                  //emulate the same kind of behavior as Qt::Popup (close when you click somewhere
@@ -5260,8 +7224,8 @@ Index: plasma/popupapplet.cpp
                      wflags |= Qt::X11BypassWindowManagerHint;
 Index: plasma/private/applethandle.cpp
 ===================================================================
---- plasma/private/applethandle.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ plasma/private/applethandle.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- plasma/private/applethandle.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ plasma/private/applethandle.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -25,6 +25,7 @@
  #include <QtGui/QLinearGradient>
  #include <QtGui/QPainter>
@@ -5299,8 +7263,8 @@ Index: plasma/private/applethandle.cpp
  void AppletHandle::appletDestroyed()
 Index: plasma/runnermanager.cpp
 ===================================================================
---- plasma/runnermanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 952918)
-+++ plasma/runnermanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 952918)
+--- plasma/runnermanager.cpp	(.../tags/KDE/4.2.2/kdelibs)	(wersja 956244)
++++ plasma/runnermanager.cpp	(.../branches/KDE/4.2/kdelibs)	(wersja 956244)
 @@ -481,8 +481,10 @@
      launchQuery(term, QString());
  }

@@ -4,7 +4,7 @@
 %bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdelibs
 %define		qtver		4.5.0
 
@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.2.3
-Release:	2
+Version:	4.2.85
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	73f76b0521dff7d9aaf1057499624a8d
+# Source0-md5:	1f21d240a5073826141d1ac5784e9e3e
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -313,13 +313,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
-# nepomuk ???
-%attr(755,root,root) %{_bindir}/nepomuk-rcgen
-%dir %{_datadir}/apps/nepomuk
-#%{_datadir}/apps/nepomuk/ontologies
-%dir %{_datadir}/apps/nepomuk/pics
-%{_datadir}/apps/nepomuk/pics/rating.png
-##### nepomuk ???
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man1/kdecmake.1*
@@ -348,7 +341,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
 %{_datadir}/apps/kjava/pluginsinfo
-%{_datadir}/apps/ktexteditor_docwordcompletion
+# %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
 %{_datadir}/apps/proxyscout
@@ -434,8 +427,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkfile.so.*
 %attr(755,root,root) %{_libdir}/libkrosscore.so.*
 %attr(755,root,root) %{_libdir}/libkrossui.so.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.?
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
@@ -483,7 +474,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkfile.so
 %attr(755,root,root) %{_libdir}/libknewstuff2.so
-%attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
 %attr(755,root,root) %{_libdir}/libplasma.so
@@ -687,7 +677,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFind
 %{_includedir}/KDE/KFindDialog
 %{_includedir}/KDE/KFloatValidator
-%{_includedir}/KDE/KFolderType
 %{_includedir}/KDE/KFontAction
 %{_includedir}/KDE/KFontChooser
 %{_includedir}/KDE/KFontComboBox
@@ -758,6 +747,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMimeTypeResolver
 %{_includedir}/KDE/KMimeTypeTrader
 %{_includedir}/KDE/KMimeTypeValidator
+%{_includedir}/KDE/KModifierKeyInfo
 %{_includedir}/KDE/KMozillaBookmarkImporterImpl
 %{_includedir}/KDE/KMultiTabBar
 %{_includedir}/KDE/KMultiTabBarButton
@@ -949,6 +939,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/OrgKdeKLauncherInterface
 %{_includedir}/KDE/PtyProcess
 %{_includedir}/KDE/Solid
+%{_includedir}/KDE/Sonnet
 %{_includedir}/KDE/SshProcess
 %{_includedir}/KDE/StubProcess
 %{_includedir}/KDE/SuProcess
@@ -980,8 +971,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kross
 %dir %{_includedir}/ktexteditor
 %{_includedir}/ktexteditor/*
-%dir %{_includedir}/nepomuk
-%{_includedir}/nepomuk/*
 %{_includedir}/*.h
 %dir %{_includedir}/solid
 %{_includedir}/solid/*

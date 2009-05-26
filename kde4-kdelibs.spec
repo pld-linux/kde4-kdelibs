@@ -24,6 +24,7 @@ Group:		X11/Libraries
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
 # Source0-md5:	e9d935561f827b1db06cbe8a60675660
+Source1:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-experimental-%{version}svn%{svn}.tar.bz2
 #Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -236,7 +237,7 @@ Zawiera:
 - listę przestrzeni nazw (namespace)
 
 %prep
-%setup -q -n %{orgname}-%{version}svn%{svn}
+%setup -q -n %{orgname}-%{version}svn%{svn} -a1
 #%patch100 -p0
 #%patch0 -p0
 #%patch1 -p0
@@ -265,6 +266,31 @@ cd build
 
 %{__make}
 
+cd ../kdelibs-experimental-%{version}svn%{svn}
+install -d build
+
+cd build
+%cmake \
+		-DCMAKE_INSTALL_PREFIX=%{_prefix} \
+		-DLIB_INSTALL_DIR=%{_libdir} \
+		-DCONFIG_INSTALL_DIR=%{_datadir}/config \
+		-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
+		-DDATA_INSTALL_DIR=%{_datadir}/apps \
+		-DKCFG_INSTALL_DIR=%{_datadir}/config.kcfg \
+		-DMIME_INSTALL_DIR=/nogo \
+		-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
+		-DHTML_INSTALL_DIR=%{_kdedocdir} \
+		-DCMAKE_BUILD_TYPE=%{!?debug:release}%{?debug:debug} \
+		-DKDE_DISTRIBUTION_TEXT="PLD-Linux" \
+%if "%{_lib}" == "lib64"
+		-DLIB_SUFFIX=64 \
+%endif
+		-DKDE4_ENABLE_FINAL=OFF \
+		../
+
+%{__make}
+
+
 %install
 rm -rf $RPM_BUILD_ROOT
 
@@ -285,6 +311,10 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
+
+cd kdelibs-experimental-%{version}svn%{svn}
+%{__make} -C build install \
+        DESTDIR=$RPM_BUILD_ROOT
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -469,6 +499,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkjsapi.so
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
+%attr(755,root,root) %{_libdir}/libknotificationitem-1.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so
 %attr(755,root,root) %{_libdir}/libkntlm.so
 %attr(755,root,root) %{_libdir}/libkparts.so
@@ -957,6 +988,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/khtml
 %{_includedir}/KDE/kndbgstream
 %{_includedir}/KDE/Plasma
+%dir %{_includedir}/knotificationitem-1
+%{_includedir}/knotificationitem-1/*
 %dir %{_includedir}/nepomuk
 %{_includedir}/nepomuk/*
 %dir %{_includedir}/plasma

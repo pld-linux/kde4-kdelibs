@@ -7,6 +7,7 @@
 %define		_state		unstable
 %define		orgname		kdelibs
 %define		qtver		4.5.0
+%define		svn		969966
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -16,12 +17,13 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.2.85
+Version:	4.2.87
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	1f21d240a5073826141d1ac5784e9e3e
+#Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
+# Source0-md5:	e9d935561f827b1db06cbe8a60675660
 #Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -86,10 +88,11 @@ BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.1.64
+BuildRequires:	soprano-devel >= 2.1.68
 BuildRequires:	strigi-devel >= 0.6.3
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
+BuildRequires:	xz-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
@@ -103,8 +106,8 @@ Requires:	kde-common-dirs >= 0.3
 Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
-Provides:	%{name}-shared
 Suggests:	kde4-icons
+Provides:	%{name}-shared
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
@@ -233,10 +236,10 @@ Zawiera:
 - listę przestrzeni nazw (namespace)
 
 %prep
-%setup -q -n %{orgname}-%{version}
+%setup -q -n %{orgname}-%{version}svn%{svn}
 #%patch100 -p0
-%patch0 -p0
-%patch1 -p0
+#%patch0 -p0
+#%patch1 -p0
 %patch2 -p0
 
 %build
@@ -313,6 +316,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
+%attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man1/kdecmake.1*
@@ -333,7 +337,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/*.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
-%{_datadir}/apps/kcertpart
+#%{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
 %{_datadir}/apps/khtml/domain_info
 %{_datadir}/apps/khtml/error.html
@@ -432,6 +436,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
+%attr(755,root,root) %{_libdir}/libnepomuk.so.*
 
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
@@ -473,6 +478,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkfile.so
+%attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libknewstuff2.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
@@ -502,6 +508,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/K3DockWidgetAbstractHeaderDrag
 %{_includedir}/KDE/K3DockWidgetHeader
 %{_includedir}/KDE/K3DockWidgetHeaderDrag
+%{_includedir}/KDE/KFileItemActions
+%{_includedir}/KDE/KFileItemListProperties
 %{_includedir}/KDE/K3FileTreeView
 %{_includedir}/KDE/K3FileTreeViewItem
 %{_includedir}/KDE/K3Icon
@@ -949,6 +957,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/khtml
 %{_includedir}/KDE/kndbgstream
 %{_includedir}/KDE/Plasma
+%dir %{_includedir}/nepomuk
+%{_includedir}/nepomuk/*
 %dir %{_includedir}/plasma
 %{_includedir}/plasma/*
 %dir %{_includedir}/dnssd

@@ -467,6 +467,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
 %attr(755,root,root) %{_libdir}/libnepomuk.so.*
+%attr(755,root,root) %{_libdir}/libknotificationitem-1.so
 
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
@@ -499,7 +500,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkjsapi.so
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
-%attr(755,root,root) %{_libdir}/libknotificationitem-1.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so
 %attr(755,root,root) %{_libdir}/libkntlm.so
 %attr(755,root,root) %{_libdir}/libkparts.so

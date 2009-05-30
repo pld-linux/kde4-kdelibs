@@ -391,6 +391,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kjava/kjava.jar
 %{_datadir}/apps/ksgmltools2
 %{_datadir}/apps/kssl
+%{_datadir}/apps/nepomuk
 %dir %{_datadir}/config
 %dir %{_datadir}/config/ui
 %{_datadir}/config/ui/ui_standards.rc

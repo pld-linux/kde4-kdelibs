@@ -21,9 +21,8 @@ Version:	4.2.90
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	%{orgname}-%{version}.tar.bz2
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	49ddb0f7a20fb2141c2f284df84cb1e2
-#Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 #Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch

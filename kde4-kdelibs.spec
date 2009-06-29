@@ -17,13 +17,13 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.2.91
+Version:	4.2.95
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 #ource0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}svn%{svn}.tar.bz2
-# Source0-md5:	8238cba33a229859ea820233dd902991
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	54cf6d01b0156c2b82fe23321b338007
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -235,7 +235,7 @@ Zawiera:
 - listę przestrzeni nazw (namespace)
 
 %prep
-%setup -q -n %{orgname}-%{version}svn%{svn}
+%setup -q -n %{orgname}-%{version}
 ##%setup -q -n %{orgname}-%{version}
 #%patch100 -p0
 #%patch0 -p0
@@ -927,6 +927,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
 %{_includedir}/KDE/KWallet
+%{_includedir}/KDE/KWidgetItemDelegate
 %{_includedir}/KDE/KWindowInfo
 %{_includedir}/KDE/KWindowSystem
 %{_includedir}/KDE/KWordMacroExpander

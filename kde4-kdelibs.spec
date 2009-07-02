@@ -61,7 +61,7 @@ BuildRequires:	giflib-devel
 %{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
-%{?with_kerberos5:BuildRequires:	krb5-devel}
+%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel

@@ -276,8 +276,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_libdir}/kconf_update_bin \
 	$RPM_BUILD_ROOT%{_datadir}/applnk/.hidden \
 	$RPM_BUILD_ROOT%{_datadir}/apps/khtml/kpartplugins \
-	$RPM_BUILD_ROOT%{_datadir}/apps/profiles \
-	$RPM_BUILD_ROOT%{_datadir}/apps/remotes \
 	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme \
 	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme/default \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
@@ -356,8 +354,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_datadir}/applnk
 %dir %{_datadir}/applnk/.hidden
-%dir %{_datadir}/apps/profiles
-%dir %{_datadir}/apps/remotes
 %dir %{_datadir}/apps/desktoptheme
 %dir %{_datadir}/apps/desktoptheme/default
 %dir %{_datadir}/services/kconfiguredialog

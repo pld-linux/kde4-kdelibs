@@ -50,11 +50,11 @@ BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cups-devel
-BuildRequires:	docbook-dtd41-sgml
-BuildRequires:	docbook-dtd412-xml
-BuildRequires:	docbook-dtd42-xml
-BuildRequires:	docbook-style-xsl
-BuildRequires:	docbook-utils
+%{?with_apidocs:BuildRequires:	docbook-dtd41-sgml}
+%{?with_apidocs:BuildRequires:	docbook-dtd412-xml}
+%{?with_apidocs:BuildRequires:	docbook-dtd42-xml}
+%{?with_apidocs:BuildRequires:	docbook-style-xsl}
+%{?with_apidocs:BuildRequires:	docbook-utils}
 %{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
@@ -98,9 +98,9 @@ BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{qtver}
-Requires:	docbook-dtd412-xml
-Requires:	docbook-dtd42-xml
-Requires:	docbook-style-xsl
+%{?with_apidocs:Requires:	docbook-dtd412-xml}
+%{?with_apidocs:Requires:	docbook-dtd42-xml}
+%{?with_apidocs:Requires:	docbook-style-xsl}
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.3
 Requires:	setup >= 2.4.6-7

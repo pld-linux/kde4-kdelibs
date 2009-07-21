@@ -88,8 +88,8 @@ BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.1.68
-BuildRequires:	strigi-devel >= 0.6.3
+BuildRequires:	soprano-devel >= 2.3.0
+BuildRequires:	strigi-devel >= 0.6.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
 BuildRequires:	xz-devel
@@ -102,7 +102,7 @@ Requires:	QtCore >= %{qtver}
 %{?with_apidocs:Requires:	docbook-dtd42-xml}
 %{?with_apidocs:Requires:	docbook-style-xsl}
 Requires:	hicolor-icon-theme
-Requires:	kde-common-dirs >= 0.3
+Requires:	kde-common-dirs >= 0.5
 Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth

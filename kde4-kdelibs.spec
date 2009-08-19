@@ -4,7 +4,8 @@
 %bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		stable
+%define		_state		unstable
+%define		snap		svn1010339
 %define		orgname		kdelibs
 %define		qtver		4.5.2
 
@@ -16,13 +17,13 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.0
-Release:	3
+Version:	4.3.64
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	ea54f71bcbb0cf96bb6d94c019de8bb5
-Patch100: %{name}-branch.diff
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
+# Source0-md5:	93e65fe3fadd354146f269fef6f9e551
+#Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
@@ -233,7 +234,7 @@ Zawiera:
 - listę przestrzeni nazw (namespace)
 
 %prep
-%setup -q -n %{orgname}-%{version}
+%setup -q -n %{orgname}-%{version}%{snap}
 ##%setup -q -n %{orgname}-%{version}
 %patch100 -p0
 #%patch0 -p0

@@ -17,12 +17,12 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.3.0
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	ea54f71bcbb0cf96bb6d94c019de8bb5
-#Patch100: %{name}-branch.diff
+Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
@@ -235,7 +235,7 @@ Zawiera:
 %prep
 %setup -q -n %{orgname}-%{version}
 ##%setup -q -n %{orgname}-%{version}
-#%patch100 -p0
+%patch100 -p0
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0

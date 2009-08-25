@@ -1,7 +1,5 @@
 #
 # Conditional build:
-%bcond_without	alsa		# build without ALSA support
-%bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		stable
@@ -40,7 +38,6 @@ BuildRequires:	QtUiTools-devel >= %{qtver}
 BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
-%{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
@@ -48,16 +45,9 @@ BuildRequires:	avahi-devel
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cups-devel
-%{?with_apidocs:BuildRequires:	docbook-dtd41-sgml}
-%{?with_apidocs:BuildRequires:	docbook-dtd412-xml}
-%{?with_apidocs:BuildRequires:	docbook-dtd42-xml}
-%{?with_apidocs:BuildRequires:	docbook-style-xsl}
-%{?with_apidocs:BuildRequires:	docbook-utils}
-%{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	giflib-devel
-%{?with_apidocs:BuildRequires:	graphviz}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
 %{?with_kerberos5:BuildRequires:	heimdal-devel}
@@ -82,7 +72,6 @@ BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.3.1
 BuildRequires:	pkgconfig
 BuildRequires:	qt4-build >= %{qtver}
-%{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
@@ -96,9 +85,6 @@ BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{qtver}
-%{?with_apidocs:Requires:	docbook-dtd412-xml}
-%{?with_apidocs:Requires:	docbook-dtd42-xml}
-%{?with_apidocs:Requires:	docbook-style-xsl}
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5
 Requires:	setup >= 2.4.6-7
@@ -213,28 +199,8 @@ KDE.
 %description devel -l uk.UTF-8
 Цей пакет містить хедери, необхідні для компіляції програм для KDE.
 
-%package apidocs
-Summary:	API documentation
-Summary(pl.UTF-8):	Dokumentacja API
-Group:		Documentation
-Requires:	%{name} = %{version}-%{release}
-Obsoletes:	kttsd-apidocs
-
-%description apidocs
-Annotated reference of KDE libraries programming interface including:
-- class lists
-- class members
-- namespaces
-
-%description apidocs -l pl.UTF-8
-Dokumentacja interfejsu programowania bibliotek KDE z przypisami.
-Zawiera:
-- listy klas i ich składników
-- listę przestrzeni nazw (namespace)
-
 %prep
 %setup -q -n %{orgname}-%{version}
-##%setup -q -n %{orgname}-%{version}
 %patch100 -p0
 #%patch0 -p0
 #%patch1 -p0
@@ -993,9 +959,3 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/ksettings/*
 %dir %{_includedir}/kunittest
 %{_includedir}/kunittest/*
-
-%if %{with apidocs}
-#%files apidocs
-#%defattr(644,root,root,755)
-#%{_kdedocdir}/en/%{name}*-apidocs
-%endif

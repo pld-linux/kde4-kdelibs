@@ -158,7 +158,6 @@ Summary(ru.UTF-8):	Хедеры и документация для компил�
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
-Requires:	%{name}-libs = %{version}-%{release}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel

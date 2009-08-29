@@ -83,7 +83,6 @@ BuildRequires:	xz-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
-Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{qtver}
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5
@@ -91,8 +90,10 @@ Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Suggests:	kde4-icons
+Provides:	%{name}-libs
 Provides:	%{name}-shared
-Obsoletes:	kde4-kdelibs-shared
+Obsoletes:	%{name}-libs
+Obsoletes:	%{name}-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
 Conflicts:	kdelibs4
@@ -148,17 +149,6 @@ aplicativo KDE.
 - khtmlw (робота з HTML),
 - kimgio (обробка зображень).
 - kspell (перевірка орфографії),
-
-%package libs
-Summary:	KDE libraries
-Summary(pl.UTF-8):	Biblioteki KDE
-Group:		X11/Libraries
-
-%description libs
-KDE libraries.
-
-%description libs -l pl.UTF-8
-Biblioteki KDE.
 
 %package devel
 Summary:	kdelibs - header files and development documentation
@@ -363,8 +353,6 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
-%files libs
-%defattr(644,root,root,755)
 %attr(755,root,root) %{_libdir}/libkde3support.so.*
 %attr(755,root,root) %{_libdir}/libkdecore.so.*
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*

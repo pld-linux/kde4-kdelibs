@@ -90,7 +90,6 @@ Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Suggests:	kde4-icons
-Provides:	%{name}-libs
 Provides:	%{name}-shared
 Obsoletes:	%{name}-libs
 Obsoletes:	%{name}-shared
@@ -240,8 +239,8 @@ install -d \
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post	libs -p /sbin/ldconfig
-%postun	libs -p /sbin/ldconfig
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)

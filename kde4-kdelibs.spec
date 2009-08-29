@@ -236,6 +236,9 @@ install -d \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 
+# DO NOT PACKAGE THIS FILE vvvv - use applnk
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
@@ -247,8 +250,6 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_docdir}/kde
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
-# DO NOT PACKAGE THIS FILE vvvv - use applnk
-#%{_sysconfdir}/xdg/menus/applications.menu
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4

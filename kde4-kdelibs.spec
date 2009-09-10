@@ -5,7 +5,7 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1013471
+%define		snap		svn1020033
 %define		orgname		kdelibs
 %define		qtver		4.5.2
 
@@ -17,12 +17,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.65
+Version:	4.3.67
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	3c3ad70d50a19221906dd1b60e30433f
+# Source0-md5:	72784c0a4fcba967e949e8887dfc687c
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -373,6 +373,18 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/*.xml
 
+# kcmremotewidgets
+%{_sysconfdir}/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
+%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
+%{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
+
+# kauth
+%{_datadir}/apps/kauth
+%{_sysconfdir}/dbus-1/system.d/org.kde.auth.conf
+
+%{_datadir}/apps/plasma/services/dataengineservice.operations
+%{_datadir}/apps/plasma/services/plasmoidservice.operations
+
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
@@ -558,6 +570,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KArchiveFile
 %{_includedir}/KDE/KArrowButton
 %{_includedir}/KDE/KAssistantDialog
+%{_includedir}/KDE/KAuth
 %{_includedir}/KDE/KAuthorized
 %{_includedir}/KDE/KAutoMount
 %{_includedir}/KDE/KAutoUnmount
@@ -769,6 +782,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KNTLM
 %{_includedir}/KDE/KNetwork
 %{_includedir}/KDE/KNotification
+%{_includedir}/KDE/KNotificationItem
 %{_includedir}/KDE/KNotificationRestrictions
 %{_includedir}/KDE/KNotifyConfigWidget
 %{_includedir}/KDE/KNumInput

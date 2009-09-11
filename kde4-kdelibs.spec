@@ -107,6 +107,7 @@ Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Suggests:	kde4-icons
 Provides:	%{name}-shared
+Obsoletes:	kde4-kdelibs-experimental
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
@@ -193,6 +194,7 @@ Requires:	pcre-devel
 Requires:	phonon-devel
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
+Obsoletes:	kde4-kdelibs-experimental-devel
 Conflicts:	kdelibs-devel
 
 %description devel

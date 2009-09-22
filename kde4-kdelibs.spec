@@ -5,7 +5,7 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1020033
+%define		snap		svn1024329
 %define		orgname		kdelibs
 %define		qtver		4.5.2
 
@@ -17,12 +17,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.67
+Version:	4.3.68
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	72784c0a4fcba967e949e8887dfc687c
+# Source0-md5:	7d09492da3369bdc8a61426aaa15a085
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -414,39 +414,70 @@ rm -rf $RPM_BUILD_ROOT
 
 %files libs
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libkde3support.so.*
-%attr(755,root,root) %{_libdir}/libkdecore.so.*
-%attr(755,root,root) %{_libdir}/libkdefakes.so.*
-%attr(755,root,root) %{_libdir}/libkdesu.so.*
-%attr(755,root,root) %{_libdir}/libplasma.so.*
-%attr(755,root,root) %{_libdir}/libkpty.so.*
-%attr(755,root,root) %{_libdir}/libkdeui.so.*
-%attr(755,root,root) %{_libdir}/libkdnssd.so.*
-%attr(755,root,root) %{_libdir}/libkhtml.so.*
-%attr(755,root,root) %{_libdir}/libkimproxy.so.*
-%attr(755,root,root) %{_libdir}/libkio.so.*
-%attr(755,root,root) %{_libdir}/libkjs.so.*
-%attr(755,root,root) %{_libdir}/libkjsapi.so.*
-%attr(755,root,root) %{_libdir}/libkjsembed.so.*
-%attr(755,root,root) %{_libdir}/libkmediaplayer.so.*
-%attr(755,root,root) %{_libdir}/libknewstuff2.so.*
-%attr(755,root,root) %{_libdir}/libknotifyconfig.so.*
-%attr(755,root,root) %{_libdir}/libkntlm.so.*
-%attr(755,root,root) %{_libdir}/libkparts.so.*
-%attr(755,root,root) %{_libdir}/libktexteditor.so.*
-%attr(755,root,root) %{_libdir}/libkunittest.so.*
-%attr(755,root,root) %{_libdir}/libkutils.so.*
-%attr(755,root,root) %{_libdir}/libsolid.so.*
-%attr(755,root,root) %{_libdir}/libthreadweaver.so.*
-%attr(755,root,root) %{_libdir}/libkfile.so.*
-%attr(755,root,root) %{_libdir}/libkrosscore.so.*
-%attr(755,root,root) %{_libdir}/libkrossui.so.*
+%attr(755,root,root) %{_libdir}/libkde3support.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkde3support.so.?
+%attr(755,root,root) %{_libdir}/libkdecore.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdecore.so.?
+%attr(755,root,root) %{_libdir}/libkdefakes.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdefakes.so.?
+%attr(755,root,root) %{_libdir}/libkdesu.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdesu.so.?
+%attr(755,root,root) %{_libdir}/libkdeui.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdeui.so.?
+%attr(755,root,root) %{_libdir}/libkdnssd.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdnssd.so.?
+%attr(755,root,root) %{_libdir}/libkfile.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkfile.so.?
+%attr(755,root,root) %{_libdir}/libkhtml.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkhtml.so.?
+%attr(755,root,root) %{_libdir}/libkimproxy.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkimproxy.so.?
+%attr(755,root,root) %{_libdir}/libkio.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkio.so.?
+%attr(755,root,root) %{_libdir}/libkjs.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjs.so.?
+%attr(755,root,root) %{_libdir}/libkjsapi.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjsapi.so.?
+%attr(755,root,root) %{_libdir}/libkjsembed.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjsembed.so.?
+%attr(755,root,root) %{_libdir}/libkmediaplayer.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkmediaplayer.so.?
+%attr(755,root,root) %{_libdir}/libknewstuff2.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknewstuff2.so.?
+%attr(755,root,root) %{_libdir}/libknotifyconfig.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknotifyconfig.so.?
+%attr(755,root,root) %{_libdir}/libkntlm.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkntlm.so.?
+%attr(755,root,root) %{_libdir}/libkparts.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkparts.so.?
+%attr(755,root,root) %{_libdir}/libkpty.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpty.so.?
+%attr(755,root,root) %{_libdir}/libkrosscore.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkrosscore.so.?
+%attr(755,root,root) %{_libdir}/libkrossui.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkrossui.so.?
+%attr(755,root,root) %{_libdir}/libktexteditor.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libktexteditor.so.?
+%attr(755,root,root) %{_libdir}/libkunitconversion.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkunitconversion.so.?
+%attr(755,root,root) %{_libdir}/libkunittest.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkunittest.so.?
+%attr(755,root,root) %{_libdir}/libkutils.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkutils.so.?
+%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomuk.so.?
+%attr(755,root,root) %{_libdir}/libplasma.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libplasma.so.?
+%attr(755,root,root) %{_libdir}/libsolid.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libsolid.so.?
+%attr(755,root,root) %{_libdir}/libthreadweaver.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libthreadweaver.so.?
+
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kio_http_cache_cleaner.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
-%attr(755,root,root) %{_libdir}/libnepomuk.so.*
 
 %attr(755,root,root) %{_libdir}/kde4/*.so
 %dir %{_libdir}/kde4/plugins/designer
@@ -468,10 +499,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
-%attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so
 %attr(755,root,root) %{_libdir}/libkdnssd.so
+%attr(755,root,root) %{_libdir}/libkfile.so
 %attr(755,root,root) %{_libdir}/libkhtml.so
 %attr(755,root,root) %{_libdir}/libkimproxy.so
 %attr(755,root,root) %{_libdir}/libkio.so
@@ -479,20 +510,22 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkjsapi.so
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
+%attr(755,root,root) %{_libdir}/libknewstuff2.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so
 %attr(755,root,root) %{_libdir}/libkntlm.so
 %attr(755,root,root) %{_libdir}/libkparts.so
-%attr(755,root,root) %{_libdir}/libktexteditor.so
-%attr(755,root,root) %{_libdir}/libkunittest.so
-%attr(755,root,root) %{_libdir}/libkutils.so
-%attr(755,root,root) %{_libdir}/libsolid.so
-%attr(755,root,root) %{_libdir}/libthreadweaver.so
-%attr(755,root,root) %{_libdir}/libkfile.so
-%attr(755,root,root) %{_libdir}/libnepomuk.so
-%attr(755,root,root) %{_libdir}/libknewstuff2.so
+%attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
+%attr(755,root,root) %{_libdir}/libktexteditor.so
+%attr(755,root,root) %{_libdir}/libkunitconversion.so
+%attr(755,root,root) %{_libdir}/libkunittest.so
+%attr(755,root,root) %{_libdir}/libkutils.so
+%attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libplasma.so
+%attr(755,root,root) %{_libdir}/libsolid.so
+%attr(755,root,root) %{_libdir}/libthreadweaver.so
+
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
 %{_includedir}/KDE/DNSSD
@@ -921,6 +954,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KTzfileTimeZoneSource
 %{_includedir}/KDE/KUndoStack
 %{_includedir}/KDE/KUniqueApplication
+%{_includedir}/KDE/KUnitConversion
 %{_includedir}/KDE/KUnitTest
 %{_includedir}/KDE/KUriFilter
 %{_includedir}/KDE/KUriFilterData
@@ -1008,6 +1042,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.tcc
 %dir %{_includedir}/ksettings
 %{_includedir}/ksettings/*
+%dir %{_includedir}/kunitconversion
+%{_includedir}/kunitconversion/*
 %dir %{_includedir}/kunittest
 %{_includedir}/kunittest/*
 

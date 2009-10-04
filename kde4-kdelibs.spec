@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.3.2
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -157,6 +157,7 @@ Summary(pt_BR.UTF-8):	Arquivos de inclusão e documentação para compilar aplic
 Summary(ru.UTF-8):	Хедеры и документация для компилляции программ KDE
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
+Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	%{name} = %{version}-%{release}
 Requires:	acl-devel
 Requires:	fam-devel

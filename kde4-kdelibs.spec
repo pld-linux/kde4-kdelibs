@@ -3,9 +3,9 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1027298
+%define		snap		svn1035674
 %define		orgname		kdelibs
-%define		qtver		4.5.2
+%define		qtver		4.6.0
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.69
+Version:	4.3.72
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	35355d5ddf49a305609a52712fcbd193
+# Source0-md5:	d6a4ce18a1f8b173478bfecbd15078c2
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -49,9 +49,9 @@ BuildRequires:	cups-devel
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	giflib-devel
+%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
-%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
@@ -72,6 +72,7 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.3.1
 BuildRequires:	pkgconfig
+BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
@@ -655,7 +656,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDiskFreeSpace
 %{_includedir}/KDE/KDiskFreeSpaceInfo
 %{_includedir}/KDE/KDoubleNumInput
-%{_includedir}/KDE/KDoubleSpinBox
 %{_includedir}/KDE/KDoubleValidator
 %{_includedir}/KDE/KEMailSettings
 %{_includedir}/KDE/KEditListBox
@@ -798,6 +798,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPixmapProvider
 %{_includedir}/KDE/KPixmapRegionSelectorDialog
 %{_includedir}/KDE/KPixmapRegionSelectorWidget
+%{_includedir}/KDE/KPixmapSequence
+%{_includedir}/KDE/KPixmapSequenceOverlayPainter
+%{_includedir}/KDE/KPixmapSequenceOverlayWidget
 %{_includedir}/KDE/KPlotAxis
 %{_includedir}/KDE/KPlotObject
 %{_includedir}/KDE/KPlotPoint
@@ -947,6 +950,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KZoneAllocator
 %{_includedir}/KDE/KonqBookmarkMenu
 %{_includedir}/KDE/KonqBookmarkOwner
+%{_includedir}/KDE/Kross
 %{_includedir}/KDE/NET
 %{_includedir}/KDE/NETRootInfo
 %{_includedir}/KDE/NETWinInfo

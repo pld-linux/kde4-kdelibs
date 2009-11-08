@@ -1,3 +1,7 @@
+# TODO
+# - use ca-certificates:
+#   rpm -qf /usr/share/apps/kssl/ca-bundle.crt
+#   kde4-kdelibs-4.3.3-1.x86_64
 #
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
@@ -20,7 +24,7 @@ License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	20fd3793d9d23088ecb1d5aed0254216
-Patch100: 	%{name}-branch.diff
+Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
@@ -49,9 +53,9 @@ BuildRequires:	cups-devel
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	giflib-devel
+%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
-%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
@@ -92,8 +96,8 @@ Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Suggests:	kde4-icons
 Provides:	%{name}-shared
-Obsoletes:	%{name}-libs
-Obsoletes:	%{name}-shared
+Obsoletes:	kde4-kdelibs-libs
+Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
 Conflicts:	kdelibs4
@@ -157,8 +161,8 @@ Summary(pt_BR.UTF-8):	Arquivos de inclusão e documentação para compilar aplic
 Summary(ru.UTF-8):	Хедеры и документация для компилляции программ KDE
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
-Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	%{name} = %{version}-%{release}
+Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel

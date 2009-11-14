@@ -3,7 +3,7 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1040395
+%define		snap		svn1044032
 %define		orgname		kdelibs
 %define		qtver		4.6.0
 
@@ -15,17 +15,17 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.73
-Release:	3
+Version:	4.3.74
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	ee81c26d16741fe49b8a2304a57e77f3
+# Source0-md5:	2dac7fddafae46152aacd7adfa69f2a5
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
-Patch3:		%{name}-bindingsfix.patch
+Patch3:		%{name}-glibc-2.11.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -200,7 +200,7 @@ KDE.
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0
-%patch3 -p0
+%patch3 -p3
 
 %build
 install -d build
@@ -776,7 +776,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KNTLM
 %{_includedir}/KDE/KNetwork
 %{_includedir}/KDE/KNotification
-%{_includedir}/KDE/KNotificationItem
 %{_includedir}/KDE/KNotificationRestrictions
 %{_includedir}/KDE/KNotifyConfigWidget
 %{_includedir}/KDE/KNumInput
@@ -802,7 +801,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPixmapRegionSelectorWidget
 %{_includedir}/KDE/KPixmapSequence
 %{_includedir}/KDE/KPixmapSequenceOverlayPainter
-%{_includedir}/KDE/KPixmapSequenceOverlayWidget
+#%{_includedir}/KDE/KPixmapSequenceOverlayWidget
 %{_includedir}/KDE/KPlotAxis
 %{_includedir}/KDE/KPlotObject
 %{_includedir}/KDE/KPlotPoint
@@ -872,6 +871,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KStartupInfoData
 %{_includedir}/KDE/KStartupInfoId
 %{_includedir}/KDE/KStatusBar
+%{_includedir}/KDE/KStatusNotifierItem
 %{_includedir}/KDE/KStringHandler
 %{_includedir}/KDE/KStringListValidator
 %{_includedir}/KDE/KStyle

@@ -1,0 +1,28 @@
+--- kdeui/itemviews/kcategorydrawer.h	2009/07/28 23:30:16	1003882
++++ kdeui/itemviews/kcategorydrawer.h.new	2009/10/29 00:24:36	1042035
+@@ -78,6 +78,8 @@
+       */
+     void setRightMargin(int rightMargin);
+ 
++    KCategoryDrawer &operator=(const KCategoryDrawer &cd);
++
+ private:
+     class Private;
+     Private *const d;
+--- kdeui/itemviews/kcategorydrawer.cpp	2009/07/28 23:30:16	1003882
++++ kdeui/itemviews/kcategorydrawer.cpp.new	2009/10/29 00:24:36	1042035
+@@ -189,6 +189,13 @@
+     d->rightMargin = rightMargin;
+ }
+ 
++KCategoryDrawer &KCategoryDrawer::operator=(const KCategoryDrawer &cd)
++{
++    d->leftMargin = cd.d->leftMargin;
++    d->rightMargin = cd.d->rightMargin;
++    return *this;
++}
++
+ KCategoryDrawerV2::KCategoryDrawerV2(QObject *parent)
+     : QObject(parent)
+     , KCategoryDrawer()
+

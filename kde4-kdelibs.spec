@@ -3,7 +3,7 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1044032
+%define		snap		svn1048496
 %define		orgname		kdelibs
 %define		qtver		4.6.0
 
@@ -15,17 +15,16 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.74
+Version:	4.3.75
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	2dac7fddafae46152aacd7adfa69f2a5
+# Source0-md5:	d8b84a20332c30256c431203b962bad9
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
-Patch3:		%{name}-glibc-2.11.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -200,7 +199,6 @@ KDE.
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0
-%patch3 -p3
 
 %build
 install -d build
@@ -432,6 +430,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libsolid.so.?
 %attr(755,root,root) %{_libdir}/libthreadweaver.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libthreadweaver.so.?
+%attr(755,root,root) %{_libdir}/libkdewebkit.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdewebkit.so.?
+%attr(755,root,root) %{_libdir}/libnepomukquery.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomukquery.so.4
 
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
@@ -485,6 +487,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libplasma.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
+%attr(755,root,root) %{_libdir}/libkdewebkit.so
+%attr(755,root,root) %{_libdir}/libnepomukquery.so
 
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
@@ -704,6 +708,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KGlobalAccel
 %{_includedir}/KDE/KGlobalSettings
 %{_includedir}/KDE/KGradientSelector
+%{_includedir}/KDE/KGraphicsWebView
 %{_includedir}/KDE/KGuiItem
 %{_includedir}/KDE/KHBox
 %{_includedir}/KDE/KHE
@@ -934,6 +939,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
 %{_includedir}/KDE/KWallet
+%{_includedir}/KDE/KWebPage
+%{_includedir}/KDE/KWebPluginFactory
+%{_includedir}/KDE/KWebView
 %{_includedir}/KDE/KWidgetItemDelegate
 %{_includedir}/KDE/KWindowInfo
 %{_includedir}/KDE/KWindowSystem

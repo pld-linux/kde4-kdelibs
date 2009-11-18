@@ -221,7 +221,7 @@ cd build
 	-DKDE4_ENABLE_FINAL=OFF \
 	../
 
-%{__make}
+%{__make} 
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -344,6 +344,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kauth
 %{_sysconfdir}/dbus-1/system.d/org.kde.auth.conf
 
+%dir %{_datadir}/apps/plasma/services
 %{_datadir}/apps/plasma/services/dataengineservice.operations
 %{_datadir}/apps/plasma/services/plasmoidservice.operations
 

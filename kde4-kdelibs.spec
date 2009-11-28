@@ -3,7 +3,7 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1048496
+%define		snap		svn1053190
 %define		orgname		kdelibs
 %define		qtver		4.6.0
 
@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.75
+Version:	4.3.77
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	d8b84a20332c30256c431203b962bad9
+# Source0-md5:	67f5a607cd35fe9f8f247648cfeb8cc7
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -307,6 +307,7 @@ rm -rf $RPM_BUILD_ROOT
 # %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
+%{_datadir}/apps/ktexteditor_exporter
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
@@ -403,6 +404,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkmediaplayer.so.?
 %attr(755,root,root) %{_libdir}/libknewstuff2.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libknewstuff2.so.?
+%attr(755,root,root) %{_libdir}/libknewstuff3.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknewstuff3.so.?
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libknotifyconfig.so.?
 %attr(755,root,root) %{_libdir}/libkntlm.so.*.*
@@ -474,6 +477,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
 %attr(755,root,root) %{_libdir}/libknewstuff2.so
+%attr(755,root,root) %{_libdir}/libknewstuff3.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so
 %attr(755,root,root) %{_libdir}/libkntlm.so
 %attr(755,root,root) %{_libdir}/libkparts.so
@@ -999,6 +1003,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/kmediaplayer
 %{_includedir}/kmediaplayer/*
 %{_includedir}/knewstuff2
+%{_includedir}/knewstuff3
 %dir %{_includedir}/kparts
 %{_includedir}/kparts/*
 %{_includedir}/kross

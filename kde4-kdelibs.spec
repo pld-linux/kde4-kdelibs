@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.77
+Version:	4.3.80
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}%{snap}.tar.bz2
-# Source0-md5:	67f5a607cd35fe9f8f247648cfeb8cc7
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
+# Source0-md5:	d31fc3d08875b33fe0802352b8671c83
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -77,7 +77,7 @@ BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.3.0
+BuildRequires:	soprano-devel >= 2.3.70
 BuildRequires:	strigi-devel >= 0.6.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -193,8 +193,7 @@ KDE.
 Цей пакет містить хедери, необхідні для компіляції програм для KDE.
 
 %prep
-%setup -q -n %{orgname}-%{version}%{snap}
-##%setup -q -n %{orgname}-%{version}
+%setup -q -n %{orgname}-%{version}
 #%patch100 -p0
 #%patch0 -p0
 #%patch1 -p0
@@ -275,7 +274,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
-%attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man1/kdecmake.1*
@@ -362,7 +360,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kjava/kjava.jar
 %{_datadir}/apps/ksgmltools2
 %{_datadir}/apps/kssl
-%{_datadir}/apps/nepomuk
 %dir %{_datadir}/config
 %dir %{_datadir}/config/ui
 %{_datadir}/config/ui/ui_standards.rc
@@ -426,8 +423,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkunittest.so.?
 %attr(755,root,root) %{_libdir}/libkutils.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkutils.so.?
-%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*
-%attr(755,root,root) %ghost %{_libdir}/libnepomuk.so.?
 %attr(755,root,root) %{_libdir}/libplasma.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libplasma.so.?
 %attr(755,root,root) %{_libdir}/libsolid.so.*.*
@@ -436,8 +431,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libthreadweaver.so.?
 %attr(755,root,root) %{_libdir}/libkdewebkit.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkdewebkit.so.?
-%attr(755,root,root) %{_libdir}/libnepomukquery.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libnepomukquery.so.4
 
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
@@ -488,12 +481,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkunitconversion.so
 %attr(755,root,root) %{_libdir}/libkunittest.so
 %attr(755,root,root) %{_libdir}/libkutils.so
-%attr(755,root,root) %{_libdir}/libnepomuk.so
 %attr(755,root,root) %{_libdir}/libplasma.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkdewebkit.so
-%attr(755,root,root) %{_libdir}/libnepomukquery.so
 
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
@@ -660,6 +651,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDialogButtonBox
 %{_includedir}/KDE/KDirLister
 %{_includedir}/KDE/KDirModel
+%{_includedir}/KDE/KDirNotify
 %{_includedir}/KDE/KDirOperator
 %{_includedir}/KDE/KDirSelectDialog
 %{_includedir}/KDE/KDirSortFilterProxyModel
@@ -778,6 +770,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMultiTabBarButton
 %{_includedir}/KDE/KMultiTabBarTab
 %{_includedir}/KDE/KNFSShare
+%{_includedir}/KDE/KNS3/Author
+%{_includedir}/KDE/KNS3/DownloadDialog
+%{_includedir}/KDE/KNS3/Entry
+%{_includedir}/KDE/KNS3/KNewStuffAction
+%{_includedir}/KDE/KNS3/KNewStuffButton
 %{_includedir}/KDE/KNS
 %{_includedir}/KDE/KNSBookmarkExporter
 %{_includedir}/KDE/KNSBookmarkExporterImpl
@@ -984,8 +981,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/khtml
 %{_includedir}/KDE/kndbgstream
 %{_includedir}/KDE/Plasma
-%dir %{_includedir}/nepomuk
-%{_includedir}/nepomuk/*
 %dir %{_includedir}/plasma
 %{_includedir}/plasma/*
 %dir %{_includedir}/dnssd

@@ -770,11 +770,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMultiTabBarButton
 %{_includedir}/KDE/KMultiTabBarTab
 %{_includedir}/KDE/KNFSShare
-%{_includedir}/KDE/KNS3/Author
-%{_includedir}/KDE/KNS3/DownloadDialog
-%{_includedir}/KDE/KNS3/Entry
-%{_includedir}/KDE/KNS3/KNewStuffAction
-%{_includedir}/KDE/KNS3/KNewStuffButton
+%{_includedir}/KDE/KNS3
 %{_includedir}/KDE/KNS
 %{_includedir}/KDE/KNSBookmarkExporter
 %{_includedir}/KDE/KNSBookmarkExporterImpl

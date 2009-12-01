@@ -343,6 +343,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kauth
 %{_sysconfdir}/dbus-1/system.d/org.kde.auth.conf
 
+%dir %{_datadir}/apps/plasma
 %dir %{_datadir}/apps/plasma/services
 %{_datadir}/apps/plasma/services/dataengineservice.operations
 %{_datadir}/apps/plasma/services/plasmoidservice.operations

@@ -76,6 +76,7 @@ BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
+BuildRequires:	shared-desktop-ontologies >= 0.2
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.3.70
 BuildRequires:	strigi-devel >= 0.6.5

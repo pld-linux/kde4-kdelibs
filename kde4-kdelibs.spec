@@ -271,6 +271,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
+%attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_bindir}/preparetips
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
@@ -353,6 +354,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
+%{_datadir}/apps/nepomuk
 %dir %{_datadir}/apps/khtml
 %dir %{_datadir}/apps/khtml/css
 %{_datadir}/apps/khtml/css/html4.css
@@ -425,6 +427,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkunittest.so.?
 %attr(755,root,root) %{_libdir}/libkutils.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkutils.so.?
+%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomuk.so.?
+%attr(755,root,root) %{_libdir}/libnepomukquery.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomukquery.so.?
 %attr(755,root,root) %{_libdir}/libplasma.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libplasma.so.?
 %attr(755,root,root) %{_libdir}/libsolid.so.*.*
@@ -483,6 +489,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkunitconversion.so
 %attr(755,root,root) %{_libdir}/libkunittest.so
 %attr(755,root,root) %{_libdir}/libkutils.so
+%attr(755,root,root) %{_libdir}/libnepomuk.so
+%attr(755,root,root) %{_libdir}/libnepomukquery.so
 %attr(755,root,root) %{_libdir}/libplasma.so
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
@@ -1002,7 +1010,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kross
 %dir %{_includedir}/ktexteditor
 %{_includedir}/ktexteditor/*
-%{_includedir}/*.h
+%dir %{_includedir}/nepomuk
+%{_includedir}/nepomuk/*
 %dir %{_includedir}/solid
 %{_includedir}/solid/*
 %dir %{_includedir}/sonnet
@@ -1016,3 +1025,4 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/kunitconversion/*
 %dir %{_includedir}/kunittest
 %{_includedir}/kunittest/*
+%{_includedir}/*.h

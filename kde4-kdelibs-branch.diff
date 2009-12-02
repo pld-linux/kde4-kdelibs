@@ -1,2041 +1,327 @@
-Index: cmake/modules/FindPhonon.cmake
+Index: kio/kio/slave.cpp
 ===================================================================
---- cmake/modules/FindPhonon.cmake	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ cmake/modules/FindPhonon.cmake	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -35,7 +35,7 @@
-    # then at the default system locations (CMAKE_SYSTEM_PREFIX_PATH, i.e. /usr etc.)
-    find_library(PHONON_LIBRARY NAMES phonon)
- 
--   find_path(PHONON_INCLUDE_DIR NAMES phonon/phonon_export.h PATHS ${KDE4_INCLUDE_INSTALL_DIR} ${QT_INCLUDE_DIR} ${INCLUDE_INSTALL_DIR} NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
-+   find_path(PHONON_INCLUDE_DIR NAMES phonon/phonon_export.h PATHS ${KDE4_INCLUDE_INSTALL_DIR} ${QT_INCLUDE_DIR} ${QT_LIBRARY_DIR} ${INCLUDE_INSTALL_DIR} NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_SYSTEM_PATH)
-    find_path(PHONON_INCLUDE_DIR NAMES phonon/phonon_export.h)
- 
-    if(PHONON_INCLUDE_DIR AND PHONON_LIBRARY)
-Index: kate/render/katerenderer.h
+--- kio/kio/slave.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/kio/slave.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -125,9 +125,10 @@
+ void Slave::timeout()
+ {
+     Q_D(Slave);
++   if (d->dead)
++      return;
+    if (d->connection->isConnected())
+       return;
+-
+    kDebug(7002) << "slave failed to connect to application pid=" << d->m_pid << " protocol=" << d->m_protocol;
+    if (d->m_pid && (::kill(d->m_pid, 0) == 0))
+    {
+Index: kio/kio/jobuidelegate.cpp
 ===================================================================
---- kate/render/katerenderer.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/render/katerenderer.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -236,6 +236,8 @@
-     int cursorToX(const KateTextLayout& range, int col) const;
-     /// \overload
-     int cursorToX(const KateTextLayout& range, const KTextEditor::Cursor& pos) const;
-+    /// \overload
-+    int cursorToX(const KateTextLayout& range, const KTextEditor::Cursor& pos, bool returnPastLine) const;
- 
-     /**
-      * Returns the real cursor which is occupied by the specified x value, or that closest to it.
-Index: kate/render/katerenderer.cpp
-===================================================================
---- kate/render/katerenderer.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/render/katerenderer.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -660,7 +660,7 @@
-         const KateTextLayout& lastLine = range->viewLine(range->viewLineCount() - 1);
-         int x = range->widthOfLastLine() + spaceWidth() * (cursor->column() - range->length());
-         if ( (x >= xStart) && (x <= xEnd))
--          paint.fillRect(x, (int)lastLine.lineLayout().y(), caretWidth, fm.height(), c);
-+          paint.fillRect(x-xStart, (int)lastLine.lineLayout().y(), caretWidth, fm.height(), c);
-       }
-     }
-   }
-@@ -903,6 +903,17 @@
-   return (int)range.lineLayout().cursorToX(pos.column());
+--- kio/kio/jobuidelegate.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/kio/jobuidelegate.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -79,17 +79,19 @@
+                                                      sizeSrc, sizeDest,
+                                                      ctimeSrc, ctimeDest, mtimeSrc,
+                                                      mtimeDest);
++    connect(job, SIGNAL(finished(KJob*)), &dlg, SLOT(reject())); // #192976
+     KIO::RenameDialog_Result res = static_cast<RenameDialog_Result>(dlg.exec());
+     newDest = dlg.newDestUrl().path();
+     return res;
  }
  
-+int KateRenderer::cursorToX(const KateTextLayout& range, const KTextEditor::Cursor & pos, bool returnPastLine) const
-+{
-+  int x = cursorToX(range, pos);
-+  int over = pos.column() * spaceWidth() - range.width();
-+ 
-+  if (returnPastLine && over > 0)
-+    x += over;
-+
-+  return x;
-+}
-+
- KTextEditor::Cursor KateRenderer::xToCursor(const KateTextLayout & range, int x, bool returnPastLine ) const
+-KIO::SkipDialog_Result KIO::JobUiDelegate::askSkip(KJob *,
++KIO::SkipDialog_Result KIO::JobUiDelegate::askSkip(KJob *job,
+                                               bool multi,
+                                               const QString & error_text)
  {
-   Q_ASSERT(range.isValid());
-Index: kate/syntax/data/lilypond.xml
-===================================================================
---- kate/syntax/data/lilypond.xml	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/syntax/data/lilypond.xml	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -8,7 +8,7 @@
-   <!ENTITY scripts "\d+|accent|marcato|staccat(issim)?o|espressivo|tenuto|portato|(up|down)(bow|mordent|prall)|flageolet|thumb|[lr](heel|toe)|open|stopped|turn|reverseturn|trill|mordent|prall(prall|mordent|down|up)?|lineprall|signumcongruentiae|(short|long|verylong)?fermata|segno|(var)?coda">
-   <!ENTITY keywords "accepts|alias|consists|defaultchild|denies|description|grobdescriptions|include|invalid|name|objectid|once|remove|sequential|simultaneous|type|version|score|book|bookpart">
-   <!ENTITY deprecatedkeywords "consistsend">
--  <!ENTITY commands "acciaccatura|addQuote|afterGrace|aikenHeads|allowPageTurn|alternative|apply(Context|Music|Output)|appoggiatura|arpeggio(Arrow(Down|Up)|Bracket|Normal|Parenthesis)?|(a|de)scendens|auctum|augmentum|autoBeamO(ff|n)|autochange|balloon(Grob)?Text|bar|barNumberCheck|bendAfter|breathe|break|cadenzaO(ff|n)|cavum|clef(\s+(treble|violin|G|alto|C|tenor|(sub)?bass|F|french|(mezzo)?soprano|(var)?baritone|percussion|tab))?|(end)?(de)?cr|cresc(TextCresc|Hairpin)|(cue|transposedCue)During|default|deminutum|dim(Text(Decresc|Decr|Dim)|Hairpin)|display(Lily)?Music|divisio(Maior|Maxima|Minima)|(dynamic|dots|phrasingSlur|slur|stem|tie|tuplet)(Down|Neutral|Up)|(balloon|text)LengthO(ff|n)|featherDurations|figure(mode|s)|finalis|flexa|(french|german|italian|semiGerman)Chords|glissando|grace|harmonic|(unH|h)ideNotes|(hide|show)StaffSwitch|inclinatum|(keep|remove)WithTag|key(\s+&pitch;)?|killCues|label|laissezVibrer|linea|mark|maxima|melisma(End)?|mergeDifferently(Head|Dott)edO(ff|n)|newSpacingSection|no(Beam|Break|PageBreak|PageTurn)|normalsize|numericTimeSignature|octaveCheck|oneVoice|oriscus|ottava|page(-ref|Break|Turn)|parallelMusic|parenthesize|partcombine|partial(\s*&duration;)?|pes|pitchedTrill|pointAndClickO(ff|n)|quilisma|quoteDuring|relative(\s+&pitch;)?|RemoveEmptyStaffContext|repeat(\s+(unfold|volta|tremolo|percent)(\s+\d+)?)?|repeatTie|resetRelativeOctave|rest|sacredHarpHeads|scaleDurations|scoreTweak|easyHeadsO(ff|n)|shift(Durations|Off|On{1,3})|(slur|tie)(Both|Dashed|Dotted|Solid)|small|spacingTweaks|(start|stop)(Group|(Text|Trill)Span|Staff)|stemBoth|stropha|super|(sustain|sostenuto)O(ff|n)|table-of-contents|tag|times?(\s*\d+/\d+)?|tiny|tocItem|transpose(\s+&pitch;\s*&pitch;)?|transposition(\s+&pitch;)|tweak|unfoldRepeats|virg(ul)?a|voice(One|Two|Three|Four)|withMusicProperty|cm|mm|in|pt|major|minor|ionian|locrian|aeolian|mixolydian|lydian|phrygian|dorian">
-+  <!ENTITY commands "acciaccatura|addQuote|afterGrace|aikenHeads|allowPageTurn|alternative|apply(Context|Music|Output)|appoggiatura|arpeggio(Arrow(Down|Up)|Bracket|Normal|Parenthesis)?|(a|de)scendens|auctum|augmentum|autoBeamO(ff|n)|autochange|balloon(Grob)?Text|bar|barNumberCheck|bendAfter|breathe|break|cadenzaO(ff|n)|cavum|clef(\s+(treble|violin|G|alto|C|tenor|(sub)?bass|F|french|(mezzo)?soprano|(var)?baritone|percussion|tab))?|(end)?(de)?cr|cresc(TextCresc|Hairpin)|(cue|transposedCue)During|default|deminutum|dim(Text(Decresc|Decr|Dim)|Hairpin)|display(Lily)?Music|divisio(Maior|Maxima|Minima)|(dynamic|dots|phrasingSlur|slur|stem|tie|tuplet)(Down|Neutral|Up)|(balloon|text)LengthO(ff|n)|featherDurations|figure(mode|s)|finalis|flexa|(french|german|italian|semiGerman)Chords|glissando|grace|harmonic|(unH|h)ideNotes|(hide|show)StaffSwitch|inclinatum|(keep|remove)WithTag|key(\s+&pitch;)?|killCues|label|laissezVibrer|linea|makeClusters|mark|maxima|melisma(End)?|mergeDifferently(Head|Dott)edO(ff|n)|newSpacingSection|no(Beam|Break|PageBreak|PageTurn)|normalsize|numericTimeSignature|octaveCheck|oneVoice|oriscus|ottava|page(-ref|Break|Turn)|parallelMusic|parenthesize|partcombine|partial(\s*&duration;)?|pes|pitchedTrill|pointAndClickO(ff|n)|quilisma|quoteDuring|relative(\s+&pitch;)?|RemoveEmptyStaffContext|repeat(\s+(unfold|volta|tremolo|percent)(\s+\d+)?)?|repeatTie|resetRelativeOctave|rest|sacredHarpHeads|scaleDurations|scoreTweak|easyHeadsO(ff|n)|shift(Durations|Off|On{1,3})|(slur|tie)(Both|Dashed|Dotted|Solid)|small|spacingTweaks|(start|stop)(Group|(Text|Trill)Span|Staff)|stemBoth|stropha|super|(sustain|sostenuto)O(ff|n)|table-of-contents|tag|times?(\s*\d+/\d+)?|tiny|tocItem|transpose(\s+&pitch;\s*&pitch;)?|transposition(\s+&pitch;)|tweak|unfoldRepeats|virg(ul)?a|voice(One|Two|Three|Four)|withMusicProperty|cm|mm|in|pt|major|minor|ionian|locrian|aeolian|mixolydian|lydian|phrygian|dorian">
-   <!ENTITY deprecatedcommands "arpeggio(Up|Down|Neutral)|newpage|script(Up|Down|Both)|(empty|fat)Text|setEasyHeads|(default|voice|modernVoice|piano|forget)Accidentals|(modern(Voice)?|piano)Cautionaries|noResetKey|compressMusic|octave|(sustain|sostenuto)(Down|Up)|set(Hairpin|Text)(Cresc|Decresc|Dim)|setTextDecr">
-   <!ENTITY markupnotextargs "arrow-head|beam|char|(semi|sesqui|double)?(flat|sharp)|draw-(circle|line)|epsfile|filled-box|fret-diagram(-terse|-verbose)?|fromproperty|harp-pedal|(justify|wordwrap)-(field|string)|lookup|markalphabet|markletter|musicglyph|natural|note-by-number|note|null|simple|(back)?slashed-digit|stencil|strut|tied-lyric|triangle|verbatim-file">
-   <!ENTITY markupwithtextargs "markup|bold|(rounded-)?box|bracket|caps|(center|general|left|right)-align|circle|((center|dir|left|right)-)?column|combine|concat|dynamic|fill-line|finger|fontCaps|(abs-)?fontsize|fraction|halign|hbracket|hcenter-in|hcenter|hspace|huge|italic|justify|larger?|line|lower|magnify|medium|normal-size-(sub|super)|normal-text|normalsize|number|on-the-fly|override|pad-(around|markup|to-box|x)|page-ref|postscript|put-adjacent|raise|roman|rotate|sans|small(er)?|smallCaps|sub|super|teeny|text|tiny|translate(-scaled)?|transparent|typewriter|underline|upright|vcenter|whiteout|with-(color|dimensions|url)|wordwrap|(markup|column-|justified-|override-|wordwrap-)lines|wordwrap-(string-)?internal">
-@@ -26,13 +26,21 @@
- ]>
- <language name="LilyPond" section="Other"
-           style="lilypond" indenter="lilypond"
--          version="3.04" kateversion="3.0"
-+          version="3.05" kateversion="3.0"
-           extensions="*.ly;*.LY;*.ily;*.ILY;*.lyi;*.LYI"
-           mimetype="text/x-lilypond"
-           author="Wilbert Berendsen (info@wilbertberendsen.nl)" license="LGPL">
- 
-   <!--
-     
-+    November, 2009
-+    Minor updates by Wilbert Berendsen
-+    
-+    Changes:
-+    
-+    - add makeClusters
-+    - fix chords in drummode
-+    
-     October, 2008
-     Minor updates by Wilbert Berendsen
- 
-@@ -882,9 +890,15 @@
-       <context name="drumrules" attribute="Normal Text" lineEndContext="#stay">
-         <DetectChar char="{" attribute="Keyword" context="drumrules" beginRegion="sequential"/>
-         <DetectChar char="}" attribute="Keyword" context="#pop" endRegion="sequential"/>
-+        <RegExpr String="&lt;(?!&lt;)" attribute="Chord" context="drumchord"/>
-         <keyword attribute="Other Text" String="drumpitchnames" context="duration"/>
-         <IncludeRules context="music"/>
-       </context>
-+      
-+      <context name="drumchord" attribute="Normal Text" lineEndContext="#stay">
-+        <keyword attribute="Other Text" String="drumpitchnames"/>
-+        <IncludeRules context="chord"/>
-+      </context>
- 
-       <!-- Chordmode -->
-       <context name="chordmode" attribute="Other Mode" lineEndContext="#stay"
-Index: kate/utils/kateautoindent.cpp
-===================================================================
---- kate/utils/kateautoindent.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/utils/kateautoindent.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -204,13 +204,26 @@
-   if (line <= 0)
-     return;
- 
--  KateTextLine::Ptr textline = doc->plainKateTextLine(line-1);
-+  KateTextLine::Ptr prevTextLine = doc->plainKateTextLine(line-1);
-+  KateTextLine::Ptr textLine     = doc->plainKateTextLine(line);
- 
-   // textline not found, cu
--  if (!textline)
-+  if (!prevTextLine || !textLine)
-     return;
- 
--  doIndent (line, textline->indentDepth (tabWidth));
-+  const QString previousWhitespace = prevTextLine->leadingWhitespace();
-+
-+  // remove leading whitespace, then insert the leading indentation
-+  doc->editStart ();
-+
-+  if (!keepExtra)
-+  {
-+    const QString currentWhitespace = textLine->leadingWhitespace();
-+    doc->editRemoveText (line, 0, currentWhitespace.length());
-+  }
-+
-+  doc->editInsertText (line, 0, previousWhitespace);
-+  doc->editEnd ();
+     // We now do it in process. So this method is a useless wrapper around KIO::open_RenameDialog.
+     KIO::SkipDialog dlg( window(), multi, error_text );
++    connect(job, SIGNAL(finished(KJob*)), &dlg, SLOT(reject())); // #192976
+     return static_cast<KIO::SkipDialog_Result>(dlg.exec());
  }
  
- void KateAutoIndent::scriptIndent (KateView *view, const KTextEditor::Cursor &position, QChar typedChar)
-Index: kate/view/kateview.cpp
+Index: kio/kio/kzip.h
 ===================================================================
---- kate/view/kateview.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/view/kateview.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -1669,7 +1669,7 @@
-   QMutexLocker l(m_doc->smartMutex());
+--- kio/kio/kzip.h	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/kio/kzip.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -149,9 +149,7 @@
+     /// Closes the archive
+     virtual bool closeArchive();
  
-   KTextEditor::Range oldSelection = *m_selection;
--  *m_selection = selection;
-+  *m_selection = selection.isEmpty() ? KTextEditor::Range::invalid() : selection;
- 
-   tagSelection(oldSelection);
- 
-@@ -1711,9 +1711,6 @@
- 
- bool KateView::selection() const
+-    /**
+-     * @internal Not needed for zip
+-     */
++    /// Reimplemented from KArchive
+     virtual bool doWriteDir( const QString& name, const QString& user,
+                              const QString& group, mode_t perm, time_t atime,
+                              time_t mtime, time_t ctime );
+Index: kio/kio/karchive.cpp
+===================================================================
+--- kio/kio/karchive.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/kio/karchive.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -351,7 +351,7 @@
+                          mode_t perm, time_t atime,
+                          time_t mtime, time_t ctime )
  {
--  if (m_selection->isEmpty())
--      return false;
--
-   if(blockSelection())
-     return *m_selection != KateSmartRange::invalid();
-   else
-Index: kate/view/kateviewinternal.h
-===================================================================
---- kate/view/kateviewinternal.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/view/kateviewinternal.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -270,7 +270,6 @@
-     KateSmartCursor m_cursor;
-     KTextEditor::Cursor m_mouse;
-     KTextEditor::Cursor m_displayCursor;
--    int m_cursorX;
- 
-     bool m_possibleTripleClick;
- 
-@@ -360,8 +359,8 @@
-     KTextEditor::Cursor toVirtualCursor(const KTextEditor::Cursor& realCursor) const;
- 
-     // These variable holds the most recent maximum real & visible column number
--    bool m_preserveMaxX;
--    int m_currentMaxX;
-+    bool m_preserveX;
-+    int m_preservedX;
- 
-     bool m_updatingView;
-     int m_wrapChangeViewLine;
-Index: kate/view/kateviewinternal.cpp
-===================================================================
---- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -87,8 +87,8 @@
-   , m_selectAnchor (-1, -1)
-   , m_selectionMode( Default )
-   , m_layoutCache(new KateLayoutCache(renderer(), this))
--  , m_preserveMaxX(false)
--  , m_currentMaxX(0)
-+  , m_preserveX(false)
-+  , m_preservedX(0)
-   , m_updatingView(true)
-   , m_cachedMaxStartPos(-1, -1)
-   , m_dragScrollTimer(this)
-@@ -179,7 +179,6 @@
- 
-   m_displayCursor.setPosition(0, 0);
-   m_cursor.setInsertBehavior(KTextEditor::SmartCursor::MoveOnInsert);
--  m_cursorX = 0;
- 
-   setAcceptDrops( true );
- 
-@@ -677,12 +676,12 @@
-     }
-   }
- 
--  if (!m_view->dynWordWrap() && endCol != -1)
-+  if (!m_view->dynWordWrap() && (endCol != -1 || m_view->wrapCursor()))
-   {
-     QMutexLocker lock(m_doc->smartMutex());
-  
-     KTextEditor::Cursor rc = toRealCursor(c);
--    int sX = renderer()->cursorToX(cache()->textLayout(rc), rc);
-+    int sX = renderer()->cursorToX(cache()->textLayout(rc), rc, !m_view->wrapCursor());
- 
-     int sXborder = sX-8;
-     if (sXborder < 0)
-@@ -953,12 +952,12 @@
-       return *this;
-     }
- 
--    const bool noWrapCursor = m_vi->view()->blockSelection() || !m_vi->m_view->wrapCursor();
-+    const bool wrapCursor = m_vi->view()->wrapCursor();
-     int maxColumn = -1;
-     if (n >= 0) {
-       for (int i = 0; i < n; i++) {
-         if (m_column >= thisLine->length()) {
--          if (!noWrapCursor) {
-+          if (wrapCursor) {
-             break;
- 
-           } else if (m_vi->view()->dynWordWrap()) {
-@@ -1320,10 +1319,7 @@
-       KateTextLayout t = cache()->textLayout(realLine, 0);
-       Q_ASSERT(t.isValid());
- 
--      if (m_currentMaxX > m_cursorX)
--        m_cursorX = m_currentMaxX;
--
--      ret.setColumn(renderer()->xToCursor(t, m_cursorX, !m_view->wrapCursor()).column());
-+      ret.setColumn(renderer()->xToCursor(t, m_preservedX, !m_view->wrapCursor()).column());
-     }
- 
-     return ret;
-@@ -1390,13 +1386,9 @@
-         if (keepX) {
-           KTextEditor::Cursor realCursor = toRealCursor(virtualCursor);
-           KateTextLayout t = cache()->textLayout(realCursor);
--          m_cursorX = renderer()->cursorToX(t, realCursor);
-+          // renderer()->cursorToX(t, realCursor, !m_view->wrapCursor());
- 
--          if (m_currentMaxX > m_cursorX) {
--            m_cursorX = m_currentMaxX;
--          }
--
--          realCursor = renderer()->xToCursor(thisViewLine, m_cursorX, !m_view->wrapCursor());
-+          realCursor = renderer()->xToCursor(thisViewLine, m_preservedX, !m_view->wrapCursor());
-           ret.setColumn(realCursor.column());
-         }
- 
-@@ -1457,7 +1449,7 @@
-   if (m_displayCursor.line() == 0 && (!m_view->dynWordWrap() || cache()->viewLine(m_cursor) == 0))
-     return;
- 
--  m_preserveMaxX = true;
-+  m_preserveX = true;
- 
-   KateTextLayout thisLine = currentLayout();
-   // This is not the first line because that is already simplified out above
-@@ -1468,14 +1460,8 @@
-   Q_ASSERT(m_cursor.column() >= thisLine.startCol());
-   Q_ASSERT(!thisLine.wrap() || m_cursor.column() < thisLine.endCol());
- 
--  // Retrieve current cursor x position
--  m_cursorX = renderer()->cursorToX(thisLine, m_cursor);
-+  KTextEditor::Cursor c = renderer()->xToCursor(pRange, m_preservedX, !m_view->wrapCursor());
- 
--  if (m_currentMaxX > m_cursorX)
--    m_cursorX = m_currentMaxX;
--
--  KTextEditor::Cursor c = renderer()->xToCursor(pRange, m_cursorX, !m_view->wrapCursor());
--
-   updateSelection( c, sel );
-   l.unlock();
-   updateCursor( c );
-@@ -1493,7 +1479,7 @@
-   if ((m_displayCursor.line() >= m_doc->numVisLines() - 1) && (!m_view->dynWordWrap() || cache()->viewLine(m_cursor) == cache()->lastViewLine(m_cursor.line())))
-     return;
- 
--  m_preserveMaxX = true;
-+  m_preserveX = true;
- 
-   KateTextLayout thisLine = currentLayout();
-   // This is not the last line because that is already simplified out above
-@@ -1504,14 +1490,8 @@
-       (m_cursor.column() >= thisLine.startCol()) &&
-       (!thisLine.wrap() || m_cursor.column() < thisLine.endCol()));
- 
--  // Retrieve current cursor x position
--  m_cursorX = renderer()->cursorToX(thisLine, m_cursor);
-+  KTextEditor::Cursor c = renderer()->xToCursor(nRange, m_preservedX, !m_view->wrapCursor());
- 
--  if (m_currentMaxX > m_cursorX)
--    m_cursorX = m_currentMaxX;
--
--  KTextEditor::Cursor c = renderer()->xToCursor(nRange, m_cursorX, !m_view->wrapCursor());
--
-   l.unlock();
-   updateSelection(c, sel);
-   l.unlock();
-@@ -1593,11 +1573,9 @@
-   int lineadj = m_minLinesVisible;
- 
-   int linesToScroll = -qMax( (linesDisplayed() - 1) - lineadj, 0 );
--  m_preserveMaxX = true;
-+  m_preserveX = true;
- 
-   if (!m_doc->pageUpDownMovesCursor () && !atTop) {
--    m_cursorX = renderer()->cursorToX(currentLayout(), m_cursor);
--
-     KTextEditor::Cursor newStartPos = viewLineOffset(startPos(), linesToScroll - 1);
-     scrollPos(newStartPos);
- 
-@@ -1606,12 +1584,9 @@
- 
-     KateTextLayout newLine = cache()->textLayout(newPos);
- 
--    if (m_currentMaxX> m_cursorX)
--      m_cursorX = m_currentMaxX;
-+    newPos = renderer()->xToCursor(newLine, m_preservedX, !view()->wrapCursor());
- 
--    newPos = renderer()->xToCursor(newLine, m_cursorX, !view()->wrapCursor());
--
--    m_preserveMaxX = true;
-+    m_preserveX = true;
-     updateSelection( newPos, sel );
-     l.unlock();
-     updateCursor(newPos);
-@@ -1638,11 +1613,9 @@
-   int lineadj = m_minLinesVisible;
- 
-   int linesToScroll = qMax( (linesDisplayed() - 1) - lineadj, 0 );
--  m_preserveMaxX = true;
-+  m_preserveX = true;
- 
-   if (!m_doc->pageUpDownMovesCursor () && !atEnd) {
--    m_cursorX = renderer()->cursorToX(currentLayout(), m_cursor);
--
-     KTextEditor::Cursor newStartPos = viewLineOffset(startPos(), linesToScroll + 1);
-     scrollPos(newStartPos);
- 
-@@ -1651,12 +1624,9 @@
- 
-     KateTextLayout newLine = cache()->textLayout(newPos);
- 
--    if (m_currentMaxX> m_cursorX)
--      m_cursorX = m_currentMaxX;
-+    newPos = renderer()->xToCursor(newLine, m_preserveX, !view()->wrapCursor());
- 
--    newPos = renderer()->xToCursor(newLine, m_cursorX, !view()->wrapCursor());
--
--    m_preserveMaxX = true;
-+    m_preserveX = true;
-     updateSelection( newPos, sel );
-     l.unlock();
-     updateCursor(newPos);
-@@ -1698,15 +1668,10 @@
- {
-   QMutexLocker lock(m_doc->smartMutex());
- 
--  m_cursorX = renderer()->cursorToX(currentLayout(), m_cursor);
--
-   KTextEditor::Cursor newCursor(0, 0);
- 
--  if (m_currentMaxX > m_cursorX)
--    m_cursorX = m_currentMaxX;
-+  newCursor = renderer()->xToCursor(cache()->textLayout(newCursor), m_preserveX, !view()->wrapCursor());
- 
--  newCursor = renderer()->xToCursor(cache()->textLayout(newCursor), m_cursorX, !view()->wrapCursor());
--
-   updateSelection( newCursor, sel );
-   lock.unlock();
-   updateCursor( newCursor );
-@@ -1718,11 +1683,8 @@
-   
-   KTextEditor::Cursor newCursor(m_doc->lastLine(), 0);
- 
--  if (m_currentMaxX > m_cursorX)
--    m_cursorX = m_currentMaxX;
-+  newCursor = renderer()->xToCursor(cache()->textLayout(newCursor), m_preserveX, !view()->wrapCursor());
- 
--  newCursor = renderer()->xToCursor(cache()->textLayout(newCursor), m_cursorX, !view()->wrapCursor());
--
-   updateSelection( newCursor, sel );
-   lock.unlock();
-   updateCursor( newCursor );
-@@ -1903,12 +1865,6 @@
-   m_cursor = newCursor;
-   m_displayCursor = toVirtualCursor(m_cursor);
-   
--  {
--    QMutexLocker lock(m_doc->smartMutex());
--
--    m_cursorX = renderer()->cursorToX(cache()->textLayout(m_cursor), m_cursor);
--  }
--  
-   if ( m_view == m_doc->activeView() )
-     makeVisible ( m_displayCursor, m_displayCursor.column(), false, center, calledExternally );
- 
-@@ -1930,12 +1886,14 @@
-   }
- 
-   // Remember the maximum X position if requested
--  if (m_preserveMaxX)
--    m_preserveMaxX = false;
--  else
--    m_currentMaxX = m_cursorX;
-+  if (m_preserveX)
-+    m_preserveX = false;
-+  else {
-+    QMutexLocker lock(m_doc->smartMutex());
-+    m_preservedX = renderer()->cursorToX(cache()->textLayout(m_cursor), m_cursor, !m_view->wrapCursor());
-+  }
- 
--  //kDebug(13030) << "m_currentMaxX: " << m_currentMaxX << " (was "<< oldmaxx << "), m_cursorX: " << m_cursorX;
-+  //kDebug(13030) << "m_preservedX: " << m_preservedX << " (was "<< oldmaxx << "), m_cursorX: " << m_cursorX;
-   //kDebug(13030) << "Cursor now located at real " << cursor.line << "," << cursor.col << ", virtual " << m_displayCursor.line << ", " << m_displayCursor.col << "; Top is " << startLine() << ", " << startPos().col;
- 
-   cursorMoved();
-Index: kate/document/katetextline.cpp
-===================================================================
---- kate/document/katetextline.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/document/katetextline.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -124,6 +124,14 @@
-   return previousNonSpaceChar(m_text.length() - 1);
+-    return doWriteDir( name, user, group, perm, atime, mtime, ctime );
++    return doWriteDir( name, user, group, perm | 040000, atime, mtime, ctime );
  }
  
-+QString KateTextLine::leadingWhitespace() const
-+{
-+  if (firstChar() < 0)
-+    return string(0, length());
-+
-+  return string(0, firstChar());
-+}
-+
- int KateTextLine::indentDepth (int tabWidth) const
+ bool KArchive::writeSymLink(const QString &name, const QString &target,
+@@ -729,7 +729,9 @@
+ 
+ void KArchiveDirectory::addEntry( KArchiveEntry* entry )
  {
-   int d = 0;
-Index: kate/document/katetextline.h
-===================================================================
---- kate/document/katetextline.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kate/document/katetextline.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -167,6 +167,8 @@
-     inline QString string(int column, int length) const
-     { return m_text.mid(column, length); }
- 
-+    QString leadingWhitespace() const;
+-  Q_ASSERT( !entry->name().isEmpty() );
++  if( entry->name().isEmpty() )
++    return;
 +
-     /**
-      * Returns the indentation depth with each tab expanded into \e tabWidth characters.
-      */
-Index: kfile/kfilewidget.cpp
+   if( d->entries.value( entry->name() ) ) {
+       kWarning() << "directory " << name()
+                   << "has entry" << entry->name() << "already";
+Index: kio/kio/kzip.cpp
 ===================================================================
---- kfile/kfilewidget.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kfile/kfilewidget.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -652,6 +652,7 @@
-     d->ops->clearFilter();
-     d->filterWidget->setFilter(copy);
-     d->ops->setNameFilter(d->filterWidget->currentFilter());
-+    d->ops->updateDir();
-     d->hasDefaultFilter = false;
-     d->filterWidget->setEditable( true );
- 
-Index: kioslave/ftp/ftp.cpp
-===================================================================
---- kioslave/ftp/ftp.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kioslave/ftp/ftp.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -2258,7 +2258,7 @@
- {
-   // check if destination is ok ...
-   KDE_struct_stat buff;
--  bool bDestExists = (KDE::stat( sCopyFile, &buff ) != -1);
-+  const bool bDestExists = (KDE::stat( sCopyFile, &buff ) != -1);
-   if(bDestExists)
-   { if(S_ISDIR(buff.st_mode))
-     {
-@@ -2275,9 +2275,10 @@
-   // do we have a ".part" file?
-   const QString sPart = sCopyFile + QLatin1String(".part");
-   bool bResume = false;
--  bool bPartExists = (KDE::stat( sPart, &buff ) != -1);
--  bool bMarkPartial = config()->readEntry("MarkPartial", true);
--  if(bMarkPartial && bPartExists && buff.st_size > 0)
-+  const bool bPartExists = (KDE::stat( sPart, &buff ) != -1);
-+  const bool bMarkPartial = config()->readEntry("MarkPartial", true);
-+  const QString dest = bMarkPartial ? sPart : sCopyFile;
-+  if (bMarkPartial && bPartExists && buff.st_size > 0)
-   { // must not be a folder! please fix a similar bug in kio_file!!
-     if(S_ISDIR(buff.st_mode))
-     {
-@@ -2292,12 +2293,10 @@
- #endif
-   }
- 
--  if(bPartExists && !bResume)                  // get rid of an unwanted ".part" file
-+  if (bPartExists && !bResume)                  // get rid of an unwanted ".part" file
-     QFile::remove(sPart);
- 
--  // JPF: in kio_file overwrite disables ".part" operations. I do not believe
--  // JPF: that this is a good behaviour!
--  if(bDestExists)                             // must delete for overwrite
-+  if (bDestExists)                             // must delete for overwrite
-     QFile::remove(sCopyFile);
- 
-   // WABA: Make sure that we keep writing permissions ourselves,
-@@ -2310,8 +2309,7 @@
- 
-   // open the output file ...
-   KIO::fileoffset_t hCopyOffset = 0;
--  if(bResume)
--  {
-+  if (bResume) {
-     iCopyFile = KDE::open( sPart, O_RDWR );  // append if resuming
-     hCopyOffset = KDE_lseek(iCopyFile, 0, SEEK_END);
-     if(hCopyOffset < 0)
-@@ -2321,8 +2319,9 @@
-     }
-     kDebug(7102) << "copy: resuming at " << hCopyOffset;
-   }
--  else
--    iCopyFile = KDE::open(sPart, O_CREAT | O_TRUNC | O_WRONLY, initialMode);
-+  else {
-+    iCopyFile = KDE::open(dest, O_CREAT | O_TRUNC | O_WRONLY, initialMode);
-+  }
- 
-   if(iCopyFile == -1)
-   {
-@@ -2362,3 +2361,4 @@
-   }
-   return iRes;
- }
-+
-Index: nepomuk/core/ontology/entity.cpp
-===================================================================
---- nepomuk/core/ontology/entity.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ nepomuk/core/ontology/entity.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -262,13 +262,13 @@
- {
-     // since we use one instace cache we can improve comparation operations
-     // intensly by not comparing URLs but pointers.
--    return( d && other.d && d == other.d );
-+    return( d.constData() == other.d.constData() );
+--- kio/kio/kzip.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/kio/kzip.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -995,9 +995,15 @@
+     return true;
  }
  
- 
- bool Nepomuk::Types::Entity::operator!=( const Entity& other ) const
- {
--    return !d || !other.d || d != other.d;
-+    return( d.constData() != other.d.constData() );
+-bool KZip::doWriteDir( const QString&, const QString&, const QString&,
+-                       mode_t, time_t, time_t, time_t ) {
+-        return true;
++bool KZip::doWriteDir( const QString &name, const QString &user, const QString &group,
++                       mode_t perm, time_t atime, time_t mtime, time_t ctime ) {
++    // Zip files have no explicit directories, they are implicitly created during extraction time
++    // when file entries have paths in them.
++    // However, to support empty directories, we must create a dummy file entry which ends with '/'.
++    QString dirName = name;
++    if (!name.endsWith("/"))
++        dirName = dirName.append('/');
++    return writeFile(dirName, user, group, 0, 0, perm, atime, mtime, ctime);
  }
  
- 
-Index: nepomuk/rcgen/CMakeLists.txt
+ bool KZip::doPrepareWriting(const QString &name, const QString &user,
+Index: kio/tests/jobtest.cpp
 ===================================================================
---- nepomuk/rcgen/CMakeLists.txt	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ nepomuk/rcgen/CMakeLists.txt	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -18,9 +18,9 @@
- qt4_add_resources(nepomuk_rcgen_SRCS templates.qrc)
- kde4_add_executable(nepomuk-rcgen ${nepomuk_rcgen_SRCS})
- target_link_libraries(nepomuk-rcgen
--  ${SOPRANO_LIBRARIES}
-   ${QT_QTCORE_LIBRARY}
-   ${QT_QTDBUS_LIBRARY}
-+  ${SOPRANO_LIBRARIES}
- )
+--- kio/tests/jobtest.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kio/tests/jobtest.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -1130,7 +1130,7 @@
  
- install(TARGETS nepomuk-rcgen ${INSTALL_TARGETS_DEFAULT_ARGS} )
-Index: kio/kio/accessmanagerreply_p.cpp
+ void JobTest::getInvalidUrl()
+ {
+-    KUrl url("file://\"\"");
++    KUrl url("http://[strange;hostname]/");
+     QVERIFY(!url.isValid());
+ 
+     KIO::SimpleJob* job = KIO::get(url, KIO::NoReload, KIO::HideProgressInfo);
+Index: kdecore/sycoca/ksycocafactory.cpp
 ===================================================================
---- kio/kio/accessmanagerreply_p.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kio/kio/accessmanagerreply_p.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -23,9 +23,9 @@
- 
- #include "accessmanagerreply_p.h"
- #include "accessmanager.h"
-+#include "job.h"
- 
- #include <kdebug.h>
--#include <job.h>
- #include <klocale.h>
- 
- #include <QSslConfiguration>
-@@ -38,15 +38,11 @@
+--- kdecore/sycoca/ksycocafactory.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kdecore/sycoca/ksycocafactory.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -31,7 +31,10 @@
+ class KSycocaFactory::Private
  {
  public:
-     AccessManagerReplyPrivate(AccessManagerReply *qq)
--    : q(qq)
--    , m_kioJob(0)
--    , m_data()
--    , m_metaDataRead(false)
--    {}
-+    : q(qq),
-+      m_metaDataRead(false) {}
- 
-     void _k_redirection(KIO::Job *job, const KUrl &url);
-     void _k_percent(KJob *job, unsigned long percent);
--    void _k_permanentRedirection(KIO::Job *job, const KUrl &fromUrl, const KUrl &toUrl);
- 
-     AccessManagerReply *q;
- 
-@@ -56,7 +52,7 @@
- };
- 
- AccessManagerReply::AccessManagerReply(const QNetworkAccessManager::Operation &op, const QNetworkRequest &request, KIO::Job *kioJob, QObject *parent)
--    : QNetworkReply(parent), d(new AccessManagerReply::AccessManagerReplyPrivate(this))
-+                   :QNetworkReply(parent), d(new AccessManagerReply::AccessManagerReplyPrivate(this))
- 
- {
-     d->m_kioJob = kioJob;
-@@ -75,8 +71,6 @@
-         QTimer::singleShot(0, this, SIGNAL(finished()));
-     } else {
-         connect(kioJob, SIGNAL(redirection(KIO::Job*, const KUrl&)), SLOT(_k_redirection(KIO::Job*, const KUrl&)));
--        connect(kioJob, SIGNAL(permanentRedirection(KIO::Job*, const KUrl&, const KUrl&)),
--            SLOT(_k_permanentRedirection(KIO::Job*, const KUrl&, const KUrl&)));
-         connect(kioJob, SIGNAL(percent(KJob*, unsigned long)), SLOT(_k_percent(KJob*, unsigned long)));
-         connect(kioJob, SIGNAL(data(KIO::Job *, const QByteArray &)),
-             SLOT(appendData(KIO::Job *, const QByteArray &)));
-@@ -106,7 +100,6 @@
- 
- qint64 AccessManagerReply::readData(char *data, qint64 maxSize)
- {
--//     kDebug();
-     const qint64 length = qMin(qint64(d->m_data.length()), maxSize);
-     if (length) {
-         qMemCopy(data, d->m_data.constData(), length);
-@@ -118,8 +111,6 @@
- 
- void AccessManagerReply::appendData(KIO::Job *kioJob, const QByteArray &data)
- {
--//     kDebug();
--
-     if (!d->m_metaDataRead) {
-         const QString responseCode = kioJob->queryMetaData("responsecode");
-         if (!responseCode.isEmpty()) 
-@@ -127,16 +118,11 @@
- 
-         const QString headers = kioJob->queryMetaData("HTTP-Headers");
-         if (!headers.isEmpty()) {
--            QStringList headerList = headers.split('\n');
--            Q_FOREACH(const QString &header, headerList) {
--                if (header.startsWith(QLatin1String("set-cookie"), Qt::CaseInsensitive)) {
--                    //kDebug() << "Ignored header: " << header;
--                    continue;
--                }
--                const QStringList headerPair = header.split(": ");
-+            QStringListIterator it (headers.split('\n'));
-+            while (it.hasNext()) {
-+                const QStringList headerPair = it.next().split(QLatin1String(":"));
-                 if (headerPair.size() == 2) {
--                    //kDebug() << headerPair.at(0) << headerPair.at(1);
--                    setRawHeader(headerPair.at(0).toUtf8(), headerPair.at(1).toUtf8());
-+                    setRawHeader(headerPair.at(0).trimmed().toUtf8(), headerPair.at(1).trimmed().toUtf8());
-                 }
-             }
-         }
-@@ -153,8 +139,6 @@
- void AccessManagerReply::setMimeType(KIO::Job *kioJob, const QString &mimeType)
- {
-     Q_UNUSED(kioJob);
--
--//     kDebug() << mimeType;
-     setHeader(QNetworkRequest::ContentTypeHeader, mimeType.toUtf8());
- }
- 
-@@ -243,14 +227,6 @@
-     emit q->downloadProgress(bytes * ((double)percent / 100), bytes);
- }
- 
--void AccessManagerReply::AccessManagerReplyPrivate::_k_permanentRedirection(KIO::Job *job, const KUrl &fromUrl, const KUrl &toUrl)
--{
--    Q_UNUSED(fromUrl);
--    if (q->attribute(QNetworkRequest::HttpStatusCodeAttribute).isNull())
--        q->setAttribute(QNetworkRequest::HttpStatusCodeAttribute, 301);
--    _k_redirection(job, toUrl);
- }
- 
--}
--
- #include "accessmanagerreply_p.moc"
-Index: kio/kio/accessmanagerreply_p.h
-===================================================================
---- kio/kio/accessmanagerreply_p.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kio/kio/accessmanagerreply_p.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -62,7 +62,6 @@
- 
-     Q_PRIVATE_SLOT(d, void _k_redirection(KIO::Job *job, const KUrl &url))
-     Q_PRIVATE_SLOT(d, void _k_percent(KJob *job, unsigned long percent))
--    Q_PRIVATE_SLOT(d, void _k_permanentRedirection(KIO::Job *job, const KUrl &fromUrl, const KUrl &toUrl))
- };
- 
- }
-Index: kio/bookmarks/kbookmarkmenu.cc
-===================================================================
---- kio/bookmarks/kbookmarkmenu.cc	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kio/bookmarks/kbookmarkmenu.cc	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -54,11 +54,11 @@
-         addAddBookmark(0),
-         bookmarksToFolder(0)
+-    Private() {}
++    Private() : mOffset(0),
++                m_sycocaDictOffset(0),
++                m_beginEntryOffset(0),
++                m_endEntryOffset(0) {}
+     ~Private()
      {
--    }    
-+    }
- 
--    QAction *newBookmarkFolder;
--    QAction *addAddBookmark;
--    QAction *bookmarksToFolder;
-+    KAction *newBookmarkFolder;
-+    KAction *addAddBookmark;
-+    KAction *bookmarksToFolder;
- };
- 
- 
-@@ -139,7 +139,7 @@
- {
-     qDeleteAll( m_lstSubMenus );
-     qDeleteAll( m_actions );
--    delete d;   
-+    delete d;
- }
- 
- void KBookmarkMenu::ensureUpToDate()
-@@ -170,24 +170,24 @@
- }
- 
- KMenu * KBookmarkMenu::contextMenu( QAction * action )
--{ 
-+{
-     KBookmarkActionInterface* act = dynamic_cast<KBookmarkActionInterface *>(action);
-     if (!act)
-         return 0;
-     return new KBookmarkContextMenu(act->bookmark(), m_pManager, m_pOwner);
- }
- 
--bool KBookmarkMenu::isRoot() const 
-+bool KBookmarkMenu::isRoot() const
- {
-     return m_bIsRoot;
- }
- 
--bool KBookmarkMenu::isDirty() const 
-+bool KBookmarkMenu::isDirty() const
- {
-     return m_bDirty;
- }
- 
--QString KBookmarkMenu::parentAddress() const 
-+QString KBookmarkMenu::parentAddress() const
- {
-     return m_parentAddress;
- }
-@@ -197,12 +197,12 @@
-     return m_pManager;
- }
- 
--KBookmarkOwner * KBookmarkMenu::owner() const 
-+KBookmarkOwner * KBookmarkMenu::owner() const
- {
-     return m_pOwner;
- }
- 
--KMenu * KBookmarkMenu::parentMenu() const 
-+KMenu * KBookmarkMenu::parentMenu() const
- {
-     return m_parentMenu;
- }
-@@ -455,7 +455,7 @@
- 
-     KAction * paOpenFolderInTabs = new KAction( title, this );
-     paOpenFolderInTabs->setIcon( KIcon("tab-new") );
--    paOpenFolderInTabs->setToolTip( i18n( "Open all bookmarks in this folder as a new tab." ) );
-+    paOpenFolderInTabs->setHelpText( i18n( "Open all bookmarks in this folder as a new tab." ) );
-     connect( paOpenFolderInTabs, SIGNAL( triggered( bool ) ), this, SLOT( slotOpenFolderInTabs() ) );
- 
-     m_parentMenu->addAction(paOpenFolderInTabs);
-@@ -472,10 +472,10 @@
-         d->bookmarksToFolder = new KAction( title, this );
-         m_actionCollection->addAction( m_bIsRoot ? "add_bookmarks_list" : 0, d->bookmarksToFolder);
-         d->bookmarksToFolder->setIcon( KIcon( "bookmark-new-list" ) );
--        d->bookmarksToFolder->setToolTip( i18n( "Add a folder of bookmarks for all open tabs." ) );
-+        d->bookmarksToFolder->setHelpText( i18n( "Add a folder of bookmarks for all open tabs." ) );
-         connect( d->bookmarksToFolder, SIGNAL( triggered( bool ) ), this, SLOT( slotAddBookmarksList() ) );
-     }
--    
-+
-     m_parentMenu->addAction(d->bookmarksToFolder);
- }
- 
-@@ -502,21 +502,21 @@
-   if( ( m_pOwner && !m_pOwner->enableOption(KBookmarkOwner::ShowEditBookmark) ) || !KAuthorized::authorizeKAction("bookmarks") )
-     return;
- 
--  QAction * m_paEditBookmarks = m_actionCollection->addAction( KStandardAction::EditBookmarks, "edit_bookmarks",
--                                                               m_pManager, SLOT( slotEditBookmarks() ) );
-+  KAction * m_paEditBookmarks = m_actionCollection->addAction(KStandardAction::EditBookmarks, "edit_bookmarks",
-+                                                              m_pManager, SLOT(slotEditBookmarks()));
-   m_parentMenu->addAction(m_paEditBookmarks);
--  m_paEditBookmarks->setToolTip( i18n( "Edit your bookmark collection in a separate window" ) );
-+  m_paEditBookmarks->setHelpText( i18n( "Edit your bookmark collection in a separate window" ) );
- }
- 
- void KBookmarkMenu::addNewFolder()
- {
-     if( !m_pOwner || !m_pOwner->enableOption(KBookmarkOwner::ShowAddBookmark) || !KAuthorized::authorizeKAction("bookmarks"))
-         return;
--    
-+
-     if (d->newBookmarkFolder == 0) {
-         d->newBookmarkFolder = new KAction( i18n( "New Bookmark Folder..." ), this );
-         d->newBookmarkFolder->setIcon( KIcon( "folder-new" ) );
--        d->newBookmarkFolder->setToolTip( i18n( "Create a new bookmark folder in this menu" ) );
-+        d->newBookmarkFolder->setHelpText( i18n( "Create a new bookmark folder in this menu" ) );
-         connect( d->newBookmarkFolder, SIGNAL( triggered( bool ) ), this, SLOT( slotNewFolder() ) );
-     }
- 
-@@ -596,7 +596,7 @@
-       parentBookmark.addBookmark(m_pOwner->currentTitle(), KUrl(m_pOwner->currentUrl()));
-       m_pManager->emitChanged( parentBookmark );
-   }
--      
-+
- }
- 
- void KBookmarkMenu::slotOpenFolderInTabs()
-@@ -725,7 +725,7 @@
-     m_pOwner(owner)
- {
-   setIcon(KIcon(bookmark().icon()));
--  setToolTip( bookmark().url().pathOrUrl() );
-+  setHelpText( bookmark().url().pathOrUrl() );
-   connect(this, SIGNAL( triggered(Qt::MouseButtons, Qt::KeyboardModifiers) ),
-      SLOT( slotSelected(Qt::MouseButtons, Qt::KeyboardModifiers) ));
- }
-Index: kio/kssl/kopenssl.cpp
+         delete m_sycocaDict;
+Index: kdecore/services/kmimetypefactory.cpp
 ===================================================================
---- kio/kssl/kopenssl.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kio/kssl/kopenssl.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -622,7 +622,7 @@
-       K_SSL_set_session = (int (*)(SSL*,SSL_SESSION*)) d->sslLib->resolveFunction("SSL_set_session");
-       K_d2i_SSL_SESSION = (SSL_SESSION* (*)(SSL_SESSION**,unsigned char**, long)) d->sslLib->resolveFunction("d2i_SSL_SESSION");
-       K_i2d_SSL_SESSION = (int (*)(SSL_SESSION*,unsigned char**)) d->sslLib->resolveFunction("i2d_SSL_SESSION");
--      K_SSL_get_ciphers = (STACK *(*)(const SSL*)) d->sslLib->resolveFunction("SSL_get_ciphers");
-+      K_SSL_get_ciphers = (STACK_OF(SSL_CIPHER) *(*)(const SSL*)) d->sslLib->resolveFunction("SSL_get_ciphers");
- #endif
+--- kdecore/services/kmimetypefactory.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kdecore/services/kmimetypefactory.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -29,15 +29,16 @@
  
- 
-Index: kio/kssl/kopenssl.h
+ KMimeTypeFactory::KMimeTypeFactory()
+     : KSycocaFactory( KST_KMimeTypeFactory ),
++      m_fastPatternOffset(0),
++      m_highWeightPatternOffset(0),
++      m_lowWeightPatternOffset(0),
++      m_parentsMapOffset(0),
+       m_highWeightPatternsLoaded(false),
+       m_lowWeightPatternsLoaded(false),
+       m_parentsMapLoaded(false),
+       m_magicFilesParsed(false)
+ {
+     kMimeTypeFactoryInstance->instanceCreated(this);
+-    m_fastPatternOffset = 0;
+-    m_highWeightPatternOffset = 0;
+-    m_lowWeightPatternOffset = 0;
+     if (!KSycoca::self()->isBuilding()) {
+         QDataStream* str = stream();
+         Q_ASSERT(str);
+Index: kdecore/tests/kurltest.cpp
 ===================================================================
---- kio/kssl/kopenssl.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kio/kssl/kopenssl.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -44,7 +44,15 @@
- #include <openssl/stack.h>
- #include <openssl/bn.h>
- #undef crypt
-+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-+#define STACK _STACK
-+#define OSSL_SKVALUE_RTYPE void
-+#define OSSL_MORECONST const
+--- kdecore/tests/kurltest.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kdecore/tests/kurltest.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -1452,26 +1452,32 @@
+   weird = "http://strange<username>@strange<hostname>/";
+   QVERIFY( !weird.isValid() );
+ 
+-  weird = "http://strange<username>@ok_hostname/";
++  weird = "http://strange<username>@hostname/";
+   QVERIFY( weird.isValid() ); // KDE3: was valid. Fixed by _setEncodedUrl.
+-  QCOMPARE( weird.host(), QString("ok_hostname") );
++  QCOMPARE( weird.host(), QString("hostname") );
+ 
+   weird = "http://strange;hostname/";
++#if QT_VERSION < 0x040600
+   QVERIFY( weird.isValid() ); // KDE3: was invalid. bah*2.
++#endif
+ 
+   weird = "http://strange;username@strange;hostname/";
++#if QT_VERSION < 0x040600
+   QVERIFY( weird.isValid() ); // KDE3: was invalid. bah*3.
++#endif
+ 
+-  weird = "http://strange;username@ok_hostname/";
++  weird = "http://strange;username@hostname/";
+   QVERIFY( weird.isValid() );
+-  QCOMPARE( weird.host(), QString("ok_hostname") );
++  QCOMPARE( weird.host(), QString("hostname") );
+ 
+   weird = "http://strange;username:password@strange;hostname/";
++#if QT_VERSION < 0x040600
+   QVERIFY( weird.isValid() ); // KDE3: was invalid
++#endif
+ 
+-  weird = "http://strange;username:password@ok_hostname/";
++  weird = "http://strange;username:password@hostname/";
+   QVERIFY( weird.isValid() );
+-  QCOMPARE( weird.host(), QString("ok_hostname") );
++  QCOMPARE( weird.host(), QString("hostname") );
+ 
+   weird = "http://[strange;hostname]/";
+   QVERIFY( !weird.isValid() );
+@@ -1626,10 +1632,16 @@
+   QCOMPARE( leo.path(), QString("text/html,http://www.invalid/" ) );
+ 
+   KUrl ptal( "ptal://mlc:usb@PC_970" ); // User=mlc, password=usb, host=PC_970
++#if QT_VERSION >= 0x040600
++  QCOMPARE(ptal.url(), QString("ptal://mlc:usb@")); // The host "PC_970" is invalid according to STD3 validation
++  KUrl ptalSimpler("ptal://mlc:usb@pc123");
++  QCOMPARE(ptalSimpler.url(), QString("ptal://mlc:usb@pc123"));
 +#else
-+#define OSSL_SKVALUE_RTYPE char
-+#define OSSL_MORECONST
- #endif
+   QVERIFY( ptal.isValid() );
+   QCOMPARE( ptal.host(), QString("pc_970") );
+   QCOMPARE( ptal.user(), QString("mlc") );
+   QCOMPARE( ptal.pass(), QString("usb") );
 +#endif
+ }
  
- /**
-  * Dynamically load and wrap OpenSSL.
-@@ -505,6 +513,9 @@
-     */
-    void sk_free(STACK *s);
- 
-+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-+   void sk_free(void *s) { return sk_free(reinterpret_cast<STACK*>(s)); }
-+#endif
- 
-    /*
-     *  Number of elements in the stack
-@@ -517,6 +528,9 @@
-     */
-    char *sk_value(STACK *s, int n);
- 
-+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-+   char *sk_value(void *s, int n) { return sk_value(reinterpret_cast<STACK*>(s), n); }
-+#endif
- 
-    /*
-     *  Create a new stack
-@@ -529,7 +543,11 @@
-     */
-    int sk_push(STACK *s, char *d);
- 
-+#if OPENSSL_VERSION_NUMBER >= 0x10000000L
-+   int sk_push(void *s, void *d) { return sk_push(reinterpret_cast<STACK*>(s), reinterpret_cast<char*>(d)); }
-+#endif
- 
-+
-    /*
-     *  Duplicate the stack
-     */
-Index: kdecore/localization/ktranslit.cpp
-===================================================================
---- kdecore/localization/ktranslit.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdecore/localization/ktranslit.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -198,7 +198,7 @@
- {
-     public:
-     QHash<QString, bool> latinNames;
--    QHash<QString, bool> yekavianNames;
-+    QHash<QString, bool> ijekavianNames;
-     QHash<QChar, QString> dictC2L;
-     QHash<QString, QString> dictI2E;
-     int maxReflexLen;
-@@ -218,16 +218,16 @@
-     SR_NAME_ENTRY(d->latinNames, "ijekavianlatin");
-     SR_NAME_ENTRY(d->latinNames, "yekavianlatin");
-     SR_NAME_ENTRY(d->latinNames, "iyekavianlatin");
--    SR_NAME_ENTRY(d->yekavianNames, "ije");
--    SR_NAME_ENTRY(d->yekavianNames, "ijelatin");
--    SR_NAME_ENTRY(d->yekavianNames, "jekavian");
--    SR_NAME_ENTRY(d->yekavianNames, "jekavianlatin");
--    SR_NAME_ENTRY(d->yekavianNames, "ijekavian");
--    SR_NAME_ENTRY(d->yekavianNames, "ijekavianlatin");
--    SR_NAME_ENTRY(d->yekavianNames, "yekavian");
--    SR_NAME_ENTRY(d->yekavianNames, "yekavianlatin");
--    SR_NAME_ENTRY(d->yekavianNames, "iyekavian");
--    SR_NAME_ENTRY(d->yekavianNames, "iyekavianlatin");
-+    SR_NAME_ENTRY(d->ijekavianNames, "ije");
-+    SR_NAME_ENTRY(d->ijekavianNames, "ijelatin");
-+    SR_NAME_ENTRY(d->ijekavianNames, "jekavian");
-+    SR_NAME_ENTRY(d->ijekavianNames, "jekavianlatin");
-+    SR_NAME_ENTRY(d->ijekavianNames, "ijekavian");
-+    SR_NAME_ENTRY(d->ijekavianNames, "ijekavianlatin");
-+    SR_NAME_ENTRY(d->ijekavianNames, "yekavian");
-+    SR_NAME_ENTRY(d->ijekavianNames, "yekavianlatin");
-+    SR_NAME_ENTRY(d->ijekavianNames, "iyekavian");
-+    SR_NAME_ENTRY(d->ijekavianNames, "iyekavianlatin");
- 
-     #define SR_DICTC2L_ENTRY(a, b) do { \
-         d->dictC2L[QString::fromUtf8(a)[0]] = QString::fromUtf8(b); \
-@@ -306,33 +306,82 @@
-     #define SR_DICTI2E_ENTRY(a, b) do { \
-         d->dictI2E[QString::fromUtf8(a)] = QString::fromUtf8(b); \
-     } while (0)
--    // basic
-+    // basic, Cyrillic
-     SR_DICTI2E_ENTRY("ије", "е");
-+    SR_DICTI2E_ENTRY("Ије", "Е");
-     SR_DICTI2E_ENTRY("ИЈЕ", "Е");
-     SR_DICTI2E_ENTRY("иј", "е");
-+    SR_DICTI2E_ENTRY("Иј", "Е");
-     SR_DICTI2E_ENTRY("ИЈ", "Е");
-     SR_DICTI2E_ENTRY("је", "е");
-+    SR_DICTI2E_ENTRY("Је", "Е");
-     SR_DICTI2E_ENTRY("ЈЕ", "Е");
-     SR_DICTI2E_ENTRY("ље", "ле");
-+    SR_DICTI2E_ENTRY("Ље", "Ле");
-     SR_DICTI2E_ENTRY("ЉЕ", "ЛЕ");
-     SR_DICTI2E_ENTRY("ње", "не");
-+    SR_DICTI2E_ENTRY("Ње", "Не");
-     SR_DICTI2E_ENTRY("ЊЕ", "НЕ");
-     SR_DICTI2E_ENTRY("ио", "ео");
-+    SR_DICTI2E_ENTRY("Ио", "Ео");
-     SR_DICTI2E_ENTRY("ИО", "ЕО");
-     SR_DICTI2E_ENTRY("иљ", "ел");
-+    SR_DICTI2E_ENTRY("Иљ", "Ел");
-     SR_DICTI2E_ENTRY("ИЉ", "ЕЛ");
--    // special cases (include one prev. letter)
-+    // basic, Latin
-+    SR_DICTI2E_ENTRY("ije", "e");
-+    SR_DICTI2E_ENTRY("Ije", "E");
-+    SR_DICTI2E_ENTRY("IJE", "E");
-+    SR_DICTI2E_ENTRY("ij", "e");
-+    SR_DICTI2E_ENTRY("Ij", "E");
-+    SR_DICTI2E_ENTRY("IJ", "E");
-+    SR_DICTI2E_ENTRY("je", "e");
-+    SR_DICTI2E_ENTRY("Je", "E");
-+    SR_DICTI2E_ENTRY("JE", "E");
-+    SR_DICTI2E_ENTRY("lje", "le");
-+    SR_DICTI2E_ENTRY("Lje", "Le");
-+    SR_DICTI2E_ENTRY("LJE", "LE");
-+    SR_DICTI2E_ENTRY("nje", "ne");
-+    SR_DICTI2E_ENTRY("Nje", "Ne");
-+    SR_DICTI2E_ENTRY("NJE", "NE");
-+    SR_DICTI2E_ENTRY("io", "eo");
-+    SR_DICTI2E_ENTRY("Io", "Eo");
-+    SR_DICTI2E_ENTRY("IO", "EO");
-+    SR_DICTI2E_ENTRY("ilj", "el");
-+    SR_DICTI2E_ENTRY("Ilj", "El");
-+    SR_DICTI2E_ENTRY("ILJ", "EL");
-+    // special cases, Cyrillic
-     SR_DICTI2E_ENTRY("лије", "ли");
-+    SR_DICTI2E_ENTRY("Лије", "Ли");
-     SR_DICTI2E_ENTRY("ЛИЈЕ", "ЛИ");
-     SR_DICTI2E_ENTRY("лијен", "лењ");
-     SR_DICTI2E_ENTRY("Лијен", "Лењ");
-     SR_DICTI2E_ENTRY("ЛИЈЕН", "ЛЕЊ");
-     SR_DICTI2E_ENTRY("мија", "меја");
-+    SR_DICTI2E_ENTRY("Мија", "Меја");
-     SR_DICTI2E_ENTRY("МИЈА", "МЕЈА");
-     SR_DICTI2E_ENTRY("мије", "мејe");
-+    SR_DICTI2E_ENTRY("Мије", "Мејe");
-     SR_DICTI2E_ENTRY("МИЈЕ", "МЕЈE");
-     SR_DICTI2E_ENTRY("није", "ни");
-+    SR_DICTI2E_ENTRY("Није", "Ни");
-     SR_DICTI2E_ENTRY("НИЈЕ", "НИ");
-+    // special cases, Latin
-+    SR_DICTI2E_ENTRY("lije", "li");
-+    SR_DICTI2E_ENTRY("Lije", "Li");
-+    SR_DICTI2E_ENTRY("LIJE", "LI");
-+    SR_DICTI2E_ENTRY("lijen", "lenj");
-+    SR_DICTI2E_ENTRY("Lijen", "Lenj");
-+    SR_DICTI2E_ENTRY("LIJEN", "LENJ");
-+    SR_DICTI2E_ENTRY("mija", "meja");
-+    SR_DICTI2E_ENTRY("Mija", "Meja");
-+    SR_DICTI2E_ENTRY("MIJA", "MEJA");
-+    SR_DICTI2E_ENTRY("mije", "meje");
-+    SR_DICTI2E_ENTRY("Mije", "Meje");
-+    SR_DICTI2E_ENTRY("MIJE", "MEJE");
-+    SR_DICTI2E_ENTRY("nije", "ni");
-+    SR_DICTI2E_ENTRY("Nije", "Ni");
-+    SR_DICTI2E_ENTRY("NIJE", "NI");
- 
-     d->maxReflexLen = 0;
-     foreach (const QString &reflex, d->dictI2E.keys()) {
-@@ -355,8 +404,8 @@
- 
-     QString str = str_;
- 
--    // Resolve Ekavian/Yekavian (must come before Cyrillic/Latin).
--    if (d->yekavianNames.contains(script)) {
-+    // Resolve Ekavian/Ijekavian.
-+    if (d->ijekavianNames.contains(script)) {
-         // Just remove reflex marks.
-         str.remove(d->reflexMark);
-         str = resolveInserts(str, 2, 1, insHeadIje);
-Index: kdecore/all_languages.desktop
-===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -13087,7 +13087,7 @@
- Name[bn]=সুন্দানিজ
- Name[bn_IN]=সুদানিজ
- Name[br]=Soudaneg
--Name[ca]=Sondanès
-+Name[ca]=Sundanès
- Name[ca@valencia]=Sondanès
- Name[cs]=Sundanský
- Name[csb]=Sudańsczi
-Index: kdecore/fakes.c
-===================================================================
---- kdecore/fakes.c	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdecore/fakes.c	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -31,7 +31,7 @@
- 
- 
- #define KDE_open open
--#define KDE_mkdir mkdir 
-+#define KDE_mkdir mkdir
- 
- 
- #ifndef HAVE_SETENV
-@@ -39,10 +39,15 @@
- #ifdef HAVE_ALLOCA_H
- #include <alloca.h>
- #endif
+ void KUrlTest::testUtf8()
+@@ -1868,12 +1880,6 @@
+   KUrl uwp( "http://%C3%A4.de" );
+   QVERIFY( uwp.isValid() );
+   QCOMPARE( thiago.url(), QString("http://xn--4ca.de") ); // as above
 -
-+#ifdef HAVE_STRING_H
- #include <string.h>
-+#endif
-+#ifdef HAVE_STDLIB_H
- #include <stdlib.h>
-+#endif
-+#ifdef HAVE_UNISTD_H
- #include <unistd.h>
-+#endif
- 
- KDECORE_EXPORT int setenv(const char *name, const char *value, int overwrite) {
-     int i;
-@@ -67,11 +72,18 @@
- #ifdef HAVE_ALLOCA_H
- #include <alloca.h>
- #endif
--
-+#ifdef HAVE_STRING_H
- #include <string.h>
-+#endif
-+#ifdef HAVE_STDLIB_H
- #include <stdlib.h>
-+#endif
-+#ifdef HAVE_ERRNO_H
- #include <errno.h>
-+#endif
-+#ifdef HAVE_UNISTD_H
- #include <unistd.h>
-+#endif
- 
- #ifndef environ
- extern char ** environ;
-@@ -154,24 +166,32 @@
- {
-     srand48(seed);
+-  // #183720
+-  const QByteArray init = ".kde.org";
+-  const QString fromAce = QUrl::fromAce(init);
+-  QCOMPARE( fromAce, QString(".kde.org"));
+-  QCOMPARE( QUrl::toAce(fromAce), init );
  }
--#endif
-+#endif /* !HAVE_RANDOM */
  
- #ifndef HAVE_SETEUID
- int seteuid(uid_t euid)
- {
-     return setreuid(-1, euid); /* Well, if you have neither you are in trouble :) */
- }
--#endif
-+#endif /* !HAVE_SETEUID */
- 
- #ifndef HAVE_MKSTEMPS
-+#ifdef HAVE_SYS_TYPES_H
- #include <sys/types.h>
-+#endif
- #ifdef HAVE_SYS_STAT_H
- #include <sys/stat.h>
- #endif
- #include <fcntl.h>
-+#ifdef HAVE_STRING_H
- #include <string.h>
-+#endif
-+#ifdef HAVE_STRINGS_H
- #include <strings.h>
-+#endif
-+#ifdef HAVE_STDLIB_H
- #include <stdlib.h>
-+#endif
- 
- /* this is based on code taken from the GNU libc, distributed under the LGPL license */
- 
-@@ -244,12 +264,14 @@
- {
-   return mkstemps( _template, 0 );
- }
--#endif
-+#endif /* !HAVE_MKSTEMP */
- 
- #ifndef HAVE_MKDTEMP
- 
- #ifndef HAVE_MKSTEMPS
-+#ifdef HAVE_SYS_TYPES_H
- #include <sys/types.h>
-+#endif
- #ifdef HAVE_SYS_STAT_H
- #include <sys/stat.h>
- #endif
-@@ -306,13 +328,18 @@
-       value += 7777;
- 
-       if (!KDE_mkdir(_template,0700))
--	return _template;	
-+	return _template;
-     }
-     return 0;
- }
- #endif /* !HAVE_MKDTEMP */
- 
- #ifndef HAVE_STRLCPY
-+
-+#ifdef HAVE_STRING_H
-+#include <string.h>
-+#endif
-+
- KDECORE_EXPORT unsigned long strlcpy(char* d, const char* s, unsigned long bufsize)
- {
-     unsigned long len, ret = strlen(s);
-@@ -325,12 +352,17 @@
-         }
-     } else
- 	memcpy(d, s, ret + 1);
--	
-+
-     return ret;
- }
-+#endif /* !HAVE_STRLCPY */
-+
-+#ifndef HAVE_STRLCAT
-+
-+#ifdef HAVE_STRING_H
-+#include <string.h>
- #endif
- 
--#ifndef HAVE_STRLCAT
- KDECORE_EXPORT unsigned long strlcat(char* d, const char* s, unsigned long bufsize)
- {
-     char *cp;
-@@ -350,7 +382,7 @@
- 
-     return ret;
- }
--#endif
-+#endif /* !HAVE_STRLCAT */
- 
- #ifndef HAVE_STRCASESTR
- /*
-@@ -450,7 +482,7 @@
- ret0:
-   return 0;
- }
--#endif
-+#endif /* !HAVE_STRCASESTR */
- 
- #ifndef HAVE_TRUNC
- 
-@@ -467,4 +499,4 @@
- {
-        return x < 0 ? -floor(-x) : floor(x);
- }
--#endif
-+#endif /* !HAVE_TRUNC */
-Index: kdecore/date/ksystemtimezone.cpp
+ void KUrlTest::testUriMode()
+Index: kded/kbuildsycoca.cpp
 ===================================================================
---- kdecore/date/ksystemtimezone.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdecore/date/ksystemtimezone.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -320,6 +320,8 @@
-     m_zoneinfoDir   = group.readEntry("ZoneinfoDir");
-     m_zonetab       = group.readEntry("Zonetab");
-     m_localZoneName = group.readEntry("LocalZone");
-+    if (m_zoneinfoDir.length() > 1 && m_zoneinfoDir.endsWith('/'))
-+        m_zoneinfoDir.truncate(m_zoneinfoDir.length() - 1);  // strip trailing '/'
-     if (!init)
-         setLocalZone();
-     kDebug(161) << "readConfig(): local zone=" << m_localZoneName;
-@@ -327,23 +329,38 @@
+--- kded/kbuildsycoca.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kded/kbuildsycoca.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -497,7 +497,7 @@
+          mimeTypeFactory = static_cast<KBuildMimeTypeFactory *>( *factory );
+       else if ( aId == KST_KServiceFactory )
+          serviceFactory = static_cast<KBuildServiceFactory *>( *factory );
+-      aOffset = (*factory)->offset();
++      aOffset = (*factory)->offset(); // not set yet, so always 0
+       (*str) << aId;
+       (*str) << aOffset;
+    }
+@@ -854,6 +854,7 @@
+      if (QDBusConnection::sessionBus().isConnected()) {
+         kDebug() << "Emitting notifyDatabaseChanged" << *g_changeList;
+        QDBusConnection::sessionBus().send(signal);
++       qApp->processEvents(); // make sure the dbus signal is sent before we quit.
+      }
+    }
  
- void KSystemTimeZonesPrivate::setLocalZone()
- {
-+    QString filename;
-     if (m_localZoneName.startsWith('/'))
-     {
-         // The time zone is specified by a file outside the zoneinfo directory
--        m_localZone = KTzfileTimeZone(KSystemTimeZonesPrivate::tzfileSource(), m_localZoneName);
--        if (m_localZone.isValid() && m_instance)
-+        filename = m_localZoneName;
+Index: kded/kbuildmimetypefactory.cpp
+===================================================================
+--- kded/kbuildmimetypefactory.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kded/kbuildmimetypefactory.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -100,6 +100,11 @@
+     QMap<QString, QString> commentsByLanguage;
+ 
+     const QStringList mimeFiles = KGlobal::dirs()->findAllResources(resource, file);
++    if (mimeFiles.isEmpty()) {
++        kWarning() << "No file found for" << file << ", even though the file appeared in a directory listing.";
++        kWarning() << "Either it was just removed, or the directory doesn't have executable permission...";
++        return 0;
 +    }
-+    else
-+    {
-+        // The zone name is either a known zone, or it's a relative file name
-+        // in zoneinfo directory which isn't in zone.tab.
-+        m_localZone = m_instance->zone(m_localZoneName);
-+        if (m_localZone.isValid())
-+            return;
-+        // It's a relative file name
-+        filename = m_zoneinfoDir + '/' + m_localZoneName;
-+    }
-+
-+    // Parse the specified time zone data file
-+    QString zonename = filename;
-+    if (zonename.startsWith(m_zoneinfoDir + '/'))
-+        zonename = zonename.mid(m_zoneinfoDir.length() + 1);
-+    m_localZone = KTzfileTimeZone(KSystemTimeZonesPrivate::tzfileSource(), zonename);
-+    if (m_localZone.isValid() && m_instance)
-+    {
-+        // Add the new time zone to the list
-+        KTimeZone oldzone = m_instance->zone(zonename);
-+        if (!oldzone.isValid() || oldzone.type() != "KTzfileTimeZone")
-         {
--            // Add the new time zone to the list
--            KTimeZone oldzone = m_instance->zone(m_localZoneName);
--            if (!oldzone.isValid() || oldzone.type() != "KTzfileTimeZone")
--            {
--                m_instance->remove(oldzone);
--                m_instance->add(m_localZone);
--            }
-+            m_instance->remove(oldzone);
-+            m_instance->add(m_localZone);
-         }
+     QListIterator<QString> mimeFilesIter(mimeFiles);
+     mimeFilesIter.toBack();
+     while (mimeFilesIter.hasPrevious()) { // global first, then local.
+@@ -167,7 +172,7 @@
+         kWarning() << "Missing <comment> field in" << file;
      }
--    else
--        m_localZone = m_instance->zone(m_localZoneName);
- }
  
- void KSystemTimeZonesPrivate::cleanup()
-Index: kdecore/util/klibrary.cpp
-===================================================================
---- kdecore/util/klibrary.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdecore/util/klibrary.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -85,14 +85,7 @@
- {
- }
+-    //kDebug() << "Creating mimetype" << name << "from file" << file << "path" << fullPath;
++    //kDebug() << "Creating mimetype" << name << "from file" << file << mimeFiles;
  
--class FactoryHash : public QHash<QString, QPointer<KPluginFactory> >
--{
--public:
--    ~FactoryHash() {
--        //qDebug() << "deleting" << count() << "kde3 factories";
--        qDeleteAll(*this);
--    }
--};
-+typedef QHash<QString, QPointer<KPluginFactory> > FactoryHash;
- 
- K_GLOBAL_STATIC(FactoryHash, s_createdKde3Factories)
- 
-Index: plasma/private/packages.cpp
-===================================================================
---- plasma/private/packages.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ plasma/private/packages.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -153,7 +153,8 @@
- 
- WallpaperPackage::WallpaperPackage(Wallpaper *paper, QObject *parent)
-     : PackageStructure(parent, "Background"),
--      m_paper(paper)
-+      m_paper(paper),
-+      m_fullPackage(true)
- {
-     QStringList mimetypes;
-     mimetypes << "image/svg" << "image/png" << "image/jpeg" << "image/jpg";
-@@ -172,7 +173,9 @@
- 
- void WallpaperPackage::renderHintsChanged()
- {
--    pathChanged();
-+    if (m_fullPackage) {
-+        findBestPaper();
-+    }
- }
- 
- void WallpaperPackage::pathChanged()
-@@ -187,7 +190,8 @@
- 
-     QFileInfo info(path());
- 
--    if (info.isDir()) {
-+    m_fullPackage = info.isDir();
-+    if (m_fullPackage) {
-         setContentsPrefix("contents/");
-         findBestPaper();
-     } else {
-Index: plasma/private/packages_p.h
-===================================================================
---- plasma/private/packages_p.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ plasma/private/packages_p.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -72,6 +72,7 @@
- 
- private:
-     Wallpaper *m_paper;
-+    bool m_fullPackage;
- };
- 
- PackageStructure::Ptr defaultPackageStructure(ComponentType type);
-Index: plasma/theme.cpp
-===================================================================
---- plasma/theme.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ plasma/theme.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -626,6 +626,8 @@
-         return d->generalFont;
-         break;
-     }
-+
-+    return d->generalFont;
- }
- 
- QFontMetrics Theme::fontMetrics() const
-Index: khtml/rendering/render_form.h
-===================================================================
---- khtml/rendering/render_form.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ khtml/rendering/render_form.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -517,6 +517,9 @@
-     virtual void layout();
-     virtual void setStyle(RenderStyle *style);
- 
-+    virtual short scrollWidth() const;
-+    virtual int scrollHeight() const;
-+
-     virtual void updateFromElement();
- 
-     // don't even think about making this method virtual!
-Index: khtml/rendering/render_object.h
-===================================================================
---- khtml/rendering/render_object.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ khtml/rendering/render_object.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -156,8 +156,8 @@
-     virtual RenderObject *firstChild() const { return 0; }
-     virtual RenderObject *lastChild() const { return 0; }
- 
--    RenderObject *nextRenderer() const; 
--    RenderObject *previousRenderer() const; 
-+    RenderObject *nextRenderer() const;
-+    RenderObject *previousRenderer() const;
- 
-     RenderObject *nextEditable() const;
-     RenderObject *previousEditable() const;
-@@ -346,7 +346,7 @@
-     DOM::DocumentImpl* document() const;
-     DOM::NodeImpl* element() const { return isAnonymous() ? 0L : m_node; }
-     DOM::NodeImpl* node() const { return m_node; }
--    
-+
-     virtual bool handleEvent(const DOM::EventImpl&) { return false; }
- 
-    /**
-@@ -644,12 +644,12 @@
-     // how much goes over the left hand side (0 or a negative number)
-     virtual int overflowTop() const { return 0; }
-     virtual int overflowLeft() const { return 0; }
--    
-+
-     /**
-      * Returns the height that is effectively considered when contemplating the
-      * object as a whole -- usually the overflow height, or the height if clipped.
-      */
--    int effectiveHeight() const { return hasOverflowClip() ? height() + borderTopExtra() + borderBottomExtra() : 
-+    int effectiveHeight() const { return hasOverflowClip() ? height() + borderTopExtra() + borderBottomExtra() :
-                                          qMax(overflowHeight() - overflowTop(),  height() + borderTopExtra() + borderBottomExtra()); }
-     /**
-      * Returns the width that is effectively considered when contemplating the
-@@ -667,8 +667,8 @@
-     int clientTop() const;
-     short clientWidth() const;
-     int clientHeight() const;
--    short scrollWidth() const;
--    int scrollHeight() const;
-+    virtual short scrollWidth() const;
-+    virtual int scrollHeight() const;
- 
-     virtual bool isSelfCollapsingBlock() const { return false; }
-     short collapsedMarginTop() const { return maxTopMargin(true)-maxTopMargin(false);  }
-@@ -807,7 +807,7 @@
-     virtual void detach( );
- 
-     bool documentBeingDestroyed() const { return !document()->renderer(); }
--    
-+
-     void setDoNotDelete(bool b) { m_doNotDelete = b; }
-     bool doNotDelete() const { return m_doNotDelete; }
- 
-@@ -892,7 +892,7 @@
- 
-     bool m_needsPageClear            : 1;
-     bool m_containsPageBreak         : 1;
--    
-+
-     bool m_hasOverflowClip           : 1;
-     bool m_inPosObjectList           : 1;
- 
-Index: khtml/rendering/render_form.cpp
-===================================================================
---- khtml/rendering/render_form.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ khtml/rendering/render_form.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -127,13 +127,13 @@
-         {
-             // Make sure we give combo popup's enough room to display contents;
-             // Qt doesn't do this by default
--            
-+
-             if (cc == QStyle::CC_ComboBox && sc == SC_ComboBoxListBoxPopup) {
-                 const QComboBox* cb = qobject_cast<const QComboBox*>(widget);
-                 const QStyleOptionComboBox* cbOpt = qstyleoption_cast<const QStyleOptionComboBox*>(opt);
--                
-+
-                 QFontMetrics fm = cb->fontMetrics();
--                
-+
-                 if (cb && cbOpt) {
-                     // Compute content width; Qt uses the usual +4 magic number for icon/text margin
-                     int maxW = 0;
-@@ -143,19 +143,19 @@
-                             iw += 4 + cb->iconSize().width();
-                         maxW = qMax(maxW, iw);
-                     }
--                    
-+
-                     // Now let sizeFromContent add in extra stuff.
-                     maxW = proxy()->sizeFromContents(QStyle::CT_ComboBox, opt, QSize(maxW, 1), widget).width();
--                    
-+
-                     // How much more room do we need for the text?
-                     int extraW = maxW > cbOpt->rect.width() ? maxW - cbOpt->rect.width() : 0;
--                    
-+
-                     QRect r = proxy()->subControlRect(cc, opt, sc, widget);
-                     r.setWidth(r.width() + extraW);
-                     return r;
-                 }
-             }
--            
-+
-             return proxy()->subControlRect(cc, opt, sc, widget);
-         }
- 
-@@ -194,7 +194,7 @@
- {
-     // Some form widgets apply the padding internally (i.e. as if they were
-     // some kind of inline-block). Thus we only want to expose that padding
--    // while layouting (so that width/height calculations are correct), and 
-+    // while layouting (so that width/height calculations are correct), and
-     // then pretend it does not exist, as it is beyond the replaced edge and
-     // thus should not affect other calculations.
-     m_exposeInternalPadding = true;
-@@ -510,7 +510,7 @@
- 
- bool RenderSubmitButton::canHaveBorder() const
- {
--    // ### TODO would be nice to be able to 
-+    // ### TODO would be nice to be able to
-     // return style()->hasBackgroundImage() here,
-     // depending on a config option (e.g. 'favour usability/integration over aspect')
-     // so that only buttons with both a custom border
-@@ -748,7 +748,7 @@
-                         }
-                         if ( s == t ) {
-                             KMessageBox::sorry( 0, i18n( "%1 is already assigned to %2", s, provider->name() ), i18n( "Error" ) );
--                            isOk = false; 
-+                            isOk = false;
-                         }
-                     }
-                 }
-@@ -833,7 +833,7 @@
-     for( unsigned long i = 0; ( node = form->elements()->item( i ) ); i++ ) {
-         inputNode = dynamic_cast<HTMLInputElementImpl*>( node );
-         if ( inputNode ) {
--            if ( ( !inputNode->name().string().size() ) || 
-+            if ( ( !inputNode->name().string().size() ) ||
-                  (inputNode->name().string() == queryName) ) {
-                 continue;
-             } else {
-@@ -910,7 +910,7 @@
-         QPainter p(this);
-         p.fillRect(pe->rect(), palette().brush(QPalette::Base));
-         p.end();
--    }   
-+    }
-     KLineEdit::paintEvent( pe );
- }
- 
-@@ -1794,7 +1794,7 @@
-         // FIXME BASELINE: the 3 lines below could be removed.
-         int lhs = m_widget->style()->pixelMetric(QStyle::PM_LayoutHorizontalSpacing);
-         if (lhs>0)
--           width += lhs;        
-+           width += lhs;
-         height = size*height + vfw;
- 
-         assert( includesPadding() );
-@@ -2108,15 +2108,14 @@
- 
-     QSize size( qMax(element()->cols(), 1L)*m.width('x') + hfw + llm+lrm +
-                 w->verticalScrollBar()->sizeHint().width()+lhs,
--                qMax(element()->rows(), 1L)*m.lineSpacing() + 2*vfw + lbm+ltm +
-+                qMax(element()->rows(), 1L)*m.lineSpacing() + vfw + lbm+ltm +
-                 (w->lineWrapMode() == QTextEdit::NoWrap ?
-                  w->horizontalScrollBar()->sizeHint().height()+lvs : 0)
-         );
- 
-     assert( includesPadding() );
-     size.rwidth() -= RenderWidget::paddingLeft() + RenderWidget::paddingRight();
--    // ### FIXME BASELINE: would like to remove that 2* (and the 2* in '2*vfw' above).
--    size.rheight() -= 2*(RenderWidget::paddingTop() + RenderWidget::paddingBottom());
-+    size.rheight() -= RenderWidget::paddingTop() + RenderWidget::paddingBottom();
- 
-     setIntrinsicWidth( size.width() );
-     setIntrinsicHeight( size.height() );
-@@ -2154,6 +2153,18 @@
-     }
- }
- 
-+short RenderTextArea::scrollWidth() const
-+{
-+    return RenderObject::scrollWidth();
-+}
-+
-+int RenderTextArea::scrollHeight() const
-+{
-+    TextAreaWidget* w = static_cast<TextAreaWidget*>(m_widget);
-+    int contentHeight = qRound(w->document()->size().height());
-+    return qMax(contentHeight, RenderObject::clientHeight());
-+}
-+
- void RenderTextArea::setText(const QString& newText)
- {
-     TextAreaWidget* w = static_cast<TextAreaWidget*>(m_widget);
-@@ -2177,7 +2188,7 @@
-             tc.setPosition( ex, QTextCursor::MoveAnchor );
-             tc.movePosition(QTextCursor::End, QTextCursor::KeepAnchor);
-             tc.insertText(newText.right( newText.length()-ex ));
--        } else {                            
-+        } else {
-             w->setPlainText( newText );
-         }
-         w->setTextCursor(tc);
-Index: kjs/dtoa.cpp
-===================================================================
---- kjs/dtoa.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kjs/dtoa.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -457,7 +457,7 @@
- #define FREE_DTOA_LOCK(n)	/*nothing*/
- #endif
- 
--#define Kmax 15
-+#define Kmax (sizeof(size_t) << 3)
- 
-  struct
- Bigint {
-Index: kdoctools/customization/pl/entities/underLGPL.docbook
-===================================================================
---- kdoctools/customization/pl/entities/underLGPL.docbook	(.../tags/KDE/4.3.3/kdelibs)	(wersja 0)
-+++ kdoctools/customization/pl/entities/underLGPL.docbook	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -0,0 +1,2 @@
-+<para>Ten program jest rozprowadzany na zasadach <ulink
-+url="common/lgpl-license.html">Licencji GNU Lesser General Public License</ulink>.</para>
-Index: kdoctools/customization/pl/lang.entities
-===================================================================
---- kdoctools/customization/pl/lang.entities	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdoctools/customization/pl/lang.entities	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -12,6 +12,8 @@
- <!-- Licence links -->
- <!ENTITY underGPL           PUBLIC "-//KDE//DOCUMENT GPL Licence Declaration//PL"
-   "entities/underGPL.docbook"                       ><!-- level: para -->
-+<!ENTITY underLGPL           PUBLIC "-//KDE//DOCUMENT LGPL Licence Declaration//PL"
-+  "entities/underLGPL.docbook"                       ><!-- level: para -->
- <!ENTITY underFDL           PUBLIC "-//KDE//DOCUMENT FDL Licence Declaration//PL"
-   "entities/underFDL.docbook"                       ><!-- level: para -->
- <!ENTITY underBSDLicense    PUBLIC "-//KDE//DOCUMENT BSD Licence Declaration//PL"
-Index: kdoctools/customization/pl/catalog.xml
-===================================================================
---- kdoctools/customization/pl/catalog.xml	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdoctools/customization/pl/catalog.xml	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -19,6 +19,8 @@
-           uri="common/fdl-translated"/>
-   <public publicId="-//KDE//DOCUMENT GPL Licence Declaration//PL"
-           uri="entities/underGPL.docbook"/> 
-+  <public publicId="-//KDE//DOCUMENT LGPL Licence Declaration//PL"
-+          uri="entities/underLGPL.docbook"/> 
-   <public publicId="-//KDE//DOCUMENT FDL Licence Declaration//PL"
-           uri="entities/underFDL.docbook"/>
-   <public publicId="-//KDE//DOCUMENT BSD Licence Declaration//PL"
-Index: kdoctools/customization/ca/user.entities
-===================================================================
---- kdoctools/customization/ca/user.entities	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdoctools/customization/ca/user.entities	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -35,6 +35,7 @@
- <!ENTITY safatasistema	"<application>safata del sistema</application>"><!-- English: &systemtray; -->
- <!ENTITY Tab	"<keycap>Tabulador</keycap>">
- <!ENTITY IGU	"<acronym>IGU</acronym>"><!-- English: &GUI; -->
-+<!ENTITY partman "<application>Gestor de particions del KDE</application>"> <!-- English: &partman; (KDE Partition Manager)-->
- <!ENTITY systemsettings	"<application>Arranjament del sistema</application>"> <!-- English: &systemsettings; -->
- 
- <!-- ROLES OF TRANSLATORS -->
-@@ -46,6 +47,8 @@
- <!ENTITY revisor.Rafael.Carreras	'<othercredit role="reviewer"><firstname>Rafael</firstname><surname>Carreras</surname><affiliation><address><email>rcarreras@caliu.cat</email></address></affiliation><contrib>Revisor</contrib></othercredit>'>
- <!ENTITY traductor.Manuel.Tortosa	'<othercredit role="translator"><firstname>Manuel</firstname><surname>Tortosa</surname><affiliation><address><email>manutortosa@gmail.com</email></address></affiliation><contrib>Traductor</contrib></othercredit>'>
- <!ENTITY revisor.Manuel.Tortosa		'<othercredit role="reviewer"><firstname>Manuel</firstname><surname>Tortosa</surname><affiliation><address><email>manutortosa@gmail.com</email></address></affiliation><contrib>Revisor</contrib></othercredit>'>
-+<!ENTITY traductor.JosepMa.Ferrer	'<othercredit role="translator"><firstname>Josep Ma.</firstname><surname>Ferrer</surname><affiliation><address><email>txemaq@gmail.com</email></address></affiliation><contrib>Traductor</contrib></othercredit>'>
-+<!ENTITY revisor.JosepMa.Ferrer		'<othercredit role="reviewer"><firstname>Josep Ma.</firstname><surname>Ferrer</surname><affiliation><address><email>txemaq@gmail.com</email></address></affiliation><contrib>Revisor</contrib></othercredit>'>
- 
- <!-- CREDITS FOR TRANSLATORS -->
- <!-- Seguir el següent format '<para>Traductor/Revisor de la documentació: &credits.Nom.Cognom;</para>' -->
-@@ -53,3 +56,4 @@
- <!ENTITY credits.Pep.Roca		'Pep Roca <email>pep.roca@gmail.com</email>'>
- <!ENTITY credits.Rafael.Carreras	'Rafael Carreras <email>rcarreras@caliu.cat</email>'>
- <!ENTITY credits.Manuel.Tortosa		'Manuel Tortosa <email>manutortosa@gmail.com</email>'>
-+<!ENTITY credits.JosepMa.Ferrer		'Josep Ma. Ferrer <email>txemaq@gmail.com</email>'>
-\ No newline at end of file
-Index: kparts/statusbarextension.cpp
-===================================================================
---- kparts/statusbarextension.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kparts/statusbarextension.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -150,7 +150,7 @@
- {
-   if ( !d->m_statusBar )  {
-     QWidget* w = static_cast<KParts::ReadOnlyPart*>(parent())->widget();
--    KMainWindow* mw = dynamic_cast<KMainWindow *>( w->topLevelWidget() );
-+    KMainWindow* mw = w ? dynamic_cast<KMainWindow *>( w->topLevelWidget() ) : 0;
-     if ( mw )
-       d->m_statusBar = mw->statusBar();
-   }
-Index: kdeui/kernel/kstyle.cpp
-===================================================================
---- kdeui/kernel/kstyle.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/kernel/kstyle.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -1422,7 +1422,6 @@
-             // Draw the icon if there is one
-             if (!bOpt->icon.isNull())
-             {
--                QSize iconSize(pixelMetric(PM_SmallIconSize),pixelMetric(PM_SmallIconSize));
-                 IconOption icoOpt;
-                 icoOpt.icon   = bOpt->icon;
-                 icoOpt.size   = bOpt->iconSize;
-@@ -1434,21 +1433,21 @@
-                     //Center text + icon w/margin in between..
- 
-                     //Calculate length of both.
--                    int length = iconSize.width() + margin
-+                    int length = bOpt->iconSize.width() + margin
-                                   + p->fontMetrics().size(Qt::TextShowMnemonic, bOpt->text).width();
- 
-                     //Calculate offset.
-                     int offset = (w - length)/2;
- 
-                     //draw icon
--                    QRect rect = QRect(QPoint(x + offset, y + h/2 - iconSize.height()/2), iconSize);
-+                    QRect rect = QRect(QPoint(x + offset, y + h/2 - bOpt->iconSize.height()/2), bOpt->iconSize);
-                     drawKStylePrimitive(WT_PushButton, Generic::Icon, option,
-                                         handleRTL(bOpt, rect),
-                                         pal, flags, p, widget, &icoOpt);
- 
-                     //new bounding rect for the text
--                    x += offset + iconSize.width() + margin;
--                    w =  length - iconSize.width() - margin;
-+                    x += offset + bOpt->iconSize.width() + margin;
-+                    w =  length - bOpt->iconSize.width() - margin;
-                 }
-                 else
-                 {
-Index: kdeui/tests/kmainwindow_unittest.cpp
-===================================================================
---- kdeui/tests/kmainwindow_unittest.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/tests/kmainwindow_unittest.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -21,6 +21,7 @@
- #include "kmainwindow_unittest.h"
- #include "kmainwindow_unittest.moc"
- #include <kmainwindow.h>
-+#include <kstatusbar.h>
- #include <kglobal.h>
- #include <QResizeEvent>
- #include <ktoolbar.h>
-@@ -188,3 +189,13 @@
-     // NOT 750, 550! (the 800,600 comes from testAutoSaveSettings)
-     QCOMPARE(mw2.size(), QSize(800, 600));
- }
-+
-+void KMainWindow_UnitTest::testWidgetWithStatusBar()
-+{
-+    // KMainWindow::statusBar() should not find any indirect KStatusBar child
-+    // (e.g. in a case like konqueror, with one statusbar per frame)
-+    MyMainWindow mw;
-+    QWidget* frame1 = new QWidget(&mw);
-+    KStatusBar* frameStatusBar = new KStatusBar(frame1);
-+    QVERIFY(mw.statusBar() != frameStatusBar);
-+}
-Index: kdeui/tests/kmainwindow_unittest.h
-===================================================================
---- kdeui/tests/kmainwindow_unittest.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/tests/kmainwindow_unittest.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -34,6 +34,7 @@
-     void testSaveWindowSize();
-     void testAutoSaveSettings();
-     void testNoAutoSave();
-+    void testWidgetWithStatusBar();
- 
-     void testDeleteOnClose();
- };
-Index: kdeui/windowmanagement/netwm_def.h
-===================================================================
---- kdeui/windowmanagement/netwm_def.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/windowmanagement/netwm_def.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -593,11 +593,15 @@
-        @li WMWindowType
-        @li WMState
-        @li WMStrut  (obsoleted by WM2ExtendedStrut)
-+       @li WMGeometry
-+       @li WMFrameExtents
-        @li WMIconGeometry
-        @li WMIcon
-+       @li WMIconName
-+       @li WMVisibleIconName
-+       @li WMHandledIcons
-        @li WMPid
--       @li WMVisibleIconName
--       @li WMIconName
-+       @li WMPing
- 
-        ICCCM properties (provided for convenience):
- 
-Index: kdeui/widgets/kmainwindow.h
-===================================================================
---- kdeui/widgets/kmainwindow.h	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/widgets/kmainwindow.h	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -91,8 +91,9 @@
-  * windows have unsaved data on close or logout, reimplement
-  * queryClose() and/or queryExit().
-  *
-+ * You have to implement session restoring also in your main() function.
-  * There are also kRestoreMainWindows convenience functions which
-- * can restore all your windows on next login.
-+ * can do this for you and restore all your windows on next login.
-  *
-  * Note that KMainWindow uses KGlobal::ref() and KGlobal::deref() so that closing
-  * the last mainwindow will quit the application unless there is still something
-@@ -208,10 +209,26 @@
-     KMenu* customHelpMenu( bool showWhatsThis = true );
- 
-     /**
--     * <b>Session Management</b>
-+     * If the session did contain so high a number, @p true is returned,
-+     * else @p false.
-+     * @see restore()
-+     **/
-+    static bool canBeRestored( int number );
-+
-+    /**
-+     * Returns the className() of the @p number of the toplevel window which
-+     * should be restored.
-      *
--     * Try to restore the toplevel widget as defined by the number (1..X).
-+     * This is only useful if your application uses
-+     * different kinds of toplevel windows.
-+     */
-+    static const QString classNameOfToplevel( int number );
-+
-+    /**
-+     * Try to restore the toplevel widget as defined by @p number (1..X).
-      *
-+     * You should call canBeRestored() first.
-+     *
-      * If the session did not contain so high a number, the configuration
-      * is not changed and @p false returned.
-      *
-@@ -227,7 +244,8 @@
-      *   // create default application as usual
-      * }
-      * \endcode
--     * Note that QWidget::show() is called implicitly in restore.
-+     * Note that if @p show is true (default), QWidget::show() is called
-+     * implicitly in restore.
-      *
-      * With this you can easily restore all toplevel windows of your
-      * application.
-@@ -237,61 +255,13 @@
-      * to determine the exact type before calling the childMW
-      * constructor in the example from above.
-      *
--     * If your client has only one kind of toplevel widgets (which
--     * should be pretty usual) then you should use the RESTORE-macro
--     * for backwards compatibility with 3.1 and 3.0 branches:
--     *
--     * \code
--     * if (qApp->isSessionRestored())
--     *   RESTORE(childMW)
--     * else {
--     *   // create default application as usual
--     * }
--     * \endcode
--     *
--     * The macro expands to the term above but is easier to use and
--     * less code to write.
--     *
--     * For new code or if you have more than one kind of toplevel
--     * widget (each derived from KMainWindow, of course), you can
--     * use the templated kRestoreMainWindows global functions:
--     *
--     * \code
--     * if (qApp->isSessionRestored())
--     *   kRestoreMainWindows< childMW1, childMW2, childMW3 >();
--     * else {
--     *   // create default application as usual
--     * }
--     * \endcode
--     *
--     * Currently, these functions are provided for up to three
--     * template arguments. If you need more, tell us. To help you in
--     * deciding whether or not you can use kRestoreMainWindows, a
--     * define KDE_RESTORE_MAIN_WINDOWS_NUM_TEMPLATE_ARGS is provided.
--     *
--     * @see restore()
--     * @see classNameOfToplevel()
--     *
--     **/
--    static bool canBeRestored( int number );
--
--    /**
--     * Returns the className() of the @p number of the toplevel window which
--     * should be restored.
--     *
--     * This is only useful if your application uses
--     * different kinds of toplevel windows.
-+     * <i>Note that you don't need to deal with this function. Use the
-+     * kRestoreMainWindows() convenience template function instead!</i>
-+     * @see kRestoreMainWindows()
-+     * @see #RESTORE
-+     * @see readProperties()
-+     * @see canBeRestored()
-      */
--    static const QString classNameOfToplevel( int number );
--
--    /**
--     * Restore the session specified by @p number.
--     *
--     * Returns @p false if this
--     * fails, otherwise returns @p true and shows the window.
--     * You should call canBeRestored() first.
--     * If @p show is true (default), this widget will be shown automatically.
--     */
-     bool restore( int number, bool show = true );
- 
-     /**
-@@ -616,6 +586,8 @@
- 
-    /**
-     * Read your instance-specific properties.
-+    *
-+    * Is called indirectly by restore().
-     */
-     virtual void readProperties( const KConfigGroup & ) {}
- 
-@@ -723,19 +695,77 @@
-     Q_PRIVATE_SLOT(k_func(), void _k_slotSaveAutoSaveSize())
- };
- 
-+/**
-+ * Restores the last session. (To be used in your main function).
-+ *
-+ * If your client has only one kind of toplevel widgets (which
-+ * should be pretty usual) then you can use this macro,
-+ * which is provided for backwards compatibility with 3.1 and 3.0
-+ * branches:
-+ *
-+ * \code
-+ * if (qApp->isSessionRestored())
-+ *   RESTORE(childMW)
-+ * else {
-+ *   // create default application as usual
-+ * }
-+ * \endcode
-+ *
-+ * The macro expects the type of your toplevel widget as argument.
-+ *
-+ * Since KDE4, you can also use kRestoreMainWindows(), which
-+ * supports also clients with more than one kind of toplevel
-+ * widgets.
-+ *
-+ * @see KMainWindow::restore()
-+ * @see kRestoreMainWindows()
-+ **/
- #define RESTORE(type) { int n = 1;\
-     while (KMainWindow::canBeRestored(n)){\
-       (new type)->restore(n);\
-       n++;}}
- 
-+/**
-+ * Returns the maximal number of arguments that are actually
-+ * supported by kRestoreMainWindows().
-+ **/
- #define KDE_RESTORE_MAIN_WINDOWS_NUM_TEMPLATE_ARGS 3
- 
- /**
-- *  These global convenience functions (that come with a varying
-- *  number of template arguments) are a replacement for the RESTORE
-- *  macro provided in earlier versions of KDE. The old RESTORE macro
-- *  is still provided for backwards compatibility. See
-- *  KMainWindow documentation for more.
-+ * Restores the last session. (To be used in your main function).
-+ *
-+ * These functions work also if you have more than one kind of toplevel
-+ * widget (each derived from KMainWindow, of course).
-+ *
-+ * Imagine you have three kinds of toplevel widgets: the classes childMW1,
-+ * childMW2 and childMW3. Than you can just do:
-+ *
-+ * \code
-+ * if (qApp->isSessionRestored())
-+ *   kRestoreMainWindows< childMW1, childMW2, childMW3 >();
-+ * else {
-+ *   // create default application as usual
-+ * }
-+ * \endcode
-+ *
-+ * kRestoreMainWindows<>() will create (on the heap) as many instances
-+ * of your main windows as have existed in the last session and
-+ * call KMainWindow::restore() with the correct arguments. Note that
-+ * also QWidget::show() is called implicitly.
-+ *
-+ * Currently, these functions are provided for up to three
-+ * template arguments. If you need more, tell us. To help you in
-+ * deciding whether or not you can use kRestoreMainWindows, a
-+ * define #KDE_RESTORE_MAIN_WINDOWS_NUM_TEMPLATE_ARGS is provided.
-+ *
-+ * These global convenience functions (that come with a varying
-+ * number of template arguments) are a replacement for the #RESTORE
-+ * macro provided in earlier versions of KDE. The old #RESTORE macro
-+ * is still provided for backwards compatibility.
-+ *
-+ * @see KMainWindow::restore()
-+ * @see #RESTORE
-+ * @see KMainWindow::classNameOfToplevel()
-  **/
- template <typename T>
- inline void kRestoreMainWindows() {
-Index: kdeui/widgets/kmainwindow.cpp
-===================================================================
---- kdeui/widgets/kmainwindow.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/widgets/kmainwindow.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -81,7 +81,14 @@
- 
- static KStatusBar *internalStatusBar(KMainWindow *mw)
- {
--    return qFindChild<KStatusBar *>(mw);
-+    const QObjectList &children = mw->children();
-+    for (int i = 0; i < children.size(); ++i) {
-+        KStatusBar* sb = qobject_cast<KStatusBar *>(children.at(i));
-+        if (sb) {
-+            return sb;
+     KMimeType* e;
+     if ( name == "inode/directory" )
+@@ -347,6 +352,10 @@
+     const KMimeFileParser::AllGlobs& allGlobs = m_parser.mimeTypeGlobs();
+     Q_FOREACH(const QString& mimeTypeName, m_parser.allMimeTypes()) {
+         const KMimeType::Ptr mimeType = findMimeTypeByName(mimeTypeName, KMimeType::DontResolveAlias);
++        if (!mimeType) {
++            kDebug() << "globs file refers to unknown mimetype" << mimeTypeName;
++            continue;
 +        }
+         const KMimeFileParser::GlobList globs = allGlobs.value(mimeTypeName);
+         Q_FOREACH(const KMimeFileParser::Glob& glob, globs) {
+             const QString &pattern = glob.pattern;
+Index: kdeui/dialogs/kdialog.cpp
+===================================================================
+--- kdeui/dialogs/kdialog.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kdeui/dialogs/kdialog.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -69,6 +69,10 @@
+ 
+   Q_Q(KDialog);
+ 
++    // Don't lose the focus widget when re-creating the layout.
++    // Testcase: KOrganizer's "Select Categories" dialog
++    QPointer<QWidget> focusWidget = mMainWidget ? mMainWidget->focusWidget() : 0;
++
+   if (q->layout() && q->layout() != mTopLayout) {
+       kWarning(240) << q->metaObject()->className() << "created with a layout; don't do that, KDialog takes care of it, use mainWidget or setMainWidget instead";
+       delete q->layout();
+@@ -97,6 +101,10 @@
+     mButtonBox->setOrientation( mButtonOrientation );
+     mTopLayout->addWidget( mButtonBox );
+   }
++
++    if (focusWidget) {
++        focusWidget->setFocus();
 +    }
-+    return 0;
  }
  
- /**
-Index: kdeui/icons/kiconeffect.cpp
+ void KDialogPrivate::setButtonFocus(QPushButton *button, bool isDefault, bool isFocus)
+Index: kdeui/tests/kglobalsettingstest.cpp
 ===================================================================
---- kdeui/icons/kiconeffect.cpp	(.../tags/KDE/4.3.3/kdelibs)	(wersja 1053992)
-+++ kdeui/icons/kiconeffect.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1053992)
-@@ -305,8 +305,13 @@
-     {
- 	if (img.depth() > 8)
-         {
--            if(img.format() == QImage::Format_ARGB32_Premultiplied)
-+            //Code using data and pixels assumes that the pixels are stored
-+            //in 32bit values and that the image is not premultiplied
-+            if ((img.format() != QImage::Format_ARGB32) &&
-+                (img.format() != QImage::Format_RGB32))
-+            {
-                 img = img.convertToFormat(QImage::Format_ARGB32);
-+            }
-             data   = (unsigned int*)img.bits();
- 	    pixels = img.width()*img.height();
- 	}
+--- kdeui/tests/kglobalsettingstest.cpp	(.../tags/KDE/4.3.4/kdelibs)	(wersja 1057516)
++++ kdeui/tests/kglobalsettingstest.cpp	(.../branches/KDE/4.3/kdelibs)	(wersja 1057516)
+@@ -49,6 +49,7 @@
+ 
+ #define CREATE_ALL_SPYS \
+     KGlobalSettings* settings = KGlobalSettings::self(); \
++    settings->activate();                                                 \
+     QSignalSpy palette_spy( settings, SIGNAL(kdisplayPaletteChanged()) ); \
+     QSignalSpy font_spy( settings, SIGNAL(kdisplayFontChanged()) ); \
+     QSignalSpy style_spy( settings, SIGNAL(kdisplayStyleChanged()) ); \
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________

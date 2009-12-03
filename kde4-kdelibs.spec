@@ -47,11 +47,13 @@ BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
+BuildRequires:	bison
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cups-devel
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
+BuildRequires:	flex
 BuildRequires:	giflib-devel
 %{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel

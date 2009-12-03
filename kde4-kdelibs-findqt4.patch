@@ -1,0 +1,11 @@
+--- cmake/modules/FindQt4.cmake	2009-12-01 01:27:12.000000000 +0100
++++ cmake/modules/FindQt4.cmake-new	2009-12-03 22:59:21.090827809 +0100
+@@ -858,7 +858,7 @@
+ 
+   FIND_LIBRARY(QT_PHONON_LIBRARY NAMES phonon phonon4 phonon_debug phonond4    PATHS ${QT_LIBRARY_DIR} NO_DEFAULT_PATH)
+ 
+-  FIND_LIBRARY(QT_QTSCRIPTTOOLS_LIBRARY NAMES QtXmlPatterns QtXmlPatterns_debug QtXmlPatterns4 QtXmlPatternsd4         PATHS ${QT_LIBRARY_DIR} NO_DEFAULT_PATH)
++  FIND_LIBRARY(QT_QTSCRIPTTOOLS_LIBRARY NAMES QtScriptTools QtScriptTools_debug QtScriptTools4 QtScriptToolsd4         PATHS ${QT_LIBRARY_DIR} NO_DEFAULT_PATH)
+ 
+   IF(MSVC)
+     FIND_LIBRARY(QT_QTCORE_LIBRARY_RELEASE        NAMES QtCore4                PATHS ${QT_LIBRARY_DIR} NO_DEFAULT_PATH)

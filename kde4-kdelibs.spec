@@ -44,11 +44,13 @@ BuildRequires:	aspell-devel
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
+BuildRequires:	bison
 BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.6.3
 BuildRequires:	cups-devel
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
+BuildRequires:	flex
 BuildRequires:	giflib-devel
 %{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel
@@ -223,7 +225,7 @@ cd build
 	-DKDE4_ENABLE_FINAL=OFF \
 	../
 
-%{__make} 
+%{__make}
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -339,13 +341,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/dbus-1/interfaces/*.xml
 
 # kcmremotewidgets
-%{_sysconfdir}/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
+/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
 %{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
 %{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
 
 # kauth
 %{_datadir}/apps/kauth
-%{_sysconfdir}/dbus-1/system.d/org.kde.auth.conf
+/etc/dbus-1/system.d/org.kde.auth.conf
 
 %dir %{_datadir}/apps/plasma
 %dir %{_datadir}/apps/plasma/services

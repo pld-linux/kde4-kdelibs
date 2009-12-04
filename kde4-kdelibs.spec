@@ -16,16 +16,15 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.3.80
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	d31fc3d08875b33fe0802352b8671c83
+# Source0-md5:	3d4fe702be4a85c02e56e80a8f06ae76
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
-Patch3:		%{name}-findqt4.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -41,6 +40,7 @@ BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 BuildRequires:	aspell-devel
+BuildRequires:	attica-devel >= 0.1
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
@@ -202,7 +202,6 @@ KDE.
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0
-%patch3 -p0
 
 %build
 install -d build

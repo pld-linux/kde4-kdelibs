@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.80
-Release:	3
+Version:	4.3.85
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	3d4fe702be4a85c02e56e80a8f06ae76
+# Source0-md5:	4bf066d2f489d7d00263ac5a8e787c23
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -40,7 +40,7 @@ BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 BuildRequires:	aspell-devel
-BuildRequires:	attica-devel >= 0.1
+BuildRequires:	attica-devel >= 0.1.1
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel

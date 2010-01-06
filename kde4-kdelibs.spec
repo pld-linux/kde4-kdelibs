@@ -15,12 +15,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.85
+Version:	4.3.90
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	4bf066d2f489d7d00263ac5a8e787c23
+# Source0-md5:	45c42bfcaa5a968a38e20a0599c4e8e9
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -587,6 +587,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KBookmarkAction
 %{_includedir}/KDE/KBookmarkActionInterface
 %{_includedir}/KDE/KBookmarkActionMenu
+%{_includedir}/KDE/KBookmarkDialog
 %{_includedir}/KDE/KBookmarkDomBuilder
 %{_includedir}/KDE/KBookmarkExporterBase
 %{_includedir}/KDE/KBookmarkGroup

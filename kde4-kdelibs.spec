@@ -75,11 +75,12 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.3.80
 BuildRequires:	pkgconfig
+BuildRequires:	polkit-qt-devel >= 0.9.3
 BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
-BuildRequires:	shared-desktop-ontologies >= 0.2
+BuildRequires:	shared-desktop-ontologies-devel >= 0.2
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.3.70
 BuildRequires:	strigi-devel >= 0.7.0

@@ -32,6 +32,7 @@ BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtDesigner-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
+BuildRequires:	QtOpenGL-devel >= %{qtver}
 BuildRequires:	QtScript-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}

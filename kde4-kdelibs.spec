@@ -18,12 +18,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.4
-Release:	5
+Version:	4.3.5
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	bc781838ad8cafa479e99139f7f403f3
+# Source0-md5:	8db761475eb6f03f634c388f1c05b329
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -82,7 +82,7 @@ BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.3.0
+BuildRequires:	soprano-devel >= 2.3.1
 BuildRequires:	strigi-devel >= 0.6.5
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -197,7 +197,7 @@ KDE.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-%patch100 -p0
+#%patch100 -p0
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0

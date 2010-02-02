@@ -3,7 +3,6 @@
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		unstable
-%define		snap		svn1053190
 %define		orgname		kdelibs
 %define		qtver		4.6.0
 

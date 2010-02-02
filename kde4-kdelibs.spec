@@ -47,7 +47,7 @@ BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
 BuildRequires:	bison
 BuildRequires:	bzip2-devel
-BuildRequires:	cmake >= 2.6.3
+BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cups-devel
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel

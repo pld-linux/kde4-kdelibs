@@ -4,7 +4,7 @@
 #
 %define		_state		unstable
 %define		orgname		kdelibs
-%define		qtver		4.6.0
+%define		qtver		4.6.1
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas

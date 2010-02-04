@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		unstable
+%define		_state		stable
 %define		orgname		kdelibs
 %define		qtver		4.6.1
 
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.3.98
+Version:	4.4.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	56cd5ff7dfe996a283ae28609047f40e
+# Source0-md5:	c62c4ed763d439737847d7b404df2c7f
 #Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch

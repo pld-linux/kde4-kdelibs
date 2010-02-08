@@ -1,12 +1,10 @@
 #
 # Conditional build:
-%bcond_without	alsa		# build without ALSA support
-%bcond_without	apidocs		# don't prepare API documentation
 %bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.4.3
+%define		qtver		4.6.1
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -16,15 +14,16 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.2.0
-Release:	11
+Version:	4.4.0
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	2d830a922195fefe6e073111850247ac
-Patch100:	%{name}-branch.diff
+# Source0-md5:	6ee8c548e42b0bb65ebc4752c2493cc2
+#Patch100: %{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
+Patch2:		%{name}-branding.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -32,6 +31,7 @@ BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
 BuildRequires:	QtDesigner-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
+BuildRequires:	QtOpenGL-devel >= %{qtver}
 BuildRequires:	QtScript-devel >= %{qtver}
 BuildRequires:	QtSvg-devel >= %{qtver}
 BuildRequires:	QtTest-devel >= %{qtver}
@@ -39,27 +39,22 @@ BuildRequires:	QtUiTools-devel >= %{qtver}
 BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
-%{?with_alsa:BuildRequires:	alsa-lib-devel}
 BuildRequires:	aspell-devel
+BuildRequires:	attica-devel >= 0.1.1
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
+BuildRequires:	bison
 BuildRequires:	bzip2-devel
-BuildRequires:	cmake >= 2.6.2
+BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cups-devel
-BuildRequires:	docbook-dtd41-sgml
-BuildRequires:	docbook-dtd412-xml
-BuildRequires:	docbook-dtd42-xml
-BuildRequires:	docbook-style-xsl
-BuildRequires:	docbook-utils
-%{?with_apidocs:BuildRequires:	doxygen}
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
+BuildRequires:	flex
 BuildRequires:	giflib-devel
-%{?with_apidocs:BuildRequires:	graphviz}
+%{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel
 BuildRequires:	jasper-devel >= 1.600
-%{?with_kerberos5:BuildRequires:	krb5-devel}
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
@@ -78,31 +73,34 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.3.0
+BuildRequires:	phonon-devel >= 4.3.80
 BuildRequires:	pkgconfig
+BuildRequires:	polkit-qt-devel >= 0.9.3
+BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
-%{?with_apidocs:BuildRequires:	qt4-doc >= %{qtver}}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
+BuildRequires:	shared-desktop-ontologies-devel >= 0.2
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.1.64
-BuildRequires:	strigi-devel >= 0.6.3
+BuildRequires:	soprano-devel >= 2.3.70
+BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
+BuildRequires:	xz-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
-Requires:	%{name}-libs = %{version}-%{release}
 Requires:	QtCore >= %{qtver}
-Requires:	docbook-dtd412-xml
-Requires:	docbook-dtd42-xml
-Requires:	docbook-style-xsl
 Requires:	hicolor-icon-theme
-Requires:	kde-common-dirs >= 0.3
+Requires:	kde-common-dirs >= 0.5
 Requires:	setup >= 2.4.6-7
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
-Provides:	%{name}-shared
+Suggests:	kde4-icons
+Provides:	kde4-kdelibs-experimental
+Provides:	kde4-kdelibs-shared
+Obsoletes:	kde4-kdelibs-experimental
+Obsoletes:	kde4-kdelibs-libs
 Obsoletes:	kde4-kdelibs-shared
 Obsoletes:	kdelibs4
 Conflicts:	kdelibs
@@ -127,8 +125,7 @@ Bibliotecas para KDE.
 
 %description -l pl.UTF-8
 Ten pakiet zawiera biblioteki potrzebne do rozwijania i uruchamiania
-aplikacji KDE, różną dokumentację oraz moduły z motywami wyglądu
-KDE.
+aplikacji KDE, różną dokumentację oraz moduły z motywami wyglądu KDE.
 
 Pakiet ten zawiera między innymi:
 - kdecore - podstawową bibliotekę KDE,
@@ -161,17 +158,6 @@ aplicativo KDE.
 - kimgio (обробка зображень).
 - kspell (перевірка орфографії),
 
-%package libs
-Summary:	KDE libraries
-Summary(pl.UTF-8):	Biblioteki KDE
-Group:		X11/Libraries
-
-%description libs
-KDE libraries.
-
-%description libs -l pl.UTF-8
-Biblioteki KDE.
-
 %package devel
 Summary:	kdelibs - header files and development documentation
 Summary(pl.UTF-8):	kdelibs - pliki nagłówkowe i dokumentacja do kdelibs
@@ -179,8 +165,8 @@ Summary(pt_BR.UTF-8):	Arquivos de inclusão e documentação para compilar aplic
 Summary(ru.UTF-8):	Хедеры и документация для компилляции программ KDE
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
+Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	%{name} = %{version}-%{release}
-Requires:	%{name}-libs = %{version}-%{release}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel
@@ -190,6 +176,7 @@ Requires:	pcre-devel
 Requires:	phonon-devel
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
+Obsoletes:	kde4-kdelibs-experimental-devel
 Conflicts:	kdelibs-devel
 
 %description devel
@@ -211,30 +198,12 @@ KDE.
 %description devel -l uk.UTF-8
 Цей пакет містить хедери, необхідні для компіляції програм для KDE.
 
-%package apidocs
-Summary:	API documentation
-Summary(pl.UTF-8):	Dokumentacja API
-Group:		Documentation
-Requires:	%{name} = %{version}-%{release}
-Obsoletes:	kttsd-apidocs
-
-%description apidocs
-Annotated reference of KDE libraries programming interface including:
-- class lists
-- class members
-- namespaces
-
-%description apidocs -l pl.UTF-8
-Dokumentacja interfejsu programowania bibliotek KDE z przypisami.
-Zawiera:
-- listy klas i ich składników
-- listę przestrzeni nazw (namespace)
-
 %prep
 %setup -q -n %{orgname}-%{version}
-%patch100 -p0
-%patch0 -p0
-%patch1 -p0
+#%patch100 -p0
+#%patch0 -p0
+#%patch1 -p0
+%patch2 -p0
 
 %build
 install -d build
@@ -249,7 +218,7 @@ cd build
 	-DMIME_INSTALL_DIR=/nogo \
 	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
 	-DHTML_INSTALL_DIR=%{_kdedocdir} \
-	-DCMAKE_BUILD_TYPE=%{!?debug:release}%{?debug:debug} \
+	-DCMAKE_BUILD_TYPE=%{!?debug:Release}%{?debug:Debug} \
 	-DKDE_DISTRIBUTION_TEXT="PLD-Linux" \
 %if "%{_lib}" == "lib64"
 	-DLIB_SUFFIX=64 \
@@ -270,8 +239,6 @@ install -d \
 	$RPM_BUILD_ROOT%{_libdir}/kconf_update_bin \
 	$RPM_BUILD_ROOT%{_datadir}/applnk/.hidden \
 	$RPM_BUILD_ROOT%{_datadir}/apps/khtml/kpartplugins \
-	$RPM_BUILD_ROOT%{_datadir}/apps/profiles \
-	$RPM_BUILD_ROOT%{_datadir}/apps/remotes \
 	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme \
 	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme/default \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
@@ -280,11 +247,14 @@ install -d \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 
+# DO NOT PACKAGE THIS FILE vvvv - use applnk
+rm -f $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu
+
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-%post	libs -p /sbin/ldconfig
-%postun	libs -p /sbin/ldconfig
+%post	-p /sbin/ldconfig
+%postun	-p /sbin/ldconfig
 
 %files
 %defattr(644,root,root,755)
@@ -306,17 +276,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
+%attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_bindir}/preparetips
 %attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/makekdewidgets
-# nepomuk ???
-%attr(755,root,root) %{_bindir}/nepomuk-rcgen
-%dir %{_datadir}/apps/nepomuk
-#%{_datadir}/apps/nepomuk/ontologies
-%dir %{_datadir}/apps/nepomuk/pics
-%{_datadir}/apps/nepomuk/pics/rating.png
-##### nepomuk ???
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
 %{_mandir}/man1/kdecmake.1*
@@ -334,9 +298,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
 %{_datadir}/apps/kconf_update/*.upd
+%{_datadir}/apps/kconf_update/*.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
-%{_datadir}/apps/kcertpart
+#%{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
 %{_datadir}/apps/khtml/domain_info
 %{_datadir}/apps/khtml/error.html
@@ -344,9 +309,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
 %{_datadir}/apps/kjava/pluginsinfo
-%{_datadir}/apps/ktexteditor_docwordcompletion
+# %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
+%{_datadir}/apps/ktexteditor_exporter
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
@@ -355,8 +321,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %dir %{_datadir}/applnk
 %dir %{_datadir}/applnk/.hidden
-%dir %{_datadir}/apps/profiles
-%dir %{_datadir}/apps/remotes
 %dir %{_datadir}/apps/desktoptheme
 %dir %{_datadir}/apps/desktoptheme/default
 %dir %{_datadir}/services/kconfiguredialog
@@ -375,13 +339,27 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/qimageioplugins/*
 %dir %{_datadir}/kde4/services/ServiceMenus
 
-%dir %{_datadir}/dbus-1/interfaces
 %{_datadir}/dbus-1/interfaces/*.xml
+
+# kcmremotewidgets
+/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
+%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
+%{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
+
+# kauth
+%{_datadir}/apps/kauth
+/etc/dbus-1/system.d/org.kde.auth.conf
+
+%dir %{_datadir}/apps/plasma
+%dir %{_datadir}/apps/plasma/services
+%{_datadir}/apps/plasma/services/dataengineservice.operations
+%{_datadir}/apps/plasma/services/plasmoidservice.operations
 
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
+%{_datadir}/apps/nepomuk
 %dir %{_datadir}/apps/khtml
 %dir %{_datadir}/apps/khtml/css
 %{_datadir}/apps/khtml/css/html4.css
@@ -402,37 +380,71 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
-%files libs
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_libdir}/libkde3support.so.*
-%attr(755,root,root) %{_libdir}/libkdecore.so.*
-%attr(755,root,root) %{_libdir}/libkdefakes.so.*
-%attr(755,root,root) %{_libdir}/libkdesu.so.*
-%attr(755,root,root) %{_libdir}/libplasma.so.*
-%attr(755,root,root) %{_libdir}/libkpty.so.*
-%attr(755,root,root) %{_libdir}/libkdeui.so.*
-%attr(755,root,root) %{_libdir}/libkdnssd.so.*
-%attr(755,root,root) %{_libdir}/libkhtml.so.*
-%attr(755,root,root) %{_libdir}/libkimproxy.so.*
-%attr(755,root,root) %{_libdir}/libkio.so.*
-%attr(755,root,root) %{_libdir}/libkjs.so.*
-%attr(755,root,root) %{_libdir}/libkjsapi.so.*
-%attr(755,root,root) %{_libdir}/libkjsembed.so.*
-%attr(755,root,root) %{_libdir}/libkmediaplayer.so.*
-%attr(755,root,root) %{_libdir}/libknewstuff2.so.*
-%attr(755,root,root) %{_libdir}/libknotifyconfig.so.*
-%attr(755,root,root) %{_libdir}/libkntlm.so.*
-%attr(755,root,root) %{_libdir}/libkparts.so.*
-%attr(755,root,root) %{_libdir}/libktexteditor.so.*
-%attr(755,root,root) %{_libdir}/libkunittest.so.*
-%attr(755,root,root) %{_libdir}/libkutils.so.*
-%attr(755,root,root) %{_libdir}/libsolid.so.*
-%attr(755,root,root) %{_libdir}/libthreadweaver.so.*
-%attr(755,root,root) %{_libdir}/libkfile.so.*
-%attr(755,root,root) %{_libdir}/libkrosscore.so.*
-%attr(755,root,root) %{_libdir}/libkrossui.so.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*.*
-%attr(755,root,root) %{_libdir}/libnepomuk.so.?
+%attr(755,root,root) %{_libdir}/libkde3support.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkde3support.so.?
+%attr(755,root,root) %{_libdir}/libkdecore.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdecore.so.?
+%attr(755,root,root) %{_libdir}/libkdefakes.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdefakes.so.?
+%attr(755,root,root) %{_libdir}/libkdesu.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdesu.so.?
+%attr(755,root,root) %{_libdir}/libkdeui.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdeui.so.?
+%attr(755,root,root) %{_libdir}/libkdnssd.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdnssd.so.?
+%attr(755,root,root) %{_libdir}/libkfile.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkfile.so.?
+%attr(755,root,root) %{_libdir}/libkhtml.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkhtml.so.?
+%attr(755,root,root) %{_libdir}/libkimproxy.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkimproxy.so.?
+%attr(755,root,root) %{_libdir}/libkio.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkio.so.?
+%attr(755,root,root) %{_libdir}/libkjs.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjs.so.?
+%attr(755,root,root) %{_libdir}/libkjsapi.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjsapi.so.?
+%attr(755,root,root) %{_libdir}/libkjsembed.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkjsembed.so.?
+%attr(755,root,root) %{_libdir}/libkmediaplayer.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkmediaplayer.so.?
+%attr(755,root,root) %{_libdir}/libknewstuff2.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknewstuff2.so.?
+%attr(755,root,root) %{_libdir}/libknewstuff3.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknewstuff3.so.?
+%attr(755,root,root) %{_libdir}/libknotifyconfig.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libknotifyconfig.so.?
+%attr(755,root,root) %{_libdir}/libkntlm.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkntlm.so.?
+%attr(755,root,root) %{_libdir}/libkparts.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkparts.so.?
+%attr(755,root,root) %{_libdir}/libkpty.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkpty.so.?
+%attr(755,root,root) %{_libdir}/libkrosscore.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkrosscore.so.?
+%attr(755,root,root) %{_libdir}/libkrossui.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkrossui.so.?
+%attr(755,root,root) %{_libdir}/libktexteditor.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libktexteditor.so.?
+%attr(755,root,root) %{_libdir}/libkunitconversion.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkunitconversion.so.?
+%attr(755,root,root) %{_libdir}/libkunittest.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkunittest.so.?
+%attr(755,root,root) %{_libdir}/libkutils.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkutils.so.?
+%attr(755,root,root) %{_libdir}/libnepomuk.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomuk.so.?
+%attr(755,root,root) %{_libdir}/libnepomukquery.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomukquery.so.?
+%attr(755,root,root) %{_libdir}/libplasma.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libplasma.so.?
+%attr(755,root,root) %{_libdir}/libsolid.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libsolid.so.?
+%attr(755,root,root) %{_libdir}/libthreadweaver.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libthreadweaver.so.?
+%attr(755,root,root) %{_libdir}/libkdewebkit.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdewebkit.so.?
+
 %attr(755,root,root) %{_libdir}/libkdeinit4_kbuildsycoca4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kded4.so
 %attr(755,root,root) %{_libdir}/libkdeinit4_kconf_update.so
@@ -459,10 +471,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
-%attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
 %attr(755,root,root) %{_libdir}/libkdeui.so
 %attr(755,root,root) %{_libdir}/libkdnssd.so
+%attr(755,root,root) %{_libdir}/libkfile.so
 %attr(755,root,root) %{_libdir}/libkhtml.so
 %attr(755,root,root) %{_libdir}/libkimproxy.so
 %attr(755,root,root) %{_libdir}/libkio.so
@@ -470,20 +482,25 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkjsapi.so
 %attr(755,root,root) %{_libdir}/libkjsembed.so
 %attr(755,root,root) %{_libdir}/libkmediaplayer.so
+%attr(755,root,root) %{_libdir}/libknewstuff2.so
+%attr(755,root,root) %{_libdir}/libknewstuff3.so
 %attr(755,root,root) %{_libdir}/libknotifyconfig.so
 %attr(755,root,root) %{_libdir}/libkntlm.so
 %attr(755,root,root) %{_libdir}/libkparts.so
-%attr(755,root,root) %{_libdir}/libktexteditor.so
-%attr(755,root,root) %{_libdir}/libkunittest.so
-%attr(755,root,root) %{_libdir}/libkutils.so
-%attr(755,root,root) %{_libdir}/libsolid.so
-%attr(755,root,root) %{_libdir}/libthreadweaver.so
-%attr(755,root,root) %{_libdir}/libkfile.so
-%attr(755,root,root) %{_libdir}/libknewstuff2.so
-%attr(755,root,root) %{_libdir}/libnepomuk.so
+%attr(755,root,root) %{_libdir}/libkpty.so
 %attr(755,root,root) %{_libdir}/libkrosscore.so
 %attr(755,root,root) %{_libdir}/libkrossui.so
+%attr(755,root,root) %{_libdir}/libktexteditor.so
+%attr(755,root,root) %{_libdir}/libkunitconversion.so
+%attr(755,root,root) %{_libdir}/libkunittest.so
+%attr(755,root,root) %{_libdir}/libkutils.so
+%attr(755,root,root) %{_libdir}/libnepomuk.so
+%attr(755,root,root) %{_libdir}/libnepomukquery.so
 %attr(755,root,root) %{_libdir}/libplasma.so
+%attr(755,root,root) %{_libdir}/libsolid.so
+%attr(755,root,root) %{_libdir}/libthreadweaver.so
+%attr(755,root,root) %{_libdir}/libkdewebkit.so
+
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
 %{_includedir}/KDE/DNSSD
@@ -509,6 +526,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/K3DockWidgetAbstractHeaderDrag
 %{_includedir}/KDE/K3DockWidgetHeader
 %{_includedir}/KDE/K3DockWidgetHeaderDrag
+%{_includedir}/KDE/KFileItemActions
+%{_includedir}/KDE/KFileItemListProperties
 %{_includedir}/KDE/K3FileTreeView
 %{_includedir}/KDE/K3FileTreeViewItem
 %{_includedir}/KDE/K3Icon
@@ -561,6 +580,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KArchiveFile
 %{_includedir}/KDE/KArrowButton
 %{_includedir}/KDE/KAssistantDialog
+%{_includedir}/KDE/KAuth
 %{_includedir}/KDE/KAuthorized
 %{_includedir}/KDE/KAutoMount
 %{_includedir}/KDE/KAutoUnmount
@@ -569,6 +589,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KBookmarkAction
 %{_includedir}/KDE/KBookmarkActionInterface
 %{_includedir}/KDE/KBookmarkActionMenu
+%{_includedir}/KDE/KBookmarkDialog
 %{_includedir}/KDE/KBookmarkDomBuilder
 %{_includedir}/KDE/KBookmarkExporterBase
 %{_includedir}/KDE/KBookmarkGroup
@@ -646,13 +667,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDialogButtonBox
 %{_includedir}/KDE/KDirLister
 %{_includedir}/KDE/KDirModel
+%{_includedir}/KDE/KDirNotify
 %{_includedir}/KDE/KDirOperator
 %{_includedir}/KDE/KDirSelectDialog
+%{_includedir}/KDE/KDirSortFilterProxyModel
 %{_includedir}/KDE/KDirWatch
 %{_includedir}/KDE/KDiskFreeSpace
 %{_includedir}/KDE/KDiskFreeSpaceInfo
 %{_includedir}/KDE/KDoubleNumInput
-%{_includedir}/KDE/KDoubleSpinBox
 %{_includedir}/KDE/KDoubleValidator
 %{_includedir}/KDE/KEMailSettings
 %{_includedir}/KDE/KEditListBox
@@ -674,17 +696,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFileMetaInfoGroup
 %{_includedir}/KDE/KFileMetaInfoItem
 %{_includedir}/KDE/KFilePlacesModel
+%{_includedir}/KDE/KFilePlacesView
+%{_includedir}/KDE/KFilePreviewGenerator
 %{_includedir}/KDE/KFileShare
 %{_includedir}/KDE/KFileSharePropsPlugin
 %{_includedir}/KDE/KFileTreeBranch
 %{_includedir}/KDE/KFileTreeView
+%{_includedir}/KDE/KFileWidget
 %{_includedir}/KDE/KFilterBase
 %{_includedir}/KDE/KFilterDev
 %{_includedir}/KDE/KFilterProxySearchLine
 %{_includedir}/KDE/KFind
 %{_includedir}/KDE/KFindDialog
 %{_includedir}/KDE/KFloatValidator
-%{_includedir}/KDE/KFolderType
 %{_includedir}/KDE/KFontAction
 %{_includedir}/KDE/KFontChooser
 %{_includedir}/KDE/KFontComboBox
@@ -697,6 +721,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KGlobalAccel
 %{_includedir}/KDE/KGlobalSettings
 %{_includedir}/KDE/KGradientSelector
+%{_includedir}/KDE/KGraphicsWebView
 %{_includedir}/KDE/KGuiItem
 %{_includedir}/KDE/KHBox
 %{_includedir}/KDE/KHE
@@ -755,11 +780,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMimeTypeResolver
 %{_includedir}/KDE/KMimeTypeTrader
 %{_includedir}/KDE/KMimeTypeValidator
+%{_includedir}/KDE/KModifierKeyInfo
 %{_includedir}/KDE/KMozillaBookmarkImporterImpl
 %{_includedir}/KDE/KMultiTabBar
 %{_includedir}/KDE/KMultiTabBarButton
 %{_includedir}/KDE/KMultiTabBarTab
 %{_includedir}/KDE/KNFSShare
+%{_includedir}/KDE/KNS3
 %{_includedir}/KDE/KNS
 %{_includedir}/KDE/KNSBookmarkExporter
 %{_includedir}/KDE/KNSBookmarkExporterImpl
@@ -791,6 +818,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPixmapProvider
 %{_includedir}/KDE/KPixmapRegionSelectorDialog
 %{_includedir}/KDE/KPixmapRegionSelectorWidget
+%{_includedir}/KDE/KPixmapSequence
+%{_includedir}/KDE/KPixmapSequenceOverlayPainter
+#%{_includedir}/KDE/KPixmapSequenceOverlayWidget
 %{_includedir}/KDE/KPlotAxis
 %{_includedir}/KDE/KPlotObject
 %{_includedir}/KDE/KPlotPoint
@@ -860,6 +890,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KStartupInfoData
 %{_includedir}/KDE/KStartupInfoId
 %{_includedir}/KDE/KStatusBar
+%{_includedir}/KDE/KStatusNotifierItem
 %{_includedir}/KDE/KStringHandler
 %{_includedir}/KDE/KStringListValidator
 %{_includedir}/KDE/KStyle
@@ -904,6 +935,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KTzfileTimeZoneSource
 %{_includedir}/KDE/KUndoStack
 %{_includedir}/KDE/KUniqueApplication
+%{_includedir}/KDE/KUnitConversion
 %{_includedir}/KDE/KUnitTest
 %{_includedir}/KDE/KUriFilter
 %{_includedir}/KDE/KUriFilterData
@@ -921,6 +953,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
 %{_includedir}/KDE/KWallet
+%{_includedir}/KDE/KWebPage
+%{_includedir}/KDE/KWebPluginFactory
+%{_includedir}/KDE/KWebView
+%{_includedir}/KDE/KWidgetItemDelegate
 %{_includedir}/KDE/KWindowInfo
 %{_includedir}/KDE/KWindowSystem
 %{_includedir}/KDE/KWordMacroExpander
@@ -938,6 +974,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KZoneAllocator
 %{_includedir}/KDE/KonqBookmarkMenu
 %{_includedir}/KDE/KonqBookmarkOwner
+%{_includedir}/KDE/Kross
 %{_includedir}/KDE/NET
 %{_includedir}/KDE/NETRootInfo
 %{_includedir}/KDE/NETWinInfo
@@ -946,6 +983,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/OrgKdeKLauncherInterface
 %{_includedir}/KDE/PtyProcess
 %{_includedir}/KDE/Solid
+%{_includedir}/KDE/Sonnet
 %{_includedir}/KDE/SshProcess
 %{_includedir}/KDE/StubProcess
 %{_includedir}/KDE/SuProcess
@@ -972,6 +1010,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/kmediaplayer
 %{_includedir}/kmediaplayer/*
 %{_includedir}/knewstuff2
+%{_includedir}/knewstuff3
 %dir %{_includedir}/kparts
 %{_includedir}/kparts/*
 %{_includedir}/kross
@@ -979,7 +1018,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/ktexteditor/*
 %dir %{_includedir}/nepomuk
 %{_includedir}/nepomuk/*
-%{_includedir}/*.h
 %dir %{_includedir}/solid
 %{_includedir}/solid/*
 %dir %{_includedir}/sonnet
@@ -989,11 +1027,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/*.tcc
 %dir %{_includedir}/ksettings
 %{_includedir}/ksettings/*
+%dir %{_includedir}/kunitconversion
+%{_includedir}/kunitconversion/*
 %dir %{_includedir}/kunittest
 %{_includedir}/kunittest/*
-
-%if %{with apidocs}
-#%files apidocs
-#%defattr(644,root,root,755)
-#%{_kdedocdir}/en/%{name}*-apidocs
-%endif
+%{_includedir}/*.h

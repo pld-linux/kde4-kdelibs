@@ -1,7 +1,7 @@
 Index: interfaces/ktexteditor/templateinterface.cpp
 ===================================================================
---- interfaces/ktexteditor/templateinterface.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ interfaces/ktexteditor/templateinterface.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- interfaces/ktexteditor/templateinterface.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ interfaces/ktexteditor/templateinterface.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -114,7 +114,7 @@
  {
    QMap<QString, QString> enhancedInitValues( initialValues );
@@ -13,8 +13,8 @@ Index: interfaces/ktexteditor/templateinterface.cpp
    int offset;
 Index: kate/smart/katesmartregion.cpp
 ===================================================================
---- kate/smart/katesmartregion.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/smart/katesmartregion.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/smart/katesmartregion.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/smart/katesmartregion.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -55,6 +55,8 @@
      else
        *m_bounding = m_bounding->encompass(*range);
@@ -26,8 +26,8 @@ Index: kate/smart/katesmartregion.cpp
  
 Index: kate/utils/kateconfig.cpp
 ===================================================================
---- kate/utils/kateconfig.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/utils/kateconfig.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/utils/kateconfig.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/utils/kateconfig.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -1392,6 +1392,7 @@
    KColorScheme schemeView(QPalette::Active, KColorScheme::View);
    KColorScheme schemeWindow(QPalette::Active, KColorScheme::Window);
@@ -61,8 +61,8 @@ Index: kate/utils/kateconfig.cpp
  
 Index: kate/utils/katetemplatehandler.cpp
 ===================================================================
---- kate/utils/katetemplatehandler.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/utils/katetemplatehandler.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/utils/katetemplatehandler.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/utils/katetemplatehandler.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -49,6 +49,9 @@
  {
    ifDebug(kDebug() << templateString << initialValues;)
@@ -106,8 +106,8 @@ Index: kate/utils/katetemplatehandler.cpp
    // create smart ranges for each found variable
 Index: kate/utils/katetemplatehandler.h
 ===================================================================
---- kate/utils/katetemplatehandler.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/utils/katetemplatehandler.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/utils/katetemplatehandler.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/utils/katetemplatehandler.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -144,6 +144,13 @@
      void syncMirroredRanges(KTextEditor::SmartRange* range);
  
@@ -138,8 +138,8 @@ Index: kate/utils/katetemplatehandler.h
       * use it to auto-indent the code after insert.
 Index: kate/spellcheck/ontheflycheck.cpp
 ===================================================================
---- kate/spellcheck/ontheflycheck.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/spellcheck/ontheflycheck.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/spellcheck/ontheflycheck.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/spellcheck/ontheflycheck.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -1,5 +1,5 @@
  /* 
 - * Copyright (C) 2008-2009 by Michel Ludwig (michel.ludwig@kdemail.net)
@@ -160,8 +160,8 @@ Index: kate/spellcheck/ontheflycheck.cpp
    }
 Index: kate/spellcheck/spellcheck.cpp
 ===================================================================
---- kate/spellcheck/spellcheck.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kate/spellcheck/spellcheck.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kate/spellcheck/spellcheck.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kate/spellcheck/spellcheck.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -1,5 +1,5 @@
  /* 
 - * Copyright (C) 2008-2009 by Michel Ludwig (michel.ludwig@kdemail.net)
@@ -198,8 +198,8 @@ Index: kate/spellcheck/spellcheck.cpp
      if(inSpellCheckArea) {
 Index: kfile/kfilewidget.cpp
 ===================================================================
---- kfile/kfilewidget.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kfile/kfilewidget.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kfile/kfilewidget.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kfile/kfilewidget.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -405,6 +405,7 @@
                     KDirOperator::FileActions |
                     KDirOperator::ViewActions);
@@ -210,8 +210,8 @@ Index: kfile/kfilewidget.cpp
      //
 Index: kfile/kdirselectdialog.cpp
 ===================================================================
---- kfile/kdirselectdialog.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kfile/kdirselectdialog.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kfile/kdirselectdialog.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kfile/kdirselectdialog.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -288,6 +288,7 @@
      hlay->setMargin(0);
      QVBoxLayout *mainLayout = new QVBoxLayout();
@@ -222,8 +222,8 @@ Index: kfile/kdirselectdialog.cpp
      d->m_placesView->setObjectName( QLatin1String( "speedbar" ) );
 Index: doc/common/Doxyfile.global
 ===================================================================
---- doc/common/Doxyfile.global	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ doc/common/Doxyfile.global	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- doc/common/Doxyfile.global	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ doc/common/Doxyfile.global	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -649,7 +649,6 @@
                           *unload.* \
                           */test/* \
@@ -234,8 +234,8 @@ Index: doc/common/Doxyfile.global
  # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 Index: doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook
 ===================================================================
---- doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -15,8 +15,8 @@
  </affiliation>
  </author>
@@ -361,8 +361,8 @@ Index: doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook
  </variablelist>
 Index: doc/sonnet/index.docbook
 ===================================================================
---- doc/sonnet/index.docbook	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ doc/sonnet/index.docbook	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- doc/sonnet/index.docbook	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ doc/sonnet/index.docbook	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -1,23 +1,24 @@
  <?xml version="1.0" ?>
 -<!DOCTYPE book PUBLIC "-//KDE//DTD DocBook XML V4.2-Based Variant V1.1//EN" "dtd/kdex.dtd" [
@@ -540,8 +540,8 @@ Index: doc/sonnet/index.docbook
  mode: sgml
 Index: nepomuk/query/queryserviceclient.cpp
 ===================================================================
---- nepomuk/query/queryserviceclient.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ nepomuk/query/queryserviceclient.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- nepomuk/query/queryserviceclient.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ nepomuk/query/queryserviceclient.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -149,6 +149,7 @@
  Nepomuk::Query::QueryServiceClient::~QueryServiceClient()
  {
@@ -550,10 +550,78 @@ Index: nepomuk/query/queryserviceclient.cpp
      delete d;
  }
  
+Index: nepomuk/core/dbusconnectionpool.h
+===================================================================
+--- nepomuk/core/dbusconnectionpool.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ nepomuk/core/dbusconnectionpool.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -34,7 +34,7 @@
+  * around in Qt) this method can be dropped.
+  */
+ NEPOMUK_EXPORT QDBusConnection threadConnection();
+-};
++}
+ 
+ #endif
+ 
+Index: kio/kio/ktar.cpp
+===================================================================
+--- kio/kio/ktar.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/kio/ktar.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -73,15 +73,14 @@
+ }
+ 
+ KTar::KTar( QIODevice * dev )
+-    : KArchive( dev ),d(new KTarPrivate(this))
++    : KArchive( dev ), d(new KTarPrivate(this))
+ {
+     Q_ASSERT( dev );
+ }
+ 
+-// Only called when the a filename was given
++// Only called when a filename was given
+ bool KTar::createDevice( QIODevice::OpenMode mode )
+ {
+-    Q_UNUSED( mode );
+     if ( d->mimetype.isEmpty() ) // Find out mimetype manually
+     {
+         if ( mode != QIODevice::WriteOnly && QFile::exists( fileName() ) )
+@@ -144,7 +143,7 @@
+         }
+     }
+ 
+-    if( d->mimetype == "application/x-tar" )
++    if (d->mimetype == "application/x-tar" || mode == QIODevice::WriteOnly)
+     {
+         return KArchive::createDevice( mode );
+     }
+@@ -499,10 +498,11 @@
+ /*
+  * Writes back the changes of the temporary file
+  * to the original file.
+- * Must only be called if in QIODevice::WriteOnly mode
++ * Must only be called if in write mode, not in read mode
+  */
+-bool KTar::KTarPrivate::writeBackTempFile( const QString & fileName ) {
+-    if ( ! tmpFile )
++bool KTar::KTarPrivate::writeBackTempFile( const QString & fileName )
++{
++    if ( !tmpFile )
+         return true;
+ 
+     kDebug(7041) << "Write temporary file to compressed file";
+@@ -555,7 +555,7 @@
+     // If we are in write mode and had created
+     // a temporary tar file, we have to write
+     // back the changes to the original file
+-    if( mode() == QIODevice::WriteOnly) {
++    if( mode() & QIODevice::WriteOnly) {
+         ok = d->writeBackTempFile( fileName() );
+         delete d->tmpFile;
+         d->tmpFile = 0;
 Index: kio/kio/kdirwatch.cpp
 ===================================================================
---- kio/kio/kdirwatch.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kio/kio/kdirwatch.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kio/kio/kdirwatch.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/kio/kdirwatch.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -1353,8 +1353,11 @@
    QList<Entry*> dList, cList;
  #endif
@@ -570,8 +638,8 @@ Index: kio/kio/kdirwatch.cpp
  
 Index: kio/kio/scheduler.cpp
 ===================================================================
---- kio/kio/scheduler.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kio/kio/scheduler.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kio/kio/scheduler.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/kio/scheduler.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -97,7 +97,6 @@
  
      SchedulerPrivate() :
@@ -735,8 +803,8 @@ Index: kio/kio/scheduler.cpp
         slaveOnHold = 0;
 Index: kio/kio/accessmanager.cpp
 ===================================================================
---- kio/kio/accessmanager.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kio/kio/accessmanager.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kio/kio/accessmanager.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/kio/accessmanager.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -37,7 +37,9 @@
  #include <QtDBus/QDBusConnection>
  #include <QtDBus/QDBusReply>
@@ -797,8 +865,8 @@ Index: kio/kio/accessmanager.cpp
  
 Index: kio/kfile/kdiskfreespaceinfo.cpp
 ===================================================================
---- kio/kfile/kdiskfreespaceinfo.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kio/kfile/kdiskfreespaceinfo.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kio/kfile/kdiskfreespaceinfo.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/kfile/kdiskfreespaceinfo.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -133,8 +133,9 @@
      // Prefer mountPoint if available, so that it even works with non-existing files.
      const QString pathArg = info.d->mountPoint.isEmpty() ? path : info.d->mountPoint;
@@ -813,8 +881,8 @@ Index: kio/kfile/kdiskfreespaceinfo.cpp
  #endif
 Index: kio/tests/kdirwatch_unittest.cpp
 ===================================================================
---- kio/tests/kdirwatch_unittest.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kio/tests/kdirwatch_unittest.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kio/tests/kdirwatch_unittest.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/tests/kdirwatch_unittest.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -35,14 +35,21 @@
          m_path = m_tempDir.name();
      }
@@ -966,10 +1034,170 @@ Index: kio/tests/kdirwatch_unittest.cpp
 +}
 +
  #include "kdirwatch_unittest.moc"
+Index: kio/tests/karchivetest.cpp
+===================================================================
+--- kio/tests/karchivetest.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/tests/karchivetest.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -19,6 +19,7 @@
+ 
+ 
+ #include "karchivetest.h"
++#include <kmimetype.h>
+ #include "karchivetest.moc"
+ #include <ktar.h>
+ #include <kzip.h>
+@@ -200,6 +201,12 @@
+     QVERIFY(e && e->isDirectory());
+ }
+ 
++static void testReadWrite( KArchive* archive )
++{
++    bool ok = archive->writeFile( "newfile", "dfaure", "users", "New File", 8, 0100440 );
++    QVERIFY(ok);
++}
++
+ static void testCopyTo( KArchive* archive )
+ {
+     const KArchiveDirectory* dir = archive->directory();
+@@ -268,6 +275,12 @@
+ 
+ void KArchiveTest::testCreateTar()
+ {
++    // With    tempfile: 0.7-0.8 ms, 994236 instr. loads
++    // Without tempfile:    0.81 ms, 992541 instr. loads
++    // Note: use ./karchivetest 2>&1 | grep ms
++    //       to avoid being slowed down by the kDebugs.
++    QBENCHMARK {
++
+     KTar tar( s_tarFileName );
+ 
+     bool ok = tar.open( QIODevice::WriteOnly );
+@@ -282,10 +295,15 @@
+     QVERIFY( fileInfo.exists() );
+     // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
+     QVERIFY( fileInfo.size() > 450 );
++    }
+ }
+ 
+ void KArchiveTest::testCreateTarGz()
+ {
++    // With    tempfile: 1.3-1.7 ms, 2555089 instr. loads
++    // Without tempfile:    0.87 ms,  987915 instr. loads
++    QBENCHMARK {
++
+     KTar tar( s_tarGzFileName );
+ 
+     bool ok = tar.open( QIODevice::WriteOnly );
+@@ -300,11 +318,20 @@
+     QVERIFY( fileInfo.exists() );
+     // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
+     QVERIFY( fileInfo.size() > 350 );
++
++    }
+ }
+ 
+-void KArchiveTest::testReadTar()
++void KArchiveTest::testReadTar() // testCreateTarGz must have been run first.
+ {
+-    // testCreateTar must have been run first.
++    kDebug() << "START";
++    // 1.6-1.7 ms per interaction, 2908428 instruction loads
++    // After the "no tempfile when writing fix" this went down
++    // to 0.9-1.0 ms, 1689059 instruction loads.
++    // I guess it finds the data in the kernel cache now that no KTempFile is
++    // used when writing.
++    QBENCHMARK {
++
+     KTar tar( s_tarGzFileName );
+ 
+     bool ok = tar.open( QIODevice::ReadOnly );
+@@ -348,6 +375,7 @@
+ 
+     ok = tar.close();
+     QVERIFY( ok );
++    }
+ }
+ 
+ // This tests the decompression using kfilterdev, basically.
+@@ -403,6 +431,33 @@
+     QVERIFY( ok );
+ }
+ 
++void KArchiveTest::testTarReadWrite()
++{
++    // testCreateTar must have been run first.
++    KTar tar( s_tarGzFileName );
++    bool ok = tar.open( QIODevice::ReadWrite );
++    QVERIFY( ok );
++
++    testReadWrite( &tar );
++    testFileData( &tar );
++
++    ok = tar.close();
++    QVERIFY( ok );
++
++    // Reopen it and check it
++    {
++        KTar tar( s_tarGzFileName );
++        bool ok = tar.open( QIODevice::ReadOnly );
++        QVERIFY( ok );
++        testFileData( &tar );
++        const KArchiveDirectory* dir = tar.directory();
++        const KArchiveEntry* e = dir->entry( "newfile" );
++        QVERIFY( e && e->isFile() );
++        const KArchiveFile* f = (KArchiveFile*)e;
++        QCOMPARE( f->data().size(), 8 );
++    }
++}
++
+ void KArchiveTest::testTarMaxLength()
+ {
+     KTar tar( s_tarGzMaxLengthFileName );
+@@ -437,6 +492,7 @@
+     QCOMPARE( listing[  3], QString("mode=100644 user=testu group=testg path=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000101 type=file size=3") );
+     QCOMPARE( listing[  4], QString("mode=100644 user=testu group=testg path=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa0000000102 type=file size=3") );
+ 
++    // TODO:
+     // ################################################# BUG! ###########################
+     // There seems to be a bug (which is in kde3 too), we miss 512 and 513.
+     // But note that tar tvzf says "skipping next header" (and it skips 511),
+@@ -667,4 +723,7 @@
+         QVERIFY(false);
+     }
+ #endif
++
++    // For better benchmarks: initialize KMimeTypeFactory magic here
++    KMimeType::findByContent(QByteArray("hello"));
+ }
+Index: kio/tests/ktartest.cpp
+===================================================================
+--- kio/tests/ktartest.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/tests/ktartest.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -40,6 +40,8 @@
+   }
+ }
+ 
++// See karchivetest.cpp for the unittest that coverts KTar.
++
+ int main( int argc, char** argv )
+ {
+     if (argc != 2)
+Index: kio/tests/karchivetest.h
+===================================================================
+--- kio/tests/karchivetest.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kio/tests/karchivetest.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -34,6 +34,7 @@
+     void testUncompress();
+     void testTarFileData();
+     void testTarCopyTo();
++    void testTarReadWrite();
+     void testTarMaxLength();
+ 
+     void testCreateZip();
 Index: kdecore/auth/kauthactionreply.h
 ===================================================================
---- kdecore/auth/kauthactionreply.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kdecore/auth/kauthactionreply.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kdecore/auth/kauthactionreply.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kdecore/auth/kauthactionreply.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -209,6 +209,7 @@
   The piece of code that calls the action of the previous example is located in example/mainwindow.cpp in the on_readAction_triggered() slot. It looks like this:
   @code
@@ -991,8 +1219,8 @@ Index: kdecore/auth/kauthactionreply.h
   @section kauth_async Asynchronous calls, data reporting, and action termination
 Index: plasma/popupapplet.cpp
 ===================================================================
---- plasma/popupapplet.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/popupapplet.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/popupapplet.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/popupapplet.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -358,7 +358,10 @@
                  //emulate the same kind of behavior as Qt::Popup (close when you click somewhere
                  //else.
@@ -1018,8 +1246,8 @@ Index: plasma/popupapplet.cpp
  
 Index: plasma/private/desktoptoolbox.cpp
 ===================================================================
---- plasma/private/desktoptoolbox.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/private/desktoptoolbox.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/private/desktoptoolbox.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/private/desktoptoolbox.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -566,7 +566,9 @@
              (viewTransform().m11() == Plasma::scalingFactor(Plasma::DesktopZoom) ||
              icon->action() == d->containment->action("add sibling containment") ||
@@ -1033,8 +1261,8 @@ Index: plasma/private/desktoptoolbox.cpp
          }
 Index: plasma/private/extender_p.h
 ===================================================================
---- plasma/private/extender_p.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/private/extender_p.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/private/extender_p.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/private/extender_p.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -47,7 +47,7 @@
          ~ExtenderPrivate();
  
@@ -1046,8 +1274,8 @@ Index: plasma/private/extender_p.h
          void loadExtenderItems();
 Index: plasma/extenders/extender.cpp
 ===================================================================
---- plasma/extenders/extender.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/extenders/extender.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/extenders/extender.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/extenders/extender.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -209,7 +209,14 @@
          return 0;
      }
@@ -1086,8 +1314,8 @@ Index: plasma/extenders/extender.cpp
      }
 Index: plasma/extenders/extenderitem.h
 ===================================================================
---- plasma/extenders/extenderitem.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/extenders/extenderitem.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/extenders/extenderitem.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/extenders/extenderitem.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -254,6 +254,13 @@
           */
          void hideCloseButton();
@@ -1104,8 +1332,8 @@ Index: plasma/extenders/extenderitem.h
  
 Index: plasma/extenders/extender.h
 ===================================================================
---- plasma/extenders/extender.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/extenders/extender.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/extenders/extender.h	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/extenders/extender.h	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -303,7 +303,7 @@
      private:
          ExtenderPrivate *const d;
@@ -1117,8 +1345,8 @@ Index: plasma/extenders/extender.h
          friend class ExtenderGroup;
 Index: plasma/extenders/extenderitem.cpp
 ===================================================================
---- plasma/extenders/extenderitem.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ plasma/extenders/extenderitem.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- plasma/extenders/extenderitem.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ plasma/extenders/extenderitem.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -141,6 +141,7 @@
  
  ExtenderItem::~ExtenderItem()
@@ -1127,10 +1355,252 @@ Index: plasma/extenders/extenderitem.cpp
      //make sure the original mousepointer always get's restored.
      if (d->mouseOver) {
          QApplication::restoreOverrideCursor();
+Index: khtml/khtmlview.cpp
+===================================================================
+--- khtml/khtmlview.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ khtml/khtmlview.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -604,6 +604,12 @@
+         setWidget( new QWidget(this) );
+     widget()->setAttribute( Qt::WA_NoSystemBackground );
+ 
++    // Do *not* remove this attribute frivolously.
++    // You might not notice a change of behaviour in Debug builds
++    // but removing opaque events will make QWidget::scroll fail horribly
++    // in Release builds.
++    widget()->setAttribute( Qt::WA_OpaquePaintEvent );
++
+     verticalScrollBar()->setCursor( Qt::ArrowCursor );
+     horizontalScrollBar()->setCursor( Qt::ArrowCursor );
+ 
+Index: khtml/rendering/bidi.cpp
+===================================================================
+--- khtml/rendering/bidi.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ khtml/rendering/bidi.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -1389,10 +1389,10 @@
+         RenderObject *o = first( this, 0, false );
+         while ( o ) {
+             invalidateVerticalPosition();
+-            if (o->markedForRepaint()) {
++            if (!fullLayout && o->markedForRepaint()) {
+                 o->repaintDuringLayout();
+                 o->setMarkedForRepaint(false);
+-             }
++            }
+             if (o->isReplaced() || o->isFloating() || o->isPositioned()) {
+ 
+                 if ((!o->isPositioned() || o->isPosWithStaticDim()) && 
+@@ -1411,8 +1411,10 @@
+                 }
+             }
+             else {
+-                if (fullLayout || o->selfNeedsLayout())
++                if (fullLayout || o->selfNeedsLayout()) {
+                     o->dirtyInlineBoxes(fullLayout);
++                    o->setMarkedForRepaint(false);
++                }
+                 o->setNeedsLayout(false);
+             }
+             o = Bidinext( this, o, 0, false );
+Index: khtml/rendering/render_replaced.cpp
+===================================================================
+--- khtml/rendering/render_replaced.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ khtml/rendering/render_replaced.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -883,7 +883,10 @@
+         keyPressEvent(static_cast<QKeyEvent *>(e));
+         break;
+     case QEvent::KeyRelease:
+-        keyReleaseEvent(static_cast<QKeyEvent *>(e));
++        if (qobject_cast<QLineEdit*>(this))
++            event(e);
++        else
++            keyReleaseEvent(static_cast<QKeyEvent *>(e));
+         break;
+     case QEvent::FocusIn:
+         focusInEvent(static_cast<QFocusEvent *>(e));
+Index: kjs/regexp.cpp
+===================================================================
+--- kjs/regexp.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kjs/regexp.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
+@@ -44,6 +44,8 @@
+ 
+ RegExp::UTF8SupportState RegExp::utf8Support = RegExp::Unknown;
+ 
++static bool sanitizePatternExtensions(UString &p, WTF::Vector<int>* parenIdx = 0);
++
+ // JS regexps can contain Unicode escape sequences (\uxxxx) which
+ // are rather uncommon elsewhere. As our regexp libs don't understand
+ // them we do the unescaping ourselves internally.
+@@ -51,11 +53,13 @@
+ // expects null termination..
+ static UString sanitizePattern(const UString &p)
+ {
+-  UString newPattern;
++  UString np;
+ 
++  bool changed = false;
+   const char* const nil = "\\x00";
+   if (p.find("\\u") >= 0 || p.find(KJS::UChar('\0')) >= 0) {
+     bool escape = false;
++    changed = true;
+     for (int i = 0; i < p.size(); ++i) {
+       UChar c = p[i];
+       if (escape) {
+@@ -81,13 +85,13 @@
+ 	  if (j < 4) {
+ 	    // sequence was incomplete. treat \u as u which IE always
+ 	    // and FF sometimes does.
+-	     newPattern.append(UString('u'));
++	     np.append(UString('u'));
+ 	  } else {
+             c = UChar(u);
+             switch (u) {
+             case 0:
+ 	      // Make sure to encode 0, to avoid terminating the string
+-	       newPattern += UString(nil);
++	       np += UString(nil);
+ 	      break;
+             case '^':
+             case '$':
+@@ -101,35 +105,87 @@
+             case '[': case ']':
+             case '|':
+ 	      // escape pattern characters have to remain escaped
+-	       newPattern.append(UString('\\'));
++	       np.append(UString('\\'));
+ 	      // intentional fallthrough
+             default:
+-	      newPattern += UString(&c, 1);
++	      np += UString(&c, 1);
+ 	      break;
+ 	    }
+           }
+           continue;
+         }
+-        newPattern += UString('\\');
+-        newPattern += UString(&c, 1);
++        np += UString('\\');
++        np += UString(&c, 1);
+       } else {
+         if (c == '\\')
+           escape = true;
+         else if (c == '\0')
+-          newPattern += UString(nil);
++          np += UString(nil);
+         else
+-          newPattern += UString(&c, 1);
++          np += UString(&c, 1);
+       }
+     }
+-    return newPattern;
+-  } else {
+-    return p;
+   }
++  // Rewrite very inefficient RE formulation:
++  // (.|\s)+ is often used instead of the less intuitive, but vastly preferable [\w\W]+
++  // The first wording needs to recurse at each character matched in libPCRE, leading to rapid exhaustion of stack space.
++  if (p.find(".|\\s)")>=0) {
++      if (np.isEmpty())
++          np = p;
++      bool didRewrite = false;
++      WTF::Vector<int> parenIdx;
++      sanitizePatternExtensions(np, &parenIdx);
++      Vector<int>::const_iterator end = parenIdx.end();
++      int previdx = 0;
++      UString tmp;
++      bool nonCapturing = false;
++      for (Vector<int>::const_iterator it = parenIdx.begin(); it != end; ++it) {
++          int idx = *it;
++          if (np.size() < idx+6)
++              break;
++          if (np[idx+1] == '?' && np[idx+2] == ':') {
++              nonCapturing = true;
++              idx += 3;
++          } else {
++             ++idx;
++          }
++          if (!(np[idx] == '.' && np[idx+1] == '|' && np[idx+2] == '\\' && np[idx+3] == 's'))
++              continue;
++          if (np.size() >= idx+6 && (np[idx+5] == '+' || (np[idx+5] == '*')) &&
++              // no need to do anything if the pattern is minimal e.g. (.|\s)+?
++              !(np.size() > idx+6 && np[idx+6] == '?')) {
++                  didRewrite = true;
++                  if (nonCapturing) {               // trivial case: (?:.|\s)+ => [\w\W]+
++                      tmp.append(np, previdx, idx-previdx-3);
++                      tmp.append("[\\w\\W]");
++                      tmp.append(np[idx+5]);
++                  } else if (np[idx+5] == '*') {    // capture zero of one or more: (.|\s)* => (?:[\w\W]*([\w\W])|[\w\W]?)
++                      tmp.append(np, previdx, idx-previdx-1);
++                      tmp.append("(?:[\\w\\W]*([\\w\\W])|[\\w\\W]?)");
++                  } else {                          // capture last of one or more: (.|\s)+ => [\w\W]*([\w\W])
++                      assert(np[idx+5] == '+');
++                      tmp.append(np, previdx, idx-previdx-1);
++                      tmp.append("[\\w\\W]*([\\w\\W])");
++                  }
++          } else {
++              tmp.append(np, previdx, idx-previdx+5);
++          }
++          previdx = idx+6;
++      }
++      if (didRewrite) {
++          tmp.append(np, previdx);
++          fprintf(stderr, "Pattern: %s ", np.ascii());
++          fprintf(stderr, "was rewritten to: %s\n", tmp.ascii());
++          np = tmp;
++          changed = true;
++      }
++  }
++  return (changed ? np : p);
+ }
+ 
+ // For now, the only 'extension' to standard we are willing to deal with is
+ // a non-escaped closing bracket, outside of a character class. e.g. /.*]/
+-static bool sanitizePatternExtensions(UString &p)
++static bool sanitizePatternExtensions(UString &p, WTF::Vector<int>* parenIdx)
+ {
+   UString newPattern;
+ 
+@@ -138,6 +194,7 @@
+   bool escape = false;
+ 
+   int state = StateNominal;
++  int escapedSinceLastParen = 0;
+   for (int i = 0; i < p.size(); ++i) {
+       UChar c = p[i];
+       if (escape) {
+@@ -150,13 +207,20 @@
+                 state = StateNominal;
+             } else if (state == StateNominal) {
+                 v.append(i);
++                ++escapedSinceLastParen;
+             }
+         } else if (c == '[') {
+             if (state == StateOpenBracket) {
+                 v.append(i);
++                ++escapedSinceLastParen;
+             } else if (state == StateNominal) {
+                 state = StateOpenBracket;
+             }
++        } else if (c == '(') {
++            if (parenIdx && state == StateNominal) {
++                parenIdx->append(i+escapedSinceLastParen);
++                escapedSinceLastParen = 0;
++            }
+         }
+     }
+   }
+@@ -176,7 +240,7 @@
+       p = newPattern;
+       return true;
+   } else {
+-    return false;
++      return false;
+   }
+ }
+ 
 Index: kdeui/dialogs/kcupsoptionswidget_p.cpp
 ===================================================================
---- kdeui/dialogs/kcupsoptionswidget_p.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kdeui/dialogs/kcupsoptionswidget_p.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kdeui/dialogs/kcupsoptionswidget_p.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kdeui/dialogs/kcupsoptionswidget_p.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -44,15 +44,18 @@
  
  bool KCupsOptionsWidget::cupsAvailable()
@@ -1160,8 +1630,8 @@ Index: kdeui/dialogs/kcupsoptionswidget_p.cpp
  void KCupsOptionsWidget::setupPrinter()
 Index: kdeui/itemviews/kselectionproxymodel.cpp
 ===================================================================
---- kdeui/itemviews/kselectionproxymodel.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kdeui/itemviews/kselectionproxymodel.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kdeui/itemviews/kselectionproxymodel.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kdeui/itemviews/kselectionproxymodel.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -304,9 +304,6 @@
  {
    Q_Q(KSelectionProxyModel);
@@ -1277,8 +1747,8 @@ Index: kdeui/itemviews/kselectionproxymodel.cpp
      if (proxyIndex.isValid())
 Index: kdewebkit/kgraphicswebview.cpp
 ===================================================================
---- kdewebkit/kgraphicswebview.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kdewebkit/kgraphicswebview.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kdewebkit/kgraphicswebview.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kdewebkit/kgraphicswebview.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -89,12 +89,15 @@
          return;
      }
@@ -1301,8 +1771,8 @@ Index: kdewebkit/kgraphicswebview.cpp
  #include "kgraphicswebview.moc"
 Index: kdewebkit/kwebview.cpp
 ===================================================================
---- kdewebkit/kwebview.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089010)
-+++ kdewebkit/kwebview.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089010)
+--- kdewebkit/kwebview.cpp	(.../tags/KDE/4.4.0/kdelibs)	(wersja 1089224)
++++ kdewebkit/kwebview.cpp	(.../branches/KDE/4.4/kdelibs)	(wersja 1089224)
 @@ -80,18 +80,21 @@
  }
  

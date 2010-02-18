@@ -1,3 +1,7 @@
+# TODO
+# - use ca-certificates:
+#   rpm -qf /usr/share/apps/kssl/ca-bundle.crt
+#   kde4-kdelibs-4.3.3-1.x86_64
 #
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos

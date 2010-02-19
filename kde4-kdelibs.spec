@@ -24,7 +24,7 @@ License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	957bca85de744a9ddd316fd85e882b40
-Patch100: %{name}-branch.diff
+Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
@@ -169,8 +169,8 @@ Summary(pt_BR.UTF-8):	Arquivos de inclusão e documentação para compilar aplic
 Summary(ru.UTF-8):	Хедеры и документация для компилляции программ KDE
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
-Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	%{name} = %{version}-%{release}
+Requires:	QtOpenGL-devel >= %{qtver}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel

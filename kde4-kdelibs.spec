@@ -19,7 +19,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.4.1
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -333,6 +333,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
 %{_datadir}/config/katemoderc
+%{_datadir}/config/katepartpluginsrc
 %{_datadir}/mime/packages/*
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services/*.desktop
@@ -346,8 +347,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/dbus-1/interfaces/*.xml
 
 # kcmremotewidgets
-/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
-%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
 %{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
 
 # kauth
@@ -456,6 +455,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkdeinit4_klauncher.so
 
 %attr(755,root,root) %{_libdir}/kde4/*.so
+%dir %{_libdir}/kde4/plugins/kauth
+%dir %{_libdir}/kde4/plugins/kauth/backend
+%attr(755,root,root) %{_libdir}/kde4/plugins/kauth/backend/kauth_backend_plugin.so
+%dir %{_libdir}/kde4/plugins/kauth/helper
+%attr(755,root,root) %{_libdir}/kde4/plugins/kauth/helper/kauth_helper_plugin.so
 %dir %{_libdir}/kde4/plugins/designer
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so

@@ -1,7 +1,3 @@
-# TODO
-# - use ca-certificates:
-#   rpm -qf /usr/share/apps/kssl/ca-bundle.crt
-#   kde4-kdelibs-4.3.3-1.x86_64
 #
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
@@ -18,16 +14,17 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.4.2
+Version:	4.4.3
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	e872979d77352dcdf39845802d8764d1
+# Source0-md5:	6f8f3414d5f679459485aa3716678571
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
+Patch3:		%{name}-cacert.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -95,6 +92,7 @@ BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
 Requires:	QtCore >= %{qtver}
+Requires:	ca-certificates
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5
 Requires:	setup >= 2.4.6-7
@@ -208,6 +206,7 @@ KDE.
 #%patch0 -p0
 #%patch1 -p0
 %patch2 -p0
+%patch3 -p0
 
 %build
 install -d build
@@ -253,6 +252,9 @@ install -d \
 
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu
+
+# USE ca-certificates
+rm -f $RPM_BUILD_ROOT%{_datadir}/apps/kssl/ca-bundle.crt
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -348,6 +350,8 @@ rm -rf $RPM_BUILD_ROOT
 
 # kcmremotewidgets
 %{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
+/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
+%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
 
 # kauth
 %{_datadir}/apps/kauth

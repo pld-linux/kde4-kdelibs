@@ -1,0 +1,21 @@
+--- kio/kssl/ksslcertificate.cpp.orig	2010-04-30 17:15:08.293417314 +0200
++++ kio/kssl/ksslcertificate.cpp	2010-04-30 17:32:02.855805686 +0200
+@@ -660,7 +660,8 @@
+         return errors;
+     }
+ 
+-    const QStringList qsl = KGlobal::dirs()->resourceDirs("kssl");
++    QStringList qsl;
++    qsl << "/etc/certs";
+ 
+     if (qsl.isEmpty()) {
+         errors << KSSLCertificate::NoCARoot;
+@@ -671,7 +672,7 @@
+ 
+     for (QStringList::ConstIterator j = qsl.begin(); j != qsl.end(); ++j) {
+         KDE_struct_stat sb;
+-        QString _j = (*j) + "ca-bundle.crt";
++        QString _j = (*j) + "ca-certificates.crt";
+         if (-1 == KDE_stat(_j.toAscii().constData(), &sb)) {
+             continue;
+         }

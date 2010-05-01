@@ -25,6 +25,7 @@ Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
 Patch2:		%{name}-branding.patch
 Patch3:		%{name}-cacert.patch
+Patch4:		%{name}-findlzmafix.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -207,6 +208,7 @@ KDE.
 #%patch1 -p0
 %patch2 -p0
 %patch3 -p0
+%patch4 -p0
 
 %build
 install -d build

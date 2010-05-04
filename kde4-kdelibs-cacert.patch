@@ -19,3 +19,15 @@
          if (-1 == KDE_stat(_j.toAscii().constData(), &sb)) {
              continue;
          }
+--- kdecore/network/ksslcertificatemanager.cpp.orig	2010-05-04 14:57:32.907278420 +0200
++++ kdecore/network/ksslcertificatemanager.cpp	2010-05-04 15:01:04.990025543 +0200
+@@ -224,7 +224,8 @@
+         }
+ 
+         // set default CAs from KDE's own bundle
+-        QStringList bundles = KGlobal::dirs()->findAllResources("data", "kssl/ca-bundle.crt");
++        QStringList bundles;
++	bundles << "/etc/certs/ca-certificates.crt";
+         foreach (const QString &bundle, bundles) {
+             defaultCaCertificates += QSslCertificate::fromPath(bundle);
+         }

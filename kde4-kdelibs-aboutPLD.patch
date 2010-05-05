@@ -1,6 +1,6 @@
---- kdeui/dialogs/kaboutkdedialog_p.cpp.orig	2010-05-05 11:13:06.245960867 +0200
-+++ kdeui/dialogs/kaboutkdedialog_p.cpp	2010-05-05 12:48:12.232039217 +0200
-@@ -146,6 +146,80 @@
+--- kdeui/dialogs/kaboutkdedialog_p.cpp.orig    2010-05-05 11:13:06.245960867 +0200
++++ kdeui/dialogs/kaboutkdedialog_p.cpp 2010-05-05 21:40:59.558623432 +0200
+@@ -146,6 +146,64 @@
      setMainWidget(mainWidget);
  }
  
@@ -27,7 +27,7 @@
 +        "The developer community consists of various enthusiasts who wish to donate their time"
 +        "and knowledge for the common good of PLD Linux. There is no specific ideology behind PLD-Linux,"
 +        "we just want to have a fast, stable and flexible environment to work in."
-+	"<a href=\"http://www.pld-linux.org\">Read more on the official website...</a>.</p></html>"));
++       "<a href=\"http://www.pld-linux.org\">Read more on the official website...</a>.</p></html>"));
 +
 +    QLabel *report = new QLabel;
 +    report->setMargin(10);
@@ -39,26 +39,10 @@
 +        "Please report any PLD Linux related bugs on our Bug Tracking System"
 +        "<a href=\"https://bugs.launchpad.net/pld-linux\">https://bugs.launchpad.net/pld-linux</a></html>" ));
 +    
-+    QLabel *maintainer = new QLabel;
-+    report->setMargin(10);
-+    report->setAlignment(Qt::AlignTop);
-+    report->setWordWrap(true);
-+    report->setOpenExternalLinks(true);
-+    report->setTextInteractionFlags(Qt::TextBrowserInteraction);
-+    report->setText(i18n("<html>"
-+        "The KDE4 package maintainer in PLD Linux is shadzik...<br><br>"
-+        "who is so big...<br>"
-+        "so absolutely huge...<br>"
-+        "Gosh, we're all really impressed down here, I can tell you.<br>"
-+        "Forgive us, oh shadzik, for this, our dreadful toadying, and barefaced flattery.<br>"
-+        "But You are so strong and, well, just so super. (Fantastic.)<br>"
-+        "<a href=\"http://www.youtube.com/watch?v=fINh4SsOyBw\">Monty Python: Oh Lord! You Are So Big!</a></html>" ));
-+
 +    QTabWidget *tabWidget = new QTabWidget;
 +    tabWidget->setUsesScrollButtons(false);
 +    tabWidget->addTab(about, i18nc("About PLD Linux","&About"));
 +    tabWidget->addTab(report, i18n("&Report Bugs or Wishes"));
-+    tabWidget->addTab(maintainer, i18n("&Package Maintainer"));
 +
 +    //QLabel *image = new QLabel;
 +    //image->setPixmap(KStandardDirs::locate("data", "kdeui/pics/aboutkde.png"));

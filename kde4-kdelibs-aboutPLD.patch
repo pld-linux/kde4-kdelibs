@@ -1,6 +1,6 @@
 --- kdeui/dialogs/kaboutkdedialog_p.cpp.orig	2010-05-05 11:13:06.245960867 +0200
 +++ kdeui/dialogs/kaboutkdedialog_p.cpp	2010-05-05 12:48:12.232039217 +0200
-@@ -146,6 +146,76 @@
+@@ -146,6 +146,80 @@
      setMainWidget(mainWidget);
  }
  
@@ -46,9 +46,13 @@
 +    report->setOpenExternalLinks(true);
 +    report->setTextInteractionFlags(Qt::TextBrowserInteraction);
 +    report->setText(i18n("<html>"
-+        "The KDE4 package maintainer in PLD Linux is <b>Bartosz Świątek</b> aka shadzik.<br>"
-+        "For any problems with the way KDE4 is packaged or minor bugs related to the packages"
-+        "contact him at <a href=\"mailto:shadzik@pld-linux.org\">shadzik@pld-linux.org</a>.</html>" ));
++        "The KDE4 package maintainer in PLD Linux is shadzik...<br><br>"
++        "who is so big...<br>"
++        "so absolutely huge...<br>"
++        "Gosh, we're all really impressed down here, I can tell you.<br>"
++        "Forgive us, oh shadzik, for this, our dreadful toadying, and barefaced flattery.<br>"
++        "But You are so strong and, well, just so super. (Fantastic.)<br>"
++        "<a href=\"http://www.youtube.com/watch?v=fINh4SsOyBw\">Monty Python: Oh Lord! You Are So Big!</a></html>" ));
 +
 +    QTabWidget *tabWidget = new QTabWidget;
 +    tabWidget->setUsesScrollButtons(false);

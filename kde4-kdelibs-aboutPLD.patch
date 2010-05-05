@@ -1,0 +1,132 @@
+--- kdeui/dialogs/kaboutkdedialog_p.cpp.orig	2010-05-05 11:13:06.245960867 +0200
++++ kdeui/dialogs/kaboutkdedialog_p.cpp	2010-05-05 12:48:12.232039217 +0200
+@@ -146,6 +146,76 @@
+     setMainWidget(mainWidget);
+ }
+ 
++KAboutPldDialog::KAboutPldDialog(QWidget *parent)
++  : KDialog(parent),
++    d( 0 )
++{
++    setPlainCaption(i18n("About PLD Linux"));
++    setButtons(KDialog::Close);
++
++    KTitleWidget *titleWidget = new KTitleWidget(this);
++    titleWidget->setText(i18n("<html><font size=\"5\">PLD Linux</font><br /><b>%1</b></html>",
++                         QString(PLD_VERSION_STRING)));
++   // titleWidget->setPixmap(KIcon("kde").pixmap(48), KTitleWidget::ImageLeft);
++
++    QLabel *about = new QLabel;
++    about->setMargin(10);
++    about->setAlignment(Qt::AlignTop);
++    about->setWordWrap(true);
++    about->setOpenExternalLinks(true);
++    about->setTextInteractionFlags(Qt::TextBrowserInteraction);
++    about->setText(i18n("<html>"
++        "<p>Unlike other big distributions, there is no commercial support behind PLD Linux."
++        "The developer community consists of various enthusiasts who wish to donate their time"
++        "and knowledge for the common good of PLD Linux. There is no specific ideology behind PLD-Linux,"
++        "we just want to have a fast, stable and flexible environment to work in."
++	"<a href=\"http://www.pld-linux.org\">Read more on the official website...</a>.</p></html>"));
++
++    QLabel *report = new QLabel;
++    report->setMargin(10);
++    report->setAlignment(Qt::AlignTop);
++    report->setWordWrap(true);
++    report->setOpenExternalLinks(true);
++    report->setTextInteractionFlags(Qt::TextBrowserInteraction);
++    report->setText(i18n("<html>"
++        "Please report any PLD Linux related bugs on our Bug Tracking System"
++        "<a href=\"https://bugs.launchpad.net/pld-linux\">https://bugs.launchpad.net/pld-linux</a></html>" ));
++    
++    QLabel *maintainer = new QLabel;
++    report->setMargin(10);
++    report->setAlignment(Qt::AlignTop);
++    report->setWordWrap(true);
++    report->setOpenExternalLinks(true);
++    report->setTextInteractionFlags(Qt::TextBrowserInteraction);
++    report->setText(i18n("<html>"
++        "The KDE4 package maintainer in PLD Linux is <b>Bartosz Świątek</b> aka shadzik.<br>"
++        "For any problems with the way KDE4 is packaged or minor bugs related to the packages"
++        "contact him at <a href=\"mailto:shadzik@pld-linux.org\">shadzik@pld-linux.org</a>.</html>" ));
++
++    QTabWidget *tabWidget = new QTabWidget;
++    tabWidget->setUsesScrollButtons(false);
++    tabWidget->addTab(about, i18nc("About PLD Linux","&About"));
++    tabWidget->addTab(report, i18n("&Report Bugs or Wishes"));
++    tabWidget->addTab(maintainer, i18n("&Package Maintainer"));
++
++    //QLabel *image = new QLabel;
++    //image->setPixmap(KStandardDirs::locate("data", "kdeui/pics/aboutkde.png"));
++
++    QHBoxLayout *midLayout = new QHBoxLayout;
++    //midLayout->addWidget(image);
++    midLayout->addWidget(tabWidget);
++
++    QVBoxLayout *mainLayout = new QVBoxLayout;
++    mainLayout->addWidget(titleWidget);
++    mainLayout->addLayout(midLayout);
++    mainLayout->setMargin(0);
++
++    QWidget *mainWidget = new QWidget;
++    mainWidget->setLayout(mainLayout);
++
++    setMainWidget(mainWidget);
++}
++
+ }
+ 
+ #include "kaboutkdedialog_p.moc"
+--- kdeui/dialogs/kaboutkdedialog_p.h.orig	2010-05-05 11:14:05.095718495 +0200
++++ kdeui/dialogs/kaboutkdedialog_p.h	2010-05-05 13:09:25.838373216 +0200
+@@ -61,6 +61,20 @@
+         Q_DISABLE_COPY( KAboutKdeDialog )
+ };
+ 
++class KAboutPldDialog : public KDialog
++{
++    Q_OBJECT
++
++    public:
++	    explicit KAboutPldDialog(QWidget *parent = 0);
++
++    private:
++	    class Private;
++	    Private* const d;
++	    Q_DISABLE_COPY( KAboutPldDialog )
++
++};
++
+ }
+ 
+ #endif
+--- CMakeLists.txt.orig	2010-05-05 12:20:50.135526490 +0200
++++ CMakeLists.txt	2010-05-05 12:30:18.529010371 +0200
+@@ -13,6 +13,7 @@
+ set (KDE_VERSION_RELEASE 3)
+ set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
+ set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.4.3)")
++exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
+ 
+ set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )
+ 
+--- CreateKDELibsDependenciesFile.cmake.orig	2010-05-05 13:12:04.609544437 +0200
++++ CreateKDELibsDependenciesFile.cmake	2010-05-05 13:12:41.791673182 +0200
+@@ -12,6 +12,7 @@
+ set(KDE_VERSION_RELEASE ${KDE_VERSION_RELEASE})
+ set(KDE_VERSION \"${KDE_VERSION}\")
+ set(KDE_VERSION_STRING \"${KDE_VERSION_STRING}\")
++set(PLD_VERSION_STRING \"${PLD_VERSION_STRING}\")
+ set(KDE_DEFAULT_HOME \"${KDE_DEFAULT_HOME}\")
+ ")
+ 
+--- kdecore/util/kdeversion.h.cmake.orig	2010-05-05 13:24:17.786407128 +0200
++++ kdecore/util/kdeversion.h.cmake	2010-05-05 13:24:47.042078321 +0200
+@@ -45,6 +45,7 @@
+  * (Fictional) example: "4.0.90 (>=20070101)"
+  */
+ #cmakedefine KDE_VERSION_STRING "@KDE_VERSION_STRING@"
++#cmakedefine PLD_VERSION_STRING "@PLD_VERSION_STRING@"
+ 
+ /**
+  * @def KDE_VERSION_MAJOR

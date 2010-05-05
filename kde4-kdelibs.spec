@@ -20,6 +20,7 @@ License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	bd2122af41660bfff642bd077ef798a2
+Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
 Patch1:		%{name}-findboost.patch
@@ -210,7 +211,7 @@ KDE.
 %patch2 -p0
 %patch3 -p0
 %patch4 -p0
-%patch5 -p0
+%patch5 -p1
 
 %build
 install -d build
@@ -253,6 +254,8 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
+
+install %{SOURCE1} $RPM_BUILD_ROOT/%{_datadir}/apps/kdeui/pics/pld_box.png
 
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 rm -f $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu

@@ -102,11 +102,11 @@ diff -ru kdelibs-4.4.3/kdeui/dialogs/kaboutkdedialog_p.cpp kdelibs-4.4.3-bs/kdeu
 +    about->setOpenExternalLinks(true);
 +    about->setTextInteractionFlags(Qt::TextBrowserInteraction);
 +    about->setText(i18n("<html>"
-+        "<p>Unlike other big distributions, there is no commercial support behind PLD Linux."
-+        "The developer community consists of various enthusiasts who wish to donate their time"
-+        "and knowledge for the common good of PLD Linux. There is no specific ideology behind PLD-Linux,"
++        "<p>Unlike other big distributions, there is no commercial support behind PLD Linux. "
++        "The developer community consists of various enthusiasts who wish to donate their time "
++        "and knowledge for the common good of PLD Linux. There is no specific ideology behind PLD Linux, "
 +        "we just want to have a fast, stable and flexible environment to work in.<br/>"
-+	"<a href=\"http://www.pld-linux.org\">Read more on the official website...</a>.</p></html>"));
++	"<a href=\"http://www.pld-linux.org\">Read more on the official website...</a></p></html>"));
 +
 +    QLabel *report = new QLabel;
 +    report->setMargin(10);

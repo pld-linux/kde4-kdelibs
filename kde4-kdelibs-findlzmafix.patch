@@ -1,0 +1,36 @@
+--- cmake/modules/FindLibLZMA.cmake.orig	2010-05-01 14:59:21.337331735 +0200
++++ cmake/modules/FindLibLZMA.cmake	2010-05-01 14:59:29.397337364 +0200
+@@ -17,8 +17,15 @@
+ # For details see the accompanying COPYING-CMAKE-SCRIPTS file.
+ 
+ 
+-FIND_PATH(LIBLZMA_INCLUDE_DIR lzma.h )
+-FIND_LIBRARY(LIBLZMA_LIBRARY lzma)
++FIND_PATH(LIBLZMA_INCLUDE_DIR lzma.h 
++	HINTS
++	/usr/include
++)
++FIND_LIBRARY(LIBLZMA_LIBRARY NAMES lzma liblzma
++	HINTS
++	/usr/lib
++	/usr/lib64
++)
+ 
+ SET(LIBLZMA_LIBRARIES ${LIBLZMA_LIBRARY})
+ SET(LIBLZMA_INCLUDE_DIRS ${LIBLZMA_INCLUDE_DIR})
+@@ -31,7 +38,6 @@
+    INCLUDE(CheckLibraryExists)
+    CHECK_LIBRARY_EXISTS(${LIBLZMA_LIBRARIES} lzma_auto_decoder "" LIBLZMA_HAS_AUTO_DECODER)
+    CHECK_LIBRARY_EXISTS(${LIBLZMA_LIBRARIES} lzma_easy_encoder "" LIBLZMA_HAS_EASY_ENCODER)
+-   CHECK_LIBRARY_EXISTS(${LIBLZMA_LIBRARIES} lzma_lzma_preset "" LIBLZMA_HAS_LZMA_PRESET)
+ ENDIF (LIBLZMA_LIBRARIES)
+ 
+ INCLUDE(FindPackageHandleStandardArgs)
+@@ -39,7 +45,6 @@
+                                                         LIBLZMA_LIBRARY
+                                                         LIBLZMA_HAS_AUTO_DECODER
+                                                         LIBLZMA_HAS_EASY_ENCODER
+-                                                        LIBLZMA_HAS_LZMA_PRESET
+                                  )
+ 
+ MARK_AS_ADVANCED( LIBLZMA_INCLUDE_DIR LIBLZMA_LIBRARY )

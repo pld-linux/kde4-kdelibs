@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.4.3
-Release:	4
+Release:	5
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -212,6 +212,13 @@ KDE.
 %patch3 -p0
 %patch4 -p0
 %patch5 -p1
+
+%if "%{pld_release}" == "ti"
+sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
+%else
+sed -i -e 's#PLDLINUX_VERSION#PLD/3.0 (Th)#g' kio/kio/kprotocolmanager.cpp
+%endif
+
 
 %build
 install -d build

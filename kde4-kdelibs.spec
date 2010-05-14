@@ -172,6 +172,7 @@ Summary(uk.UTF-8):	Хедери та документація для компі�
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
 Requires:	QtOpenGL-devel >= %{qtver}
+Requires:	QtSvg-devel >= %{qtver}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel

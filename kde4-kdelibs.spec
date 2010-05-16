@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.4.3
-Release:	5
+Release:	6
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -171,8 +171,18 @@ Summary(ru.UTF-8):	Хедеры и документация для компил�
 Summary(uk.UTF-8):	Хедери та документація для компіляції програм KDE
 Group:		X11/Development/Libraries
 Requires:	%{name} = %{version}-%{release}
+Requires:	Qt3Support-devel >= %{qtver}
+Requires:	QtCore-devel >= %{qtver}
+Requires:	QtDBus-devel >= %{qtver}
+Requires:	QtDesigner-devel >= %{qtver}
+Requires:	QtGui-devel >= %{qtver}
 Requires:	QtOpenGL-devel >= %{qtver}
+Requires:	QtScript-devel >= %{qtver}
 Requires:	QtSvg-devel >= %{qtver}
+Requires:	QtTest-devel >= %{qtver}
+Requires:	QtUiTools-devel >= %{qtver}
+Requires:	QtWebKit-devel >= %{qtver}
+Requires:	QtXml-devel >= %{qtver}
 Requires:	acl-devel
 Requires:	fam-devel
 Requires:	libart_lgpl-devel

@@ -90,6 +90,7 @@ BuildRequires:	soprano-devel >= 2.3.70
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
+BuildRequires:	xorg-lib-libScrnSaver-devel
 BuildRequires:	xz-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs

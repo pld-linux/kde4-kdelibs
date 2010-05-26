@@ -21,7 +21,7 @@ Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	95ae454b45491116b42803beffc7956e
 Source1:	%{name}-pld_box.png
-Patch100:	%{name}-branch.diff
+#Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
 Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
@@ -59,6 +59,7 @@ BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
 BuildRequires:	libart_lgpl-devel
+BuildRequires:	libdbusmenu-qt-devel >= 0.3.3
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
 BuildRequires:	libmad-devel

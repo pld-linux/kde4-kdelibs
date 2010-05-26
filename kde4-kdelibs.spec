@@ -58,6 +58,7 @@ BuildRequires:	flex
 BuildRequires:	giflib-devel
 %{?with_kerberos5:BuildRequires:	heimdal-devel}
 BuildRequires:	hspell-devel
+BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
 BuildRequires:	libart_lgpl-devel
 BuildRequires:	libidn-devel

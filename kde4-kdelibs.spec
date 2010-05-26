@@ -22,12 +22,10 @@ Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version
 # Source0-md5:	95ae454b45491116b42803beffc7956e
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
-Patch0:		%{orgname}4-findqt4.patch
-Patch1:		%{name}-findboost.patch
-Patch2:		%{name}-branding.patch
-Patch3:		%{name}-cacert.patch
-Patch4:		%{name}-findlzmafix.patch
-Patch5:		%{name}-aboutPLD.patch
+Patch0:		%{name}-branding.patch
+Patch1:		%{name}-cacert.patch
+Patch2:		%{name}-findlzmafix.patch
+Patch3:		%{name}-aboutPLD.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -219,12 +217,10 @@ KDE.
 %prep
 %setup -q -n %{orgname}-%{version}
 #%patch100 -p0
-#%patch0 -p0
-#%patch1 -p0
+%patch0 -p0
+%patch1 -p0
 %patch2 -p0
-%patch3 -p0
-%patch4 -p0
-%patch5 -p1
+%patch3 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp

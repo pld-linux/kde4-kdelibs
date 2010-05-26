@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdelibs
 %define		qtver		4.6.2
 
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.4.3
-Release:	6
+Version:	4.4.80
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	bd2122af41660bfff642bd077ef798a2
+# Source0-md5:	95ae454b45491116b42803beffc7956e
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch
@@ -85,9 +85,9 @@ BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
-BuildRequires:	shared-desktop-ontologies-devel >= 0.2
+BuildRequires:	shared-desktop-ontologies-devel >= 0.5
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.3.70
+BuildRequires:	soprano-devel >= 2.4.63
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel

@@ -306,6 +306,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
+%attr(755,root,root) %{_bindir}/meinproc4_simple
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_bindir}/preparetips
 %attr(755,root,root) %{_bindir}/checkXML
@@ -343,6 +344,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
 %{_datadir}/apps/ktexteditor_exporter
+%{_datadir}/apps/ktexteditor_iconinserter
+%{_datadir}/apps/ktexteditor_insanehtml_le
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
@@ -405,12 +408,23 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/ui/ui_standards.rc
 %{_datadir}/config/kdebug.areas
 %{_datadir}/config/kdebugrc
+%{_datadir}/config/khtmlrc
 %{_datadir}/config/plasmoids.knsrc
 %{_datadir}/locale/all_languages
 %{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
+%attr(755,root,root) %ghost %{_libdir}/libkatepartinterfaces.so.?
+%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkcmutils.so.?
+%attr(755,root,root) %{_libdir}/libkcmutils.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkemoticons.so.?
+%attr(755,root,root) %{_libdir}/libkemoticons.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkidletime.so.?
+%attr(755,root,root) %{_libdir}/libkidletime.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkprintutils.so.?
+%attr(755,root,root) %{_libdir}/libkprintutils.so.*.*.*
 %attr(755,root,root) %{_libdir}/libkde3support.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkde3support.so.?
 %attr(755,root,root) %{_libdir}/libkdecore.so.*.*
@@ -536,6 +550,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkdewebkit.so
+%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so
+%attr(755,root,root) %{_libdir}/libkcmutils.so
+%attr(755,root,root) %{_libdir}/libkemoticons.so
+%attr(755,root,root) %{_libdir}/libkidletime.so
+%attr(755,root,root) %{_libdir}/libkprintutils.so
 
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
@@ -856,7 +875,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPixmapRegionSelectorWidget
 %{_includedir}/KDE/KPixmapSequence
 %{_includedir}/KDE/KPixmapSequenceOverlayPainter
-#%{_includedir}/KDE/KPixmapSequenceOverlayWidget
+%{_includedir}/KDE/KPixmapSequenceWidget
 %{_includedir}/KDE/KPlotAxis
 %{_includedir}/KDE/KPlotObject
 %{_includedir}/KDE/KPlotPoint
@@ -991,6 +1010,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KWallet
 %{_includedir}/KDE/KWebPage
 %{_includedir}/KDE/KWebPluginFactory
+%{_includedir}/KDE/KWebWallet
 %{_includedir}/KDE/KWebView
 %{_includedir}/KDE/KWidgetItemDelegate
 %{_includedir}/KDE/KWindowInfo

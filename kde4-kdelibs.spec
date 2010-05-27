@@ -332,7 +332,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/*.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
-#%{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
 %{_datadir}/apps/khtml/domain_info
 %{_datadir}/apps/khtml/error.html
@@ -340,7 +339,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
 %{_datadir}/apps/kjava/pluginsinfo
-# %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
 %{_datadir}/apps/ktexteditor_exporter

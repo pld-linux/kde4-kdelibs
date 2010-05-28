@@ -1,14 +1,3 @@
-diff -ru kdelibs-4.4.3/CMakeLists.txt kdelibs-4.4.3-bs/CMakeLists.txt
---- kdelibs-4.4.3/CMakeLists.txt	2010-04-29 21:52:27.000000000 +0200
-+++ kdelibs-4.4.3-bs/CMakeLists.txt	2010-05-05 15:09:15.709513497 +0200
-@@ -13,6 +13,7 @@
- set (KDE_VERSION_RELEASE 3)
- set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
- set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.4.3)")
-+exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
- 
- set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )
- 
 diff -ru kdelibs-4.4.3/CreateKDELibsDependenciesFile.cmake kdelibs-4.4.3-bs/CreateKDELibsDependenciesFile.cmake
 --- kdelibs-4.4.3/CreateKDELibsDependenciesFile.cmake	2010-03-26 18:24:35.000000000 +0100
 +++ kdelibs-4.4.3-bs/CreateKDELibsDependenciesFile.cmake	2010-05-05 15:09:16.247343933 +0200
@@ -324,3 +313,13 @@ diff -ru kdelibs-4.4.3/kdeui/xmlgui/ui_standards.rc kdelibs-4.4.3-bs/kdeui/xmlgu
    </Menu>
  </MenuBar>
  <ToolBar name="mainToolBar"><text>Main Toolbar</text>
+--- kdelibs-4.4.4/CMakeLists.txt.orig	2010-05-28 12:09:01.000000000 +0200
++++ kdelibs-4.4.4/CMakeLists.txt	2010-05-28 22:54:50.780631042 +0200
+@@ -13,6 +13,7 @@
+ set (KDE_VERSION_RELEASE 4)
+ set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
+ set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.4.4)")
++exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
+ 
+ set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )
+ 

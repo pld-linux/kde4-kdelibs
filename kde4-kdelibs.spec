@@ -4,7 +4,7 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.6.2
+%define		qtver		4.6.3
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.4.4
+Version:	4.4.5
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	1cfd94108b7654589268c0d9776fd361
+# Source0-md5:	42813c549777b5b3d6440ef719ef8588
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{orgname}4-findqt4.patch

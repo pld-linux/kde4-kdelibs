@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		unstable
+%define		_state		stable
 %define		orgname		kdelibs
 %define		qtver		4.6.3
 

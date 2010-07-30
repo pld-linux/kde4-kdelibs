@@ -2,7 +2,7 @@
 # Conditional build:
 %bcond_without	kerberos5	# disable kerberos
 #
-%define		_state		stable
+%define		_state		unstable
 %define		orgname		kdelibs
 %define		qtver		4.6.3
 
@@ -14,20 +14,18 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.4.5
+Version:	4.5.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	42813c549777b5b3d6440ef719ef8588
+# Source0-md5:	9c4b1bc5114c4960a49549aa484e7c27
 Source1:	%{name}-pld_box.png
-Patch100:	%{name}-branch.diff
-Patch0:		%{orgname}4-findqt4.patch
-Patch1:		%{name}-findboost.patch
-Patch2:		%{name}-branding.patch
-Patch3:		%{name}-cacert.patch
-Patch4:		%{name}-findlzmafix.patch
-Patch5:		%{name}-aboutPLD.patch
+#Patch100:	%{name}-branch.diff
+Patch0:		%{name}-branding.patch
+Patch1:		%{name}-cacert.patch
+Patch2:		%{name}-findlzmafix.patch
+Patch3:		%{name}-aboutPLD.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -61,6 +59,7 @@ BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
 BuildRequires:	libart_lgpl-devel
+BuildRequires:	libdbusmenu-qt-devel >= 0.3.3
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
 BuildRequires:	libmad-devel
@@ -85,9 +84,9 @@ BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.293
-BuildRequires:	shared-desktop-ontologies-devel >= 0.2
+BuildRequires:	shared-desktop-ontologies-devel >= 0.5
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.3.70
+BuildRequires:	soprano-devel >= 2.4.63
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -219,12 +218,10 @@ KDE.
 %prep
 %setup -q -n %{orgname}-%{version}
 #%patch100 -p0
-#%patch0 -p0
-#%patch1 -p0
+%patch0 -p0
+%patch1 -p0
 %patch2 -p0
-%patch3 -p0
-%patch4 -p0
-%patch5 -p1
+%patch3 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -309,6 +306,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
+%attr(755,root,root) %{_bindir}/meinproc4_simple
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_bindir}/preparetips
 %attr(755,root,root) %{_bindir}/checkXML
@@ -334,7 +332,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kconf_update/*.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
-#%{_datadir}/apps/kcertpart
 %{_datadir}/apps/khtml/css/presentational.css
 %{_datadir}/apps/khtml/domain_info
 %{_datadir}/apps/khtml/error.html
@@ -342,10 +339,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
 %{_datadir}/apps/kjava/pluginsinfo
-# %{_datadir}/apps/ktexteditor_docwordcompletion
 %{_datadir}/apps/ktexteditor_insertfile
 %{_datadir}/apps/ktexteditor_kdatatool
 %{_datadir}/apps/ktexteditor_exporter
+%{_datadir}/apps/ktexteditor_iconinserter
+%{_datadir}/apps/ktexteditor_insanehtml_le
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
@@ -375,11 +373,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/*.xml
 
-# kcmremotewidgets
-%{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
-/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
-%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
-
 # kauth
 %{_datadir}/apps/kauth
 /etc/dbus-1/system.d/org.kde.auth.conf
@@ -393,7 +386,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
-%{_datadir}/apps/nepomuk
 %dir %{_datadir}/apps/khtml
 %dir %{_datadir}/apps/khtml/css
 %{_datadir}/apps/khtml/css/html4.css
@@ -408,12 +400,23 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/ui/ui_standards.rc
 %{_datadir}/config/kdebug.areas
 %{_datadir}/config/kdebugrc
+%{_datadir}/config/khtmlrc
 %{_datadir}/config/plasmoids.knsrc
 %{_datadir}/locale/all_languages
 %{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
+%attr(755,root,root) %ghost %{_libdir}/libkatepartinterfaces.so.?
+%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkcmutils.so.?
+%attr(755,root,root) %{_libdir}/libkcmutils.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkemoticons.so.?
+%attr(755,root,root) %{_libdir}/libkemoticons.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkidletime.so.?
+%attr(755,root,root) %{_libdir}/libkidletime.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkprintutils.so.?
+%attr(755,root,root) %{_libdir}/libkprintutils.so.*.*.*
 %attr(755,root,root) %{_libdir}/libkde3support.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkde3support.so.?
 %attr(755,root,root) %{_libdir}/libkdecore.so.*.*
@@ -539,6 +542,11 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkdewebkit.so
+%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so
+%attr(755,root,root) %{_libdir}/libkcmutils.so
+%attr(755,root,root) %{_libdir}/libkemoticons.so
+%attr(755,root,root) %{_libdir}/libkidletime.so
+%attr(755,root,root) %{_libdir}/libkprintutils.so
 
 %{_datadir}/apps/cmake
 %{_includedir}/KDE/ConversionCheck
@@ -782,6 +790,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KIconEffect
 %{_includedir}/KDE/KIconLoader
 %{_includedir}/KDE/KIconTheme
+%{_includedir}/KDE/KIdleTime
+%{_includedir}/KDE/KImageCache
 %{_includedir}/KDE/KImageFilePreview
 %{_includedir}/KDE/KImageIO
 %{_includedir}/KDE/KInputDialog
@@ -859,7 +869,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPixmapRegionSelectorWidget
 %{_includedir}/KDE/KPixmapSequence
 %{_includedir}/KDE/KPixmapSequenceOverlayPainter
-#%{_includedir}/KDE/KPixmapSequenceOverlayWidget
+%{_includedir}/KDE/KPixmapSequenceWidget
 %{_includedir}/KDE/KPlotAxis
 %{_includedir}/KDE/KPlotObject
 %{_includedir}/KDE/KPlotPoint
@@ -909,6 +919,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KSettings
 %{_includedir}/KDE/KSharedConfig
 %{_includedir}/KDE/KSharedConfigPtr
+%{_includedir}/KDE/KSharedDataCache
 %{_includedir}/KDE/KSharedPtr
 %{_includedir}/KDE/KShell
 %{_includedir}/KDE/KShellCompletion
@@ -994,6 +1005,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KWallet
 %{_includedir}/KDE/KWebPage
 %{_includedir}/KDE/KWebPluginFactory
+%{_includedir}/KDE/KWebWallet
 %{_includedir}/KDE/KWebView
 %{_includedir}/KDE/KWidgetItemDelegate
 %{_includedir}/KDE/KWindowInfo

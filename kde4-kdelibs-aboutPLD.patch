@@ -313,12 +313,12 @@ diff -ru kdelibs-4.4.3/kdeui/xmlgui/ui_standards.rc kdelibs-4.4.3-bs/kdeui/xmlgu
    </Menu>
  </MenuBar>
  <ToolBar name="mainToolBar"><text>Main Toolbar</text>
---- kdelibs-4.4.4/CMakeLists.txt.orig	2010-05-28 12:09:01.000000000 +0200
-+++ kdelibs-4.4.4/CMakeLists.txt	2010-05-28 22:54:50.780631042 +0200
+--- kdelibs-4.4.80/CMakeLists.txt.orig	2010-05-20 13:40:53.000000000 +0200
++++ kdelibs-4.4.80/CMakeLists.txt	2010-05-26 21:51:02.063537981 +0200
 @@ -13,6 +13,7 @@
- set (KDE_VERSION_RELEASE 4)
+ set (KDE_VERSION_RELEASE 80)
  set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
- set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.4.5)")
+ set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.5.0)")
 +exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
  
  set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )

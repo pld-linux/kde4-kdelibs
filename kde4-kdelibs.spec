@@ -4,7 +4,7 @@
 #
 %define		_state		unstable
 %define		orgname		kdelibs
-%define		qtver		4.6.2
+%define		qtver		4.6.3
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -14,12 +14,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.4.80
+Version:	4.5.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	95ae454b45491116b42803beffc7956e
+# Source0-md5:	9c4b1bc5114c4960a49549aa484e7c27
 Source1:	%{name}-pld_box.png
 #Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -373,11 +373,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/*.xml
 
-# kcmremotewidgets
-%{_datadir}/PolicyKit/policy/org.kde.kcontrol.kcmremotewidgets.policy
-/etc/dbus-1/system.d/org.kde.kcontrol.kcmremotewidgets.conf
-%{_datadir}/dbus-1/system-services/org.kde.kcontrol.kcmremotewidgets.service
-
 # kauth
 %{_datadir}/apps/kauth
 /etc/dbus-1/system.d/org.kde.auth.conf
@@ -391,7 +386,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
-%{_datadir}/apps/nepomuk
 %dir %{_datadir}/apps/khtml
 %dir %{_datadir}/apps/khtml/css
 %{_datadir}/apps/khtml/css/html4.css
@@ -796,6 +790,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KIconEffect
 %{_includedir}/KDE/KIconLoader
 %{_includedir}/KDE/KIconTheme
+%{_includedir}/KDE/KIdleTime
+%{_includedir}/KDE/KImageCache
 %{_includedir}/KDE/KImageFilePreview
 %{_includedir}/KDE/KImageIO
 %{_includedir}/KDE/KInputDialog
@@ -923,6 +919,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KSettings
 %{_includedir}/KDE/KSharedConfig
 %{_includedir}/KDE/KSharedConfigPtr
+%{_includedir}/KDE/KSharedDataCache
 %{_includedir}/KDE/KSharedPtr
 %{_includedir}/KDE/KShell
 %{_includedir}/KDE/KShellCompletion

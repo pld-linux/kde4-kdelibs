@@ -15,13 +15,13 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.5.0
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
 # Source0-md5:	5da80f7549924808a394e6f8fb477212
 Source1:	%{name}-pld_box.png
-#Patch100:	%{name}-branch.diff
+Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
 Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
@@ -218,7 +218,7 @@ KDE.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-#%patch100 -p0
+%patch100 -p0
 %patch0 -p0
 %patch1 -p0
 %patch2 -p0

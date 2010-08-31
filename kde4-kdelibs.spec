@@ -15,7 +15,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.5.1
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -59,7 +59,7 @@ BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
 BuildRequires:	libart_lgpl-devel
-BuildRequires:	libdbusmenu-qt-devel >= 0.3.3
+BuildRequires:	libdbusmenu-qt-devel >= 0.6.0
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
 BuildRequires:	libmad-devel

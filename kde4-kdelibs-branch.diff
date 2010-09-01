@@ -1,2755 +1,997 @@
-Index: ConfigureChecks.cmake
+Index: kate/syntax/data/latex.xml
 ===================================================================
---- ConfigureChecks.cmake	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ ConfigureChecks.cmake	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -34,6 +34,8 @@
+--- kate/syntax/data/latex.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kate/syntax/data/latex.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE language SYSTEM "language.dtd">
+-<language name="LaTeX" version="1.41" section="Markup" kateversion="2.3" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" >
++<language name="LaTeX" version="1.42" section="Markup" kateversion="2.3" priority="10" extensions="*.tex;*.ltx;*.dtx;*.sty;*.cls;*.bbx;*.cbx;*.lbx;" mimetype="text/x-tex" casesensitive="1" author="Jeroen Wijnhout (Jeroen.Wijnhout@kdemail.net)+Holger Danielsson (holger.danielsson@versanet.de)+Michel Ludwig (michel.ludwig@kdemail.net)+Thomas Braun (thomas.braun@virtuell-zuhause.de)" license="LGPL" >
+   <highlighting>
+     <contexts>
+       <!-- Normal text -->
+@@ -281,9 +281,8 @@
  
- macro_bool_to_01(LIBINTL_FOUND ENABLE_NLS)              # kdecore, khtml, kjs
+       <!-- parse math environment -->
+       <context name="MathModeEnv" attribute="Math" lineEndContext="#stay">
+-        <RegExpr String="\\end(?=\s*\{(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|alignat|xalignat|xxalignat)\*?\})" attribute="Structure" context="MathFindEnd"/>
+-        <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" beginRegion="block" />
+-        <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" endRegion="block" />
++	<RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Structure" context="FindBeginEnvironment" beginRegion="block"/>
++	<RegExpr String="\\end(?=[^a-zA-Z])" attribute="Structure" context="MathFindEnd"/>
+         <StringDetect String="\(" attribute="Error" context="#stay" />
+         <StringDetect String="\[" attribute="Error" context="#stay" />
+         <StringDetect String="\)" attribute="Error" context="#stay" />
+@@ -371,8 +370,8 @@
+       <!-- math mode common -->
+       <context name="MathModeCommon" attribute="Math" lineEndContext="#stay">
+         <RegExpr String="\\(begin|end)\s*\{(equation|displaymath|eqnarray|subeqnarray|math|multline|gather|align|flalign|alignat|xalignat|xxalignat)\*?\}" attribute="Error" context="#stay"/>
+-        <RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" beginRegion="block" />
+-        <RegExpr String="\\end(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" endRegion="block" />
++	<RegExpr String="\\begin(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" beginRegion="block" />
++	<RegExpr String="\\end(?=[^a-zA-Z])" attribute="Keyword Mathmode" context="#stay" endRegion="block" />
+         <RegExpr String="\\(text|intertext|mbox)\s*(?=\{)" attribute="Keyword Mathmode" context="MathModeText" />
+         <DetectChar char="\" attribute="Keyword Mathmode" context="MathContrSeq"/>
+         <DetectChar char="%" attribute="Comment" context="Comment"/>
+@@ -443,7 +442,7 @@
+       <itemData name="Structure Keyword" defStyleNum="dsNormal" color="#800000" selColor="#60FFFF" bold="1" italic="0" spellChecking="false"/>
+       <itemData name="Structure Math" defStyleNum="dsNormal" color="#00A000" selColor="#FF40FF"  bold="1" italic="0"/>
+       <itemData name="Structure Keyword Mathmode" defStyleNum="dsNormal" color="#606000" selColor="#FFD0FF" bold="1" italic="0" spellChecking="false"/>
+-     </itemDatas>
++    </itemDatas>
+   </highlighting>
  
-+macro_bool_to_01(DBUSMENUQT_FOUND HAVE_DBUSMENUQT)      # kdeui
+   <general>
+Index: kate/spellcheck/ontheflycheck.cpp
+===================================================================
+--- kate/spellcheck/ontheflycheck.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kate/spellcheck/ontheflycheck.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -60,6 +60,10 @@
+           this, SLOT(updateConfig()));
+   connect(document, SIGNAL(respellCheckBlock(KateDocument*, int, int)),
+           this, SLOT(handleRespellCheckBlock(KateDocument*, int, int)));
 +
- # FIXME: Make this changeable!
- # khtml svg support
- set(SVG_SUPPORT 1)              # unused yet, but for the future
-Index: kate/data/katemoderc
-===================================================================
---- kate/data/katemoderc	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kate/data/katemoderc	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -1,5 +1,5 @@
- [Python]
--Variables=kate: presave-postdialog python-encoding; indent-mode python;
-+Variables=kate: indent-mode python;
- 
- [Makefile]
- Variables=kate: tab-width 8; indent-width 8; replace-tabs off; replace-tabs-save off;
-Index: kate/plugins/autobrace/ktexteditor_autobrace_config.desktop
-===================================================================
---- kate/plugins/autobrace/ktexteditor_autobrace_config.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kate/plugins/autobrace/ktexteditor_autobrace_config.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -14,6 +14,7 @@
- Name[en_GB]=AutoBrace Configuration
- Name[es]=Configuración de los paréntesis automáticos
- Name[et]=Automaatsete sulgude seadistamine
-+Name[eu]=Parentesi automatikoen konfiguraketa
- Name[fr]=Configuration des accolades automatiques
- Name[fy]=Ynstellings for automatyske heakjes
- Name[ga]=Cumraíocht AutoBrace
-Index: kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop
-===================================================================
---- kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -22,6 +22,7 @@
- Name[en_GB]=Insane (not ZEN) HTML coding (light edition)
- Name[es]=Codificación HTML insensata (no zen) (edición ligera)
- Name[et]=Hullumeelne (mitte ZEN) HTML kodeering (kerge versioon)
-+Name[eu]=HTML kodeketa zentzugabea (ez ZEN) (edizio arina)
- Name[fr]=Codage HTML démentiel (non ZEN, édition simple)
- Name[fy]=Insane (net ZEN) HTML kode sjen (lighte edysje)
- Name[ga]=Códú HTML Insane (seachas ZEN) (leagan éadrom)
-@@ -58,6 +59,7 @@
- Comment[en_GB]=A plugin, which does zen-coding like selector completion
- Comment[es]=Un complemento que realiza codificación zen, como el selector de terminación
- Comment[et]=Plugin, mis kasutab zen-kodeerimise laadset selektori lõpetamist
-+Comment[eu]=Plugin bat, zen kodeketa egiten duena, osaketa hautaketa bezala
- Comment[fr]=Un module permettant un codage zen grâce à l'auto-complètement
- Comment[fy]=In plugyn, dy't zen-kodearring docht lykas kar-foltôging
- Comment[ga]=Breiseán a dhéanann códú zen mar shampla comhlánú roghnóirí
-Index: kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop
-===================================================================
---- kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -10,6 +10,7 @@
- Comment[en_GB]=Select an icon and use it as a KIcon in your source-code
- Comment[es]=Seleccionar un icono y usarlo como KIcon en su código fuente
- Comment[et]=Ikooni valimine ja selle kasutamine KIconina oma lähtekoodis
-+Comment[eu]=Hautatu ikono bat eta erabili KIcon bezala zure iturburu kodean
- Comment[fr]=Sélectionner une icône et l'utiliser comme une KIcon dans votre code source
- Comment[fy]=In byldkaike selektearje en it brûke as Kbyldkaike yn jo boarnekoade
- Comment[ga]=Roghnaigh deilbhín agus bain úsáid as mar KIcon i do chód foinseach
-@@ -53,6 +54,7 @@
- Name[en_GB]=IconInserter
- Name[es]=IconInserter
- Name[et]=Ikoonilisaja
-+Name[eu]=Ikono txertatzailea
- Name[fr]=InsertionIcone
- Name[fy]=Byldkaiketaheakker
- Name[ga]=IconInserter
-@@ -99,6 +101,7 @@
- GenericName[en_GB]=Insert Code for KIcon-Creation
- GenericName[es]=Insertar código para la creación de un KIcon
- GenericName[et]=Koodi lisamine KIconi loomiseks
-+GenericName[eu]=Txertatu KIcon sortzeko kodea
- GenericName[fr]=Insérer le code pour la création du KIcon
- GenericName[fy]=Koade foar Kbyldkaike-oanmeitsje ynfoegje
- GenericName[ga]=Ionsáigh cód le haghaidh cruthaithe KIcon
-Index: kate/plugins/exporter/ktexteditor_exporter.desktop
-===================================================================
---- kate/plugins/exporter/ktexteditor_exporter.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kate/plugins/exporter/ktexteditor_exporter.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -46,7 +46,7 @@
- Name[kk]=Экспорттау
- Name[km]=កម្មវិធីនាំចេញ
- Name[ko]=내보내기
--Name[lt]=Eksportas
-+Name[lt]=Eksportavimas
- Name[nb]=Exporter
- Name[nds]=Export
- Name[nl]=Exportprogramma
-Index: includes/CMakeLists.txt
-===================================================================
---- includes/CMakeLists.txt	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ includes/CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -863,6 +863,7 @@
-   KTextEditor/CommandInterface
-   KTextEditor/ConfigInterface
-   KTextEditor/ConfigPage
-+  KTextEditor/ContainerInterface
-   KTextEditor/Cursor
-   KTextEditor/Document
-   KTextEditor/Editor
-@@ -870,6 +871,9 @@
-   KTextEditor/Factory
-   KTextEditor/HighlightInterface
-   KTextEditor/MarkInterface
-+  KTextEditor/MovingCursor
-+  KTextEditor/MovingInterface
-+  KTextEditor/MovingRange
-   KTextEditor/ModificationInterface
-   KTextEditor/Plugin
-   KTextEditor/Range
-@@ -884,6 +888,7 @@
-   KTextEditor/SmartRangeNotifier
-   KTextEditor/SmartRangeWatcher
-   KTextEditor/TemplateInterface
-+  KTextEditor/TemplateInterface2
-   KTextEditor/TextHintInterface
-   KTextEditor/VariableInterface
-   KTextEditor/View
-Index: mimetypes/kde.xml
-===================================================================
---- mimetypes/kde.xml	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ mimetypes/kde.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -102,7 +102,7 @@
-     <glob pattern="*.kug"/>
-   </mime-type>
-   <mime-type type="application/x-webarchive">
--    <sub-class-of type="application/zip"/>
-+    <sub-class-of type="application/x-compressed-tar"/>
-     <comment>web archive</comment>
-     <glob pattern="*.war"/>
-   </mime-type>
-Index: kioslave/http/kcookiejar/kcookiejar.desktop
-===================================================================
---- kioslave/http/kcookiejar/kcookiejar.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kioslave/http/kcookiejar/kcookiejar.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -11,6 +11,7 @@
- Name[en_GB]=Cookie Jar
- Name[es]=Almacén de cookies
- Name[et]=Küpsisekarp
-+Name[eu]=Cookie ontzia
- Name[fi]=Evästeiden säilytys
- Name[fr]=Boîte à cookies
- Name[fy]=Koekjespot
-@@ -57,6 +58,7 @@
- Comment[en_GB]=Stores network cookies
- Comment[es]=Almacena cookies de la red
- Comment[et]=Võrguküpsiste salvestamine
-+Comment[eu]=Sareko cookie-ak biltegiratzen ditu
- Comment[fi]=Säilyttää verkkoevästeitä
- Comment[fr]=Enregistre les cookies réseaux
- Comment[fy]=Bewarret netwurk koekjes
-Index: kioslave/http/http_cache_cleaner.desktop
-===================================================================
---- kioslave/http/http_cache_cleaner.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kioslave/http/http_cache_cleaner.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -160,7 +160,7 @@
- Comment[pt_BR]=Limpa itens antigos do cache HTTP
- Comment[ro]=Elimină înregistrările vechi din cache-ul HTTP
- Comment[ru]=Удаление устаревших элементов из кеша HTTP
--Comment[se]=Buhtista boares merko3/4iid HTTP gaskarádjosis
-+Comment[se]=Buhtista boares merkošiid HTTP gaskarádjosis
- Comment[sk]=Vyčistí staré položky z vyrovnávacej pamäte HTTP
- Comment[sl]=Zbriše stare vnose iz pomnilnika HTTP
- Comment[sr]=Чисти старе ставке из ХТТП кеша
-Index: nepomuk/query/query.cpp
-===================================================================
---- nepomuk/query/query.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ nepomuk/query/query.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -65,6 +65,16 @@
- ORDER BY  desc (?
- */
- 
-+namespace {
-+    QStringList urlsToStringList( const KUrl::List& urls, KUrl::AdjustPathOption opt ) {
-+        QStringList lst;
-+        for( KUrl::List::ConstIterator it = urls.constBegin();
-+             it != urls.constEnd(); ++it ) {
-+            lst.append( it->url(opt) );
-+        }
-+        return lst;
-+    }
-+}
- 
- 
- QString Nepomuk::Query::QueryPrivate::createFolderFilter( const QString& resourceVarName, QueryBuilderData* qbd ) const
-@@ -73,10 +83,10 @@
-         QString uriVarName = qbd->uniqueVarName();
-         QString filter = resourceVarName + ' ' + Soprano::Node::resourceToN3( Nepomuk::Vocabulary::NIE::url() ) + ' ' + uriVarName + QLatin1String( " . " );
-         if ( !m_includeFolders.isEmpty() ) {
--            filter += QString( " FILTER(REGEX(STR(%1), \"^(%2/)\")) ." ).arg( uriVarName ).arg( m_includeFolders.toStringList().join( "|" ) );
-+            filter += QString( " FILTER(REGEX(STR(%1), \"^(%2)\")) ." ).arg( uriVarName ).arg( urlsToStringList(m_includeFolders, KUrl::AddTrailingSlash).join( "|" ) );
-         }
-         if ( !m_excludeFolders.isEmpty() ) {
--            filter += QString( " FILTER(!REGEX(STR(%1), \"^(%2/)\")) ." ).arg( uriVarName ).arg( m_excludeFolders.toStringList().join( "|" ) );
-+            filter += QString( " FILTER(!REGEX(STR(%1), \"^(%2)\")) ." ).arg( uriVarName ).arg( urlsToStringList(m_excludeFolders,  KUrl::AddTrailingSlash).join( "|" ) );
-         }
-         return filter;
-     }
-@@ -361,7 +371,8 @@
-                               d->m_isFileQuery ? QString() : instanceBaseRestriction );
- 
-     // add optional order terms
--    queryBase += qbd.buildOrderString();
-+    if( !(flags & CreateCountQuery) )
-+        queryBase += qbd.buildOrderString();
- 
-     // offset and limit
-     if ( d->m_offset > 0 )
-Index: nepomuk/query/query_p.cpp
-===================================================================
---- nepomuk/query/query_p.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ nepomuk/query/query_p.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -28,6 +28,7 @@
- 
- #include <Soprano/Vocabulary/RDF>
- 
-+#include <QtCore/QSet>
- 
- namespace {
- Nepomuk::Query::Term flattenGroupTerms( const Nepomuk::Query::Term& term )
-@@ -42,19 +43,22 @@
-               it != end; ++it ) {
-             const Nepomuk::Query::Term& t = *it;
-             Nepomuk::Query::Term ot = flattenGroupTerms( t );
--            if ( ot.isValid() ) {
--                if ( ot.type() == term.type() ) {
--                    newSubTerms += static_cast<const Nepomuk::Query::GroupTerm&>( ot ).subTerms();
--                }
--                else {
--                    newSubTerms += ot;
--                }
-+            QList<Nepomuk::Query::Term> terms;
-+            if ( ot.type() == term.type() ) {
-+                terms = static_cast<const Nepomuk::Query::GroupTerm&>( ot ).subTerms();
-             }
-+            else if( ot.isValid() ) {
-+                terms += ot;
-+            }
-+            Q_FOREACH( const Nepomuk::Query::Term& t, terms ) {
-+                if( !newSubTerms.contains( t ) )
-+                    newSubTerms += t;
-+            }
-         }
-         if ( newSubTerms.count() == 0 )
-             return Nepomuk::Query::Term();
-         else if ( newSubTerms.count() == 1 )
--            return newSubTerms.first();
-+            return *newSubTerms.begin();
-         else if ( term.isAndTerm() )
-             return Nepomuk::Query::AndTerm( newSubTerms );
-         else
-Index: kimgio/ras.desktop
-===================================================================
---- kimgio/ras.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kimgio/ras.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -11,6 +11,7 @@
- Name[en_GB]=RAS
- Name[es]=RAS
- Name[et]=RAS
-+Name[eu]=RAS
- Name[fr]=RAS
- Name[fy]=RAS
- Name[ga]=RAS
-Index: kio/kio/kfileitemdelegate.cpp
-===================================================================
---- kio/kio/kfileitemdelegate.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/kio/kfileitemdelegate.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -588,10 +588,10 @@
++  // load the settings for the speller
++  updateConfig();
++
+   foreach(KTextEditor::View* view, document->views()) {
+     addView(document, view);
+   }
+@@ -407,6 +411,7 @@
+             this,
+             SLOT(misspelling(const QString&,int)));
+     connect(m_backgroundChecker, SIGNAL(done()), this, SLOT(spellCheckDone()));
++    m_backgroundChecker->restore(KGlobal::config().data());
+   }
+   m_backgroundChecker->setSpeller(m_speller);
+   m_backgroundChecker->setText(text); // don't call 'start()' after this!
+@@ -665,6 +670,9 @@
  {
-     int value = int(0xff * amount);
+   ON_THE_FLY_DEBUG;
+   m_speller.restore(KGlobal::config().data());
++  if(m_backgroundChecker) {
++    m_backgroundChecker->restore(KGlobal::config().data());
++  }
+ }
  
--    if (value == 0)
-+    if (value == 0 || to.isNull())
-         return from;
- 
--    if (value == 0xff)
-+    if (value == 0xff || from.isNull())
-         return to;
- 
-     QColor color;
-Index: kio/kio/accessmanager.cpp
+ void KateOnTheFlyChecker::refreshSpellCheck(const KTextEditor::Range &range)
+Index: kate/spellcheck/spellcheckdialog.cpp
 ===================================================================
---- kio/kio/accessmanager.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/kio/accessmanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -308,7 +308,7 @@
+--- kate/spellcheck/spellcheckdialog.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kate/spellcheck/spellcheckdialog.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -110,15 +110,13 @@
+   {
+     m_speller = new Sonnet::Speller();
+   }
+-  else
+-  {
+-    m_speller->restore(KGlobal::config().data());
+-  }
++  m_speller->restore(KGlobal::config().data());
  
-         if (reply.isValid()) {
-             const QString cookieStr = reply.value();
--            const QStringList cookies = cookieStr.split(QL1S("; "));
-+            const QStringList cookies = cookieStr.split(QL1S("; "), QString::SkipEmptyParts);
-             Q_FOREACH(const QString& cookie, cookies) {
-                 const int index = cookie.indexOf(QL1C('='));
-                 const QString name = cookie.left(index);
-Index: kio/bookmarks/kbookmark.h
+   if ( !m_backgroundChecker )
+   {
+     m_backgroundChecker = new Sonnet::BackgroundChecker(*m_speller);
+   }
++  m_backgroundChecker->restore(KGlobal::config().data());
+ 
+   if ( !m_sonnetDialog )
+   {
+Index: nepomuk/types/entitymanager.cpp
 ===================================================================
---- kio/bookmarks/kbookmark.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/bookmarks/kbookmark.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -24,6 +24,7 @@
+--- nepomuk/types/entitymanager.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ nepomuk/types/entitymanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -1,5 +1,5 @@
+ /* This file is part of the Nepomuk-KDE libraries
+-    Copyright (c) 2007 Sebastian Trueg <trueg@kde.org>
++    Copyright (c) 2007-2010 Sebastian Trueg <trueg@kde.org>
  
- #include <QtCore/QString>
- #include <QtCore/QList>
-+#include <QtCore/QMetaType>
- #include <QtXml/QDomElement>
- #include <kurl.h>
+     This library is free software; you can redistribute it and/or
+     modify it under the terms of the GNU Library General Public
+@@ -33,94 +33,50 @@
+ }
  
-@@ -460,4 +461,7 @@
-     virtual void visitLeave(const KBookmarkGroup &);
- };
  
-+#define KIO_KBOOKMARK_METATYPE_DEFINED 1
-+Q_DECLARE_METATYPE( KBookmark )
-+
- #endif
-Index: kio/kfile/kfilemetadatawidget.h
+-Nepomuk::Types::EntityPrivate* Nepomuk::Types::EntityManager::findEntity( const QUrl& uri ) const
++QExplicitlySharedDataPointer<Nepomuk::Types::ClassPrivate> Nepomuk::Types::EntityManager::getClass( const QUrl& uri )
+ {
+-    if ( ClassPrivate* cp = findClass( uri ) ) {
+-        return cp;
+-    }
+-    else if ( PropertyPrivate* pp = findProperty( uri ) ) {
+-        return pp;
+-    }
+-    else if ( OntologyPrivate* op = findOntology( uri ) ) {
+-        return op;
+-    }
+-    else {
+-        return 0;
+-    }
+-}
++    QMutexLocker lock( &m_mutex );
+ 
+-
+-Nepomuk::Types::ClassPrivate* Nepomuk::Types::EntityManager::findClass( const QUrl& uri ) const
+-{
+     QHash<QUrl, QExplicitlySharedDataPointer<ClassPrivate> >::const_iterator it = m_classMap.constFind( uri );
+-    if ( it != m_classMap.end() ) {
+-        return it.value().data();
++    if ( it != m_classMap.constEnd() ) {
++        return it.value();
+     }
+-    return 0;
+-}
+-
+-
+-Nepomuk::Types::PropertyPrivate* Nepomuk::Types::EntityManager::findProperty( const QUrl& uri ) const
+-{
+-    QHash<QUrl, QExplicitlySharedDataPointer<PropertyPrivate> >::const_iterator it = m_propertyMap.constFind( uri );
+-    if ( it != m_propertyMap.end() ) {
+-        return it.value().data();
+-    }
+-    return 0;
+-}
+-
+-
+-Nepomuk::Types::OntologyPrivate* Nepomuk::Types::EntityManager::findOntology( const QUrl& uri ) const
+-{
+-    QHash<QUrl, QExplicitlySharedDataPointer<OntologyPrivate> >::const_iterator it = m_ontologyMap.constFind( uri );
+-    if ( it != m_ontologyMap.end() ) {
+-        return it.value().data();
+-    }
+-    return 0;
+-}
+-
+-
+-Nepomuk::Types::ClassPrivate* Nepomuk::Types::EntityManager::getClass( const QUrl& uri )
+-{
+-    QMutexLocker lock( &m_mutex );
+-
+-    if ( ClassPrivate* cp = findClass( uri ) ) {
+-        return cp;
+-    }
+     else {
+         QExplicitlySharedDataPointer<ClassPrivate> scp( new ClassPrivate( uri ) );
+         m_classMap.insert( uri, scp );
+-        return scp.data();
++        return scp;
+     }
+ }
+ 
+ 
+-Nepomuk::Types::PropertyPrivate* Nepomuk::Types::EntityManager::getProperty( const QUrl& uri )
++QExplicitlySharedDataPointer<Nepomuk::Types::PropertyPrivate> Nepomuk::Types::EntityManager::getProperty( const QUrl& uri )
+ {
+     QMutexLocker lock( &m_mutex );
+ 
+-    if ( PropertyPrivate* pp = findProperty( uri ) ) {
+-        return pp;
++    QHash<QUrl, QExplicitlySharedDataPointer<PropertyPrivate> >::const_iterator it = m_propertyMap.constFind( uri );
++    if ( it != m_propertyMap.constEnd() ) {
++        return it.value();
+     }
+     else {
+         QExplicitlySharedDataPointer<PropertyPrivate> cp( new PropertyPrivate( uri ) );
+         m_propertyMap.insert( uri, cp );
+-        return cp.data();
++        return cp;
+     }
+ }
+ 
+ 
+-Nepomuk::Types::OntologyPrivate* Nepomuk::Types::EntityManager::getOntology( const QUrl& uri )
++QExplicitlySharedDataPointer<Nepomuk::Types::OntologyPrivate> Nepomuk::Types::EntityManager::getOntology( const QUrl& uri )
+ {
+     QMutexLocker lock( &m_mutex );
+ 
+-    if ( OntologyPrivate* op = findOntology( uri ) ) {
+-        return op;
++    QHash<QUrl, QExplicitlySharedDataPointer<OntologyPrivate> >::const_iterator it = m_ontologyMap.constFind( uri );
++    if ( it != m_ontologyMap.constEnd() ) {
++        return it.value();
+     }
+     else {
+         QExplicitlySharedDataPointer<OntologyPrivate> cp( new OntologyPrivate( uri ) );
+         m_ontologyMap.insert( uri, cp );
+-        return cp.data();
++        return cp;
+     }
+ }
+ 
+Index: nepomuk/types/entitymanager.h
 ===================================================================
---- kio/kfile/kfilemetadatawidget.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/kfile/kfilemetadatawidget.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -51,6 +51,8 @@
+--- nepomuk/types/entitymanager.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ nepomuk/types/entitymanager.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -1,5 +1,5 @@
+ /* This file is part of the Nepomuk-KDE libraries
+-   Copyright (c) 2007 Sebastian Trueg <trueg@kde.org>
++   Copyright (c) 2007-2010 Sebastian Trueg <trueg@kde.org>
+ 
+    This library is free software; you can redistribute it and/or
+    modify it under the terms of the GNU Library General Public
+@@ -45,18 +45,13 @@
+         public:
+             EntityManager();
+ 
+-            ClassPrivate* getClass( const QUrl& uri );
+-            PropertyPrivate* getProperty( const QUrl& uri );
+-            OntologyPrivate* getOntology( const QUrl& uri );
++            QExplicitlySharedDataPointer<ClassPrivate> getClass( const QUrl& uri );
++            QExplicitlySharedDataPointer<PropertyPrivate> getProperty( const QUrl& uri );
++            QExplicitlySharedDataPointer<OntologyPrivate> getOntology( const QUrl& uri );
+ 
+             static EntityManager* self();
+ 
+         private:
+-            EntityPrivate* findEntity( const QUrl& uri ) const;
+-            ClassPrivate* findClass( const QUrl& uri ) const;
+-            PropertyPrivate* findProperty( const QUrl& uri ) const;
+-            OntologyPrivate* findOntology( const QUrl& uri ) const;
+-
+             QHash<QUrl, QExplicitlySharedDataPointer<ClassPrivate> > m_classMap;
+             QHash<QUrl, QExplicitlySharedDataPointer<PropertyPrivate> > m_propertyMap;
+             QHash<QUrl, QExplicitlySharedDataPointer<OntologyPrivate> > m_ontologyMap;
+Index: nepomuk/types/entity.cpp
+===================================================================
+--- nepomuk/types/entity.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ nepomuk/types/entity.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -275,7 +275,8 @@
+ 
+ void Nepomuk::Types::Entity::reset( bool recursive )
+ {
+-    d->reset( recursive );
++    if( d )
++        d->reset( recursive );
+ }
+ 
+ 
+@@ -291,7 +292,10 @@
+ {
+     // since we use one instace cache we can improve comparation operations
+     // intensly by not comparing URLs but pointers.
+-    return( d.constData()->uri == other );
++    if( d )
++        return( d->uri == other );
++    else
++        return !other.isValid();
+ }
+ 
+ 
+@@ -307,7 +311,10 @@
+ {
+     // since we use one instace cache we can improve comparation operations
+     // intensly by not comparing URLs but pointers.
+-    return( d.constData()->uri != other );
++    if( d )
++        return( d->uri != other );
++    else
++        return other.isValid();
+ }
+ 
+ 
+Index: kio/kio/kurifilter.h
+===================================================================
+--- kio/kio/kurifilter.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kio/kio/kurifilter.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -247,14 +247,22 @@
+     /**
+      * Returns a list of the names of the preferred search providers.
+      *
+-     * This function returns the list of favorite or preferred providers only
+-     * when this data filtered through the default search uri plugin 'kurisearchfilter'.
+-     * Otherwise, it returns an empty list.
++     * This function returns the list of providers that are marked as favorite
++     * or preferred by the user whenever the data it contains is filtered by the
++     * 'kuriikwsfilter' search uri filter plugin.
+      *
++     * If no prior search providers were marked preferred or no default search
++     * engine was selected, then this function will return an empty list unless
++     * you set alternate default or search providers using the appropriate function.
++     * See @ref setAlternateDefaultSearchProvider and @ref setAlternateSearchProviders.
++     *
+      * You can use @ref queryForPreferredServiceProvider to obtain the queries
+      * associated with the returned search providers.
+      *
+      * @see searchProvider
++     * @see alternateSearchProviders
++     * @see alternateDefaultSearchProvider
++     * @see queryForPreferredServiceProvider
+      * @since 4.5
+      */
+     QStringList preferredSearchProviders() const;
+@@ -287,8 +295,9 @@
+      * Returns the list of alternate search providers.
+      *
+      * This function returns an empty list if @ref setAlternateSearchProviders
+-     * was not called to set alternate search providers to be used in place of
+-     * the preferred search providers when they are not available.
++     * was not called to set the alternate search providers to be when no
++     * preferred providers have been chosen by the user through the search
++     * configuration module.
+      *
+      * @see setAlternatteSearchProviders
+      * @see preferredSearchProviders
+@@ -299,8 +308,9 @@
+     /**
+      * Returns the search provider to use when a default provider is not available.
+      *
+-     * The alternate default search provider is not set by default and this function
+-     * returns an empty string.
++     * This function returns an empty string if @ref setAlternateDefaultSearchProvider
++     * was not called to set the default search provider to be used when none has been
++     * chosen by the user through the search configuration module.
+      *
+      * @see setAlternateDefaultSearchProvider
+      * @since 4.5
+@@ -362,25 +372,30 @@
+     bool setAbsolutePath( const QString& abs_path );
  
      /**
-      * Sets the items for which the meta data should be shown.
-+     * The signal metaDataRequestFinished() will be emitted,
-+     * as soon as the meta data for the items has been received.
+-     * Sets a list of search providers to use in case no default preferred search
++     * Sets a list of search providers to use in case no preferred search
+      * providers are available.
+      *
+-     * The list of preferred search providers set using this function will only be
+-     * used if the default and favorite search providers have not yet been configured
+-     * through the configuration dialogs. Otherwise, the providers specified by this
++     * The list of preferred search providers set using this function will only
++     * be used if the default and favorite search providers have not yet been
++     * selected by the user. Otherwise, the providers specified through this
+      * function will be ignored.
+      *
+-     * @see alternatteSearchProviders
++     * @see alternateSearchProviders
+      * @see preferredSearchProviders
+      * @since 4.5
       */
-     void setItems(const KFileItemList& items);
-     KFileItemList items() const;
-@@ -72,6 +74,13 @@
+     void setAlternateSearchProviders(const QStringList &providers);
+ 
+     /**
+-     * Sets the search provider to use when there no default provider has been
+-     * set by though the web shortcuts configuration dialog.
++     * Sets the search provider to use in case no default provider is available.
+      *
+-     * @see setAlternateDefaultSearchProvider
++     * The default search provider set using this function will only be used if
++     * the default and favorite search providers have not yet been selected by
++     * the user. Otherwise, the default provider specified by through function
++     * will be ignored.
++     *
++     * @see alternateDefaultSearchProvider
++     * @see preferredSearchProviders
+      * @since 4.5
       */
-     void urlActivated(const KUrl& url);
- 
-+    /**
-+     * Is emitted after the meta data has been received for the items
-+     * set by KFileMetaDataWidget::setItems().
-+     * @since 4.5.1
-+     */
-+    void metaDataRequestFinished(const KFileItemList& items);
-+
- protected:
-     virtual bool event(QEvent* event);
- 
-Index: kio/kfile/kfilemetadatawidget.cpp
+     void setAlternateDefaultSearchProvider(const QString &provider);
+Index: kio/kio/previewjob.cpp
 ===================================================================
---- kio/kfile/kfilemetadatawidget.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/kfile/kfilemetadatawidget.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -48,7 +48,6 @@
-     #include <QThread>
- #endif
- 
--
- // The default size hint of QLabel tries to return a square size.
- // This does not work well in combination with layouts that use
- // heightForWidth(): In this case it is possible that the content
-@@ -66,6 +65,7 @@
-     QLabel(parent)
- {
- }
-+
- QSize ValueWidget::sizeHint() const
- {
-     QFontMetrics metrics(font());
-@@ -425,6 +425,7 @@
- #endif
- 
-     q->updateGeometry();
-+    emit q->metaDataRequestFinished(m_fileItems);
- }
- 
- void KFileMetaDataWidget::Private::removeOutdatedRows()
-Index: kio/misc/kpac/proxyscout.notifyrc
-===================================================================
---- kio/misc/kpac/proxyscout.notifyrc	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/misc/kpac/proxyscout.notifyrc	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -12,6 +12,7 @@
- Comment[en_GB]=Network Proxy Configuration
- Comment[es]=Configuración del proxy de la red
- Comment[et]=Võrgupuhverserveri seadistamine
-+Comment[eu]=Sareko ordezkariaren konfiguraketa
- Comment[fi]=Verkon välityspalvelinasetukset
- Comment[fr]=Configuration du réseau mandataire
- Comment[fy]=Netwurk proksy ynstelling
-@@ -72,7 +73,7 @@
- Name[eo]=Nevalida prokura skripto
- Name[es]=Script de proxy no válido
- Name[et]=Vigane puhverserveri skript
--Name[eu]=Proxy script baliogabea
-+Name[eu]=Ordezkariaren script baliogabea
- Name[fa]=دست‌نوشتهٔ نامعتبر پیشکار
- Name[fi]=Virheellinen välityspalvelinkomentosarja
- Name[fr]=Script pour serveur mandataire non valable
-@@ -156,7 +157,7 @@
- Comment[eo]=La elŝutita prokura agordoskripto estas nevalida
- Comment[es]=El script de configuración del proxy descargado no es válido
- Comment[et]=Allalaaditud puhverserveri seadistuse skript on vigane
--Comment[eu]=Deskargatutako proxy-aren konfigurazioko script-a baliogabea da
-+Comment[eu]=Jaitsitako ordezkaria konfiguratzeko script-a baliogabea da
- Comment[fa]=دست‌نوشتهٔ پیکربندی پیشکار بارگیری شده نامعتبر است
- Comment[fi]=Ladattu välityspalvelin asetuskomentosarja on virheellinen
- Comment[fr]=Le script téléchargé de configuration du serveur mandataire n'est pas valable
-@@ -329,7 +330,7 @@
- Comment[eo]=Ne povis elŝuti la prokuran agordoskripton
- Comment[es]=No se puede descargar el script de configuración del proxy
- Comment[et]=Puhverserveri seadistuse skripti allalaadimine nurjus
--Comment[eu]=Proxy-aren konfigurazioko script-a ezin izan da deskargatu
-+Comment[eu]=Ordezkaria konfiguratzeko script-a ezin izan da deskargatu
- Comment[fa]=دست‌نوشتهٔ پیکربندی پیشکار نتوانست بارگیری شود
- Comment[fi]=Välityspalvelimen asetuskomentosarjan lataaminen ei onnistunut
- Comment[fr]=Le script de configuration du serveur mandataire (proxy) n'a pas pu être téléchargé
-@@ -500,7 +501,7 @@
- Comment[eo]=Eraro okazis pri plenumo de la prokura agordoskripto
- Comment[es]=Ocurrió un error al ejecutar el script de configuración del proxy
- Comment[et]=Ilmnes tõsine viga puhverserveri seadistuse skripti käivitamisel
--Comment[eu]=Errorea gertatu da proxy-a konfiguratzeko script-ean
-+Comment[eu]=Akatsa gertatu da ordezkaria konfiguratzeko script-a exekutatzerakoan
- Comment[fa]=خطایی در اجرای دست‌نوشتهٔ پیکربندی پیشکار وجود داشت
- Comment[fi]=Välityspalvelimen asetuskomentosarjan suorittamisessa tapahtui virhe
- Comment[fr]=Une erreur s'est produite lors de l'exécution du script de configuration du serveur mandataire (proxy)
-Index: kio/misc/kpac/proxyscout.desktop
-===================================================================
---- kio/misc/kpac/proxyscout.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kio/misc/kpac/proxyscout.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -12,6 +12,7 @@
- Name[en_GB]=Network Proxy Configuration
- Name[es]=Configuración del proxy de la red
- Name[et]=Võrgupuhverserveri seadistamine
-+Name[eu]=Sareko ordezkariaren konfiguraketa
- Name[fi]=Verkon välityspalvelinasetukset
- Name[fr]=Configuration du réseau mandataire
- Name[fy]=Netwurk proksy ynstelling
-@@ -73,7 +74,7 @@
- Comment[eo]=Aŭtomata prokuragordo
- Comment[es]=Configuración automática del proxy
- Comment[et]=Automaatne puhverserveri seadistamine
--Comment[eu]=Proxy-aren konfigurazio automatikoa
-+Comment[eu]=Ordezkariaren konfiguraketa automatikoa
- Comment[fa]=پیکربندی خودکار پیشکار
- Comment[fi]=Automaattiset välityspalvelinasetukset
- Comment[fr]=Configuration automatique du serveur mandataire
-Index: kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop
-===================================================================
---- kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -12,6 +12,7 @@
- Name[en_GB]=KDE Emoticons Theme
- Name[es]=Tema de emoticonos de KDE
- Name[et]=KDE emotikoniteema
-+Name[eu]=KDE emotikono gaia
- Name[fi]=KDE-hymiöteemat
- Name[fr]=Thèmes d'émoticônes KDE
- Name[fy]=KDE emobyldkaikes tema
-Index: kdecore/network/kssld/kssld.desktop
-===================================================================
---- kdecore/network/kssld/kssld.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/network/kssld/kssld.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -15,6 +15,7 @@
- Name[en_GB]=SSL Certificate Policy
- Name[es]=Política de certificados SSL
- Name[et]=SSL sertifikadi reegel
-+Name[eu]=SSL ziurtagiri politika
- Name[fi]=SSL-varmennekäytäntö
- Name[fr]=Politique de certificats SSL
- Name[fy]=SSL sertifikaat belied
-@@ -62,6 +63,7 @@
- Comment[en_GB]=Provides SSL certificate policy to applications
- Comment[es]=Proporciona a las aplicaciones una política de certificados SSL
- Comment[et]=SSL sertifikaadi reegli edastamine rakendustele
-+Comment[eu]=Aplikazioei SSL ziurtagiri politika hornitzen die
- Comment[fi]=Tarjoaa SSL-varmennekäytännön sovelluksille
- Comment[fr]=Fournit une politique de certificats SSL aux applications
- Comment[fy]=Ferskaft SSL sertifikaat belied oan programma's
-Index: kdecore/tests/karchivetest.cpp
-===================================================================
---- kdecore/tests/karchivetest.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/tests/karchivetest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -17,6 +17,7 @@
-    Boston, MA 02110-1301, USA.
+--- kio/kio/previewjob.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kio/kio/previewjob.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -22,6 +22,7 @@
  */
  
-+#include <config.h>
+ #include "previewjob.h"
++#include <kdebug.h>
  
- #include "karchivetest.h"
- #include <kmimetype.h>
-@@ -38,61 +39,49 @@
- 
- static const int SIZE1 = 100;
- 
-+/**
-+ * Writes test fileset specified archive
-+ * @param archive archive
-+ */
- static void writeTestFilesToArchive( KArchive* archive )
- {
--    bool ok;
--    ok = archive->writeFile( "empty", "weis", "users", "", 0 );
--    QVERIFY( ok );
--    ok = archive->writeFile( "test1", "weis", "users", "Hallo", 5, 0100440 );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeFile( "empty", "weis", "users", "", 0 ) );
-+    QVERIFY( archive->writeFile( "test1", "weis", "users", "Hallo", 5, 0100440 ) );
-     // Now let's try with the prepareWriting/writeData/finishWriting API
--    ok = archive->prepareWriting( "test2", "weis", "users", 8 );
--    QVERIFY( ok );
--    ok = archive->writeData( "Hallo ", 6 );
--    QVERIFY( ok );
--    ok = archive->writeData( "Du", 2 );
--    QVERIFY( ok );
--    ok = archive->finishWriting( 8 );
--    QVERIFY( ok );
-+    QVERIFY( archive->prepareWriting( "test2", "weis", "users", 8 ) );
-+    QVERIFY( archive->writeData( "Hallo ", 6 ) );
-+    QVERIFY( archive->writeData( "Du", 2 ) );
-+    QVERIFY( archive->finishWriting( 8 ) );
-     // Add local file
-     QFile localFile( "test3" );
--    ok = localFile.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
--    ok = localFile.write( "Noch so einer", 13 ) == 13;
--    QVERIFY( ok );
-+    QVERIFY( localFile.open( QIODevice::WriteOnly ) );
-+    QVERIFY( localFile.write( "Noch so einer", 13 ) == 13 );
-     localFile.close();
--    ok = archive->addLocalFile( "test3", "z/test3" );
--    QVERIFY( ok );
-+    QVERIFY( archive->addLocalFile( "test3", "z/test3" ) );
- 
-     // writeFile API
--    ok = archive->writeFile( "my/dir/test3", "dfaure", "hackers", "I do not speak German\nDavid.", 29 );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeFile( "my/dir/test3", "dfaure", "hackers", "I do not speak German\nDavid.", 29 ) );
- 
-     // Now a medium file : 100 null bytes
-     char medium[ SIZE1 ];
-     memset( medium, 0, SIZE1 );
--    ok = archive->writeFile( "mediumfile", "user", "group", medium, SIZE1 );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeFile( "mediumfile", "user", "group", medium, SIZE1 ) );
-     // Another one, with an absolute path
--    ok = archive->writeFile( "/dir/subdir/mediumfile2", "user", "group", medium, SIZE1 );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeFile( "/dir/subdir/mediumfile2", "user", "group", medium, SIZE1 ) );
- 
-     // Now a huge file : 20000 null bytes
-     int n = 20000;
-     char * huge = new char[ n ];
-     memset( huge, 0, n );
--    ok = archive->writeFile( "hugefile", "user", "group", huge, n );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeFile( "hugefile", "user", "group", huge, n ) );
-     delete [] huge;
- 
-     // Now an empty directory
--    ok = archive->writeDir( "aaaemptydir", "user", "group" );
--    QVERIFY( ok );
-+    QVERIFY( archive->writeDir( "aaaemptydir", "user", "group" ) );
- 
- #ifndef Q_OS_WIN
-     // Add local symlink
--    ok = archive->addLocalFile( "test3_symlink", "z/test3_symlink");
--    QVERIFY( ok );
-+    QVERIFY( archive->addLocalFile( "test3_symlink", "z/test3_symlink") );
- #endif
- }
- 
-@@ -131,6 +120,10 @@
-   return ret;
- }
- 
-+/**
-+ * Verifies contents of specified archive against test fileset
-+ * @param archive archive
-+ */
- static void testFileData( KArchive* archive )
- {
-     const KArchiveDirectory* dir = archive->directory();
-@@ -203,8 +196,7 @@
- 
- static void testReadWrite( KArchive* archive )
- {
--    bool ok = archive->writeFile( "newfile", "dfaure", "users", "New File", 8, 0100440 );
--    QVERIFY(ok);
-+    QVERIFY(archive->writeFile("newfile", "dfaure", "users", "New File", 8, 0100440));
- }
- 
- static void testCopyTo( KArchive* archive )
-@@ -266,14 +258,27 @@
- #endif
- }
- 
--static const char s_tarFileName[] = "karchivetest.tar";
--static const char s_tarGzFileName[]  = "karchivetest.tar.gz";
--static const char s_tarBz2FileName[]  = "karchivetest.tar.bz2";
--static const char s_tarGzMaxLengthFileName[] = "karchivetest-maxlength.tar.gz";
--static const char s_zipFileName[] = "karchivetest.zip";
--static const char s_zipMaxLengthFileName[] = "karchivetest-maxlength.zip";
--static const char s_zipLocaleFileName[] = "karchivetest-locale.zip";
-+/**
-+ * Prepares dataset for archive filter tests
-+ */
-+void KArchiveTest::setupData()
-+{
-+    QTest::addColumn<QString>("fileName");
-+    QTest::addColumn<QString>("mimeType");
- 
-+    QTest::newRow(".tar.gz") << "karchivetest.tar.gz" << "application/x-gzip";
-+#if defined (HAVE_BZIP2_SUPPORT)
-+    QTest::newRow(".tar.bz2") << "karchivetest.tar.bz2" << "application/x-bzip";
-+#endif
-+#if defined (HAVE_XZ_SUPPORT)
-+    QTest::newRow(".tar.lzma") << "karchivetest.tar.lzma" << "application/x-lzma";
-+    QTest::newRow(".tar.xz") << "karchivetest.tar.xz" << "application/x-xz";
-+#endif
-+}
+ #include <sys/stat.h>
+ #ifdef __FreeBSD__
+@@ -361,6 +362,15 @@
+             {
+                 // For remote items the "IgnoreMaximumSize" plugin property is not respected
+                 skipCurrentItem = !d->ignoreMaximumSize && size > d->maximumRemoteSize;
 +
-+/**
-+ * @see QTest::initTestCase()
-+ */
- void KArchiveTest::initTestCase()
- {
- #ifndef Q_OS_WIN
-@@ -289,76 +294,76 @@
-     KMimeType::findByContent(QByteArray("hello"));
- }
- 
-+void KArchiveTest::testCreateTar_data()
-+{
-+    QTest::addColumn<QString>("fileName");
-+    QTest::newRow(".tar") << "karchivetest.tar";
-+}
-+
-+/**
-+ * @dataProvider testCreateTar_data
-+ */
- void KArchiveTest::testCreateTar()
- {
-+    QFETCH(QString, fileName);
-+
-     // With    tempfile: 0.7-0.8 ms, 994236 instr. loads
-     // Without tempfile:    0.81 ms, 992541 instr. loads
-     // Note: use ./karchivetest 2>&1 | grep ms
-     //       to avoid being slowed down by the kDebugs.
-     QBENCHMARK {
- 
--    KTar tar( s_tarFileName );
-+    KTar tar(fileName);
-+    QVERIFY(tar.open(QIODevice::WriteOnly));
- 
--    bool ok = tar.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    writeTestFilesToArchive(&tar);
- 
--    writeTestFilesToArchive( &tar );
-+    QVERIFY(tar.close());
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QFileInfo fileInfo(QFile::encodeName(fileName));
-+    QVERIFY(fileInfo.exists());
-+    // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
-+    QVERIFY(fileInfo.size() > 450);
- 
--    QFileInfo fileInfo( QFile::encodeName( s_tarFileName ) );
--    QVERIFY( fileInfo.exists() );
--    // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
--    QVERIFY( fileInfo.size() > 450 );
-     }
-+
-+    // NOTE The only .tar test, cleanup here
-+    QFile::remove(fileName);
- }
- 
--void KArchiveTest::testCreateTarGz()
-+/**
-+ * @dataProvider setupData
-+ */
-+void KArchiveTest::testCreateTarXXX()
- {
-+    QFETCH(QString, fileName);
-+
-     // With    tempfile: 1.3-1.7 ms, 2555089 instr. loads
-     // Without tempfile:    0.87 ms,  987915 instr. loads
-     QBENCHMARK {
- 
--    KTar tar( s_tarGzFileName );
-+    KTar tar(fileName);
-+    QVERIFY(tar.open(QIODevice::WriteOnly));
- 
--    bool ok = tar.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    writeTestFilesToArchive(&tar);
- 
--    writeTestFilesToArchive( &tar );
-+    QVERIFY(tar.close());
- 
--    ok = tar.close();
--    QVERIFY( ok );
--
--    QFileInfo fileInfo( QFile::encodeName( s_tarGzFileName ) );
--    QVERIFY( fileInfo.exists() );
-+    QFileInfo fileInfo(QFile::encodeName(fileName));
-+    QVERIFY(fileInfo.exists());
-     // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
--    QVERIFY( fileInfo.size() > 350 );
-+    QVERIFY(fileInfo.size() > 350);
- 
-     }
- }
- 
--void KArchiveTest::testCreateTarBz2()
-+/**
-+ * @dataProvider setupData
-+ */
-+void KArchiveTest::testReadTar() // testCreateTarGz must have been run first.
- {
--    KTar tar( s_tarBz2FileName );
-+    QFETCH( QString, fileName );
- 
--    bool ok = tar.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
--
--    writeTestFilesToArchive( &tar );
--
--    ok = tar.close();
--    QVERIFY( ok );
--
--    QFileInfo fileInfo( QFile::encodeName( s_tarBz2FileName ) );
--    QVERIFY( fileInfo.exists() );
--    // We can't check for an exact size because of the addLocalFile, whose data is system-dependent
--    QVERIFY( fileInfo.size() > 350 );
--}
--
--void KArchiveTest::testReadTar() // testCreateTarGz must have been run first.
--{
--    kDebug() << "START";
-     // 1.6-1.7 ms per interaction, 2908428 instruction loads
-     // After the "no tempfile when writing fix" this went down
-     // to 0.9-1.0 ms, 1689059 instruction loads.
-@@ -366,10 +371,9 @@
-     // used when writing.
-     QBENCHMARK {
- 
--    KTar tar( s_tarGzFileName );
-+    KTar tar( fileName );
- 
--    bool ok = tar.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( tar.open( QIODevice::ReadOnly ) );
- 
-     const KArchiveDirectory* dir = tar.directory();
-     QVERIFY( dir != 0 );
-@@ -383,10 +387,8 @@
-     QCOMPARE( listing.count(), 14 );
- #endif
-     QCOMPARE( listing[ 0], QString("mode=40755 user=user group=group path=aaaemptydir type=dir") );
--    QCOMPARE( listing[ 1],
--	      QString("mode=40777 user=%1 group=%2 path=dir type=dir").arg(localFileData.owner()).arg(localFileData.group()) );
--    QCOMPARE( listing[ 2],
--	      QString("mode=40777 user=%1 group=%2 path=dir/subdir type=dir").arg(localFileData.owner()).arg(localFileData.group()) );
-+    QCOMPARE( listing[ 1], QString("mode=40777 user=%1 group=%2 path=dir type=dir").arg(localFileData.owner()).arg(localFileData.group()) );
-+    QCOMPARE( listing[ 2], QString("mode=40777 user=%1 group=%2 path=dir/subdir type=dir").arg(localFileData.owner()).arg(localFileData.group()) );
-     QCOMPARE( listing[ 3], QString("mode=100644 user=user group=group path=dir/subdir/mediumfile2 type=file size=100") );
-     QCOMPARE( listing[ 4], QString("mode=100644 user=weis group=users path=empty type=file size=0") );
-     QCOMPARE( listing[ 5], QString("mode=100644 user=user group=group path=hugefile type=file size=20000") );
-@@ -407,98 +409,126 @@
-     QCOMPARE( str, QString("path=z/test3_symlink type=file size=0 symlink=test3") );
- #endif
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY( tar.close() );
-+
-     }
- }
- 
--// This tests the decompression using kfilterdev, basically.
--// To debug KTarPrivate::fillTempFile().
-+/**
-+ * This tests the decompression using kfilterdev, basically.
-+ * To debug KTarPrivate::fillTempFile().
-+ *
-+ * @dataProvider setupData
-+ */
- void KArchiveTest::testUncompress()
- {
-+    QFETCH(QString, fileName);
-+    QFETCH(QString, mimeType);
-+
-     // testCreateTar must have been run first.
--    QVERIFY( QFile::exists( s_tarGzFileName ) );
--    QIODevice *filterDev = KFilterDev::deviceForFile( s_tarGzFileName, "application/x-gzip", true );
--    QVERIFY( filterDev );
-+    QVERIFY(QFile::exists(fileName));
-+    QIODevice *filterDev = KFilterDev::deviceForFile(fileName, mimeType, true);
-+    QVERIFY(filterDev);
-     QByteArray buffer;
-     buffer.resize(8*1024);
-     kDebug() << "buffer.size()=" << buffer.size();
--    QVERIFY( filterDev->open( QIODevice::ReadOnly ) );
-+    QVERIFY(filterDev->open(QIODevice::ReadOnly));
- 
-     qint64 totalSize = 0;
-     qint64 len = -1;
--    while ( !filterDev->atEnd() && len != 0 ) {
-+    while (!filterDev->atEnd() && len != 0) {
-         len = filterDev->read(buffer.data(), buffer.size());
--        QVERIFY( len >= 0 );
-+        QVERIFY(len >= 0);
-         totalSize += len;
-         // kDebug() << "read len=" << len << " totalSize=" << totalSize;
-     }
-     filterDev->close();
-     delete filterDev;
-     // kDebug() << "totalSize=" << totalSize;
--    QVERIFY( totalSize > 26000 ); // 27648 here when using gunzip
-+    QVERIFY(totalSize > 26000); // 27648 here when using gunzip
- }
- 
-+/**
-+ * @dataProvider setupData
-+ */
- void KArchiveTest::testTarFileData()
- {
-+    QFETCH(QString, fileName);
-+
-     // testCreateTar must have been run first.
--    KTar tar( s_tarGzFileName );
--    bool ok = tar.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    KTar tar(fileName);
-+    QVERIFY(tar.open(QIODevice::ReadOnly));
- 
--    testFileData( &tar );
-+    testFileData(&tar);
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY(tar.close());
- }
- 
-+/**
-+ * @dataProvider setupData
-+ */
- void KArchiveTest::testTarCopyTo()
- {
-+    QFETCH(QString, fileName);
-+
-     // testCreateTar must have been run first.
--    KTar tar( s_tarGzFileName );
--    bool ok = tar.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    KTar tar(fileName);
-+    QVERIFY(tar.open(QIODevice::ReadOnly));
- 
--    testCopyTo( &tar );
-+    testCopyTo(&tar);
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY(tar.close());
- }
- 
-+/**
-+ * @dataProvider setupData
-+ */
- void KArchiveTest::testTarReadWrite()
- {
-+    QFETCH(QString, fileName);
-+
-     // testCreateTar must have been run first.
--    KTar tar( s_tarGzFileName );
--    bool ok = tar.open( QIODevice::ReadWrite );
--    QVERIFY( ok );
-+    KTar tar(fileName);
-+    QVERIFY(tar.open(QIODevice::ReadWrite));
- 
--    testReadWrite( &tar );
--    testFileData( &tar );
-+    testReadWrite(&tar);
-+    testFileData(&tar);
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY(tar.close());
- 
-     // Reopen it and check it
-     {
--        KTar tar( s_tarGzFileName );
--        bool ok = tar.open( QIODevice::ReadOnly );
--        QVERIFY( ok );
-+        KTar tar(fileName);
-+        QVERIFY(tar.open(QIODevice::ReadOnly));
-         testFileData( &tar );
-         const KArchiveDirectory* dir = tar.directory();
--        const KArchiveEntry* e = dir->entry( "newfile" );
--        QVERIFY( e && e->isFile() );
-+        const KArchiveEntry* e = dir->entry("newfile");
-+        QVERIFY(e && e->isFile());
-         const KArchiveFile* f = (KArchiveFile*)e;
--        QCOMPARE( f->data().size(), 8 );
-+        QCOMPARE(f->data().size(), 8);
-     }
-+
-+    // NOTE This is the last test for this dataset. so cleanup here
-+    QFile::remove(fileName);
- }
- 
-+void KArchiveTest::testTarMaxLength_data()
-+{
-+    QTest::addColumn<QString>("fileName");
-+    QTest::newRow("maxlength.tar.gz") << "karchivetest-maxlength.tar.gz";
-+}
-+
-+/**
-+ * @dataProvider testTarMaxLength_data
-+ */
- void KArchiveTest::testTarMaxLength()
- {
--    KTar tar( s_tarGzMaxLengthFileName );
-+    QFETCH( QString, fileName );
- 
--    bool ok = tar.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    KTar tar( fileName );
- 
-+    QVERIFY( tar.open( QIODevice::WriteOnly ) );
-+
-     // Generate long filenames of each possible length bigger than 98...
-     // Also exceed 512 byte block size limit to see how well the ././@LongLink
-     // implementation fares
-@@ -512,11 +542,9 @@
-     }
-     // Result of this test : works perfectly now (failed at 482 formerly and
-     // before that at 154).
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY( tar.close() );
- 
--    ok = tar.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( tar.open( QIODevice::ReadOnly ) );
- 
-     const KArchiveDirectory* dir = tar.directory();
-     QVERIFY( dir != 0 );
-@@ -531,22 +559,26 @@
-     // There seems to be a bug (which is in kde3 too), we miss 512 and 513.
-     // But note that tar tvzf says "skipping next header" (and it skips 511),
-     // so the bug is probably during writing...
--    QCOMPARE( listing.count(), /*514 - 98*/ 414 );
-+    QCOMPARE( listing.count(), 414 ); // TODO investigate 514 - 98
- 
--    ok = tar.close();
--    QVERIFY( ok );
-+    QVERIFY( tar.close() );
-+
-+    // NOTE Cleanup here
-+    QFile::remove( fileName );
- }
- 
- ///
- 
--static const char* s_zipMimeType = "application/vnd.oasis.opendocument.text";
-+static const char s_zipFileName[] = "karchivetest.zip";
-+static const char s_zipMaxLengthFileName[] = "karchivetest-maxlength.zip";
-+static const char s_zipLocaleFileName[] = "karchivetest-locale.zip";
-+static const char s_zipMimeType[] = "application/vnd.oasis.opendocument.text";
- 
- void KArchiveTest::testCreateZip()
- {
-     KZip zip( s_zipFileName );
- 
--    bool ok = zip.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::WriteOnly ) );
- 
-     zip.setExtraField( KZip::NoExtraField );
- 
-@@ -557,8 +589,7 @@
- 
-     writeTestFilesToArchive( &zip );
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY( zip.close() );
- 
-     QFile zipFile( QFile::encodeName( s_zipFileName ) );
-     QFileInfo fileInfo( zipFile );
-@@ -567,12 +598,10 @@
- 
-     // Check that the header with no-compression and no-extrafield worked.
-     // (This is for the "magic" for koffice documents)
--    ok = zipFile.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( zipFile.open( QIODevice::ReadOnly ) );
-     QByteArray arr = zipFile.read( 4 );
-     QCOMPARE( arr, QByteArray( "PK\003\004" ) );
--    ok = zipFile.seek( 30 );
--    QVERIFY( ok );
-+    QVERIFY( zipFile.seek( 30 ) );
-     arr = zipFile.read( 8 );
-     QCOMPARE( arr, QByteArray( "mimetype" ) );
-     arr = zipFile.read( zipMimeType.size() );
-@@ -583,15 +612,13 @@
- {
-     // Giving a directory name to kzip must give an error case in close(), see #136630.
-     // Otherwise we just lose data.
--    KZip zip( QDir::currentPath() );
-+    KZip zip(QDir::currentPath());
- 
--    bool ok = zip.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    QVERIFY(zip.open(QIODevice::WriteOnly));
- 
--    writeTestFilesToArchive( &zip );
-+    writeTestFilesToArchive(&zip);
- 
--    ok = zip.close();
--    QVERIFY( !ok );
-+    QVERIFY(!zip.close());
- }
- 
- void KArchiveTest::testReadZip()
-@@ -599,8 +626,7 @@
-     // testCreateZip must have been run first.
-     KZip zip( s_zipFileName );
- 
--    bool ok = zip.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::ReadOnly ) );
- 
-     const KArchiveDirectory* dir = zip.directory();
-     QVERIFY( dir != 0 );
-@@ -637,42 +663,36 @@
-     QCOMPARE( str, QString("path=z/test3_symlink type=file size=5 symlink=test3") );
- #endif
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY( zip.close() );
- }
- 
- void KArchiveTest::testZipFileData()
- {
-     // testCreateZip must have been run first.
--    KZip zip( s_zipFileName );
--    bool ok = zip.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    KZip zip(s_zipFileName);
-+    QVERIFY(zip.open( QIODevice::ReadOnly));
- 
--    testFileData( &zip );
-+    testFileData(&zip);
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY(zip.close());
- }
- 
- void KArchiveTest::testZipCopyTo()
- {
-     // testCreateZip must have been run first.
--    KZip zip( s_zipFileName );
--    bool ok = zip.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    KZip zip(s_zipFileName);
-+    QVERIFY(zip.open(QIODevice::ReadOnly));
- 
--    testCopyTo( &zip );
-+    testCopyTo(&zip);
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY(zip.close());
- }
- 
- void KArchiveTest::testZipMaxLength()
- {
-     KZip zip( s_zipMaxLengthFileName );
- 
--    bool ok = zip.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::WriteOnly ) );
- 
-     // Similar to testTarMaxLength just to make sure, but of course zip doesn't have
-     // those limitations in the first place.
-@@ -684,11 +704,9 @@
-       num = num.rightJustified( 10, '0' );
-       zip.writeFile( str+num, "testu", "testg", "hum", 3 );
-     }
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY( zip.close() );
- 
--    ok = zip.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::ReadOnly ) );
- 
-     const KArchiveDirectory* dir = zip.directory();
-     QVERIFY( dir != 0 );
-@@ -700,28 +718,23 @@
- 
-     QCOMPARE( listing.count(), 514 - 98 );
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY( zip.close() );
- }
- 
- void KArchiveTest::testZipWithNonLatinFileNames()
- {
-     KZip zip( s_zipLocaleFileName );
- 
--    bool ok = zip.open( QIODevice::WriteOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::WriteOnly ) );
- 
-     const QByteArray fileData("Test of data with a russian file name");
-     const QString fileName = QString::fromUtf8( "Архитектура.okular" );
-     const QString recodedFileName = QFile::decodeName( QFile::encodeName( fileName ) );
--    ok = zip.writeFile( fileName, "pino", "users", fileData.constData(), fileData.size() );
--    QVERIFY( ok );
-+    QVERIFY( zip.writeFile( fileName, "pino", "users", fileData.constData(), fileData.size() ) );
- 
--    ok = zip.close();
--    QVERIFY( ok );
-+    QVERIFY( zip.close() );
- 
--    ok = zip.open( QIODevice::ReadOnly );
--    QVERIFY( ok );
-+    QVERIFY( zip.open( QIODevice::ReadOnly ) );
- 
-     const KArchiveDirectory* dir = zip.directory();
-     QVERIFY( dir != 0 );
-@@ -734,19 +747,6 @@
-     QCOMPARE( fileEntry->data(), fileData );
- }
- 
--void KArchiveTest::cleanupTestCase()
--{
--    QFile::remove(s_tarGzMaxLengthFileName);
--    QFile::remove(s_zipMaxLengthFileName);
--    QFile::remove(s_tarGzFileName);
--    QFile::remove(s_zipFileName);
--    QFile::remove(s_zipLocaleFileName);
--    QFile::remove(s_tarFileName);
--#ifndef Q_OS_WIN
--    QFile::remove("test3_symlink");
--#endif
--}
--
- static bool writeFile(const QString& dirName, const QString& fileName, const QByteArray& data)
- {
-     Q_ASSERT(dirName.endsWith('/'));
-@@ -770,25 +770,34 @@
-     {
-         KZip zip(s_zipFileName);
- 
--        bool ok = zip.open(QIODevice::WriteOnly);
--        QVERIFY(ok);
--        ok = zip.addLocalDirectory(dirName, ".");
--        QVERIFY(ok);
--        ok = zip.close();
--        QVERIFY(ok);
-+        QVERIFY(zip.open(QIODevice::WriteOnly));
-+        QVERIFY(zip.addLocalDirectory(dirName, "."));
-+        QVERIFY(zip.close());
-     }
-     {
-         KZip zip(s_zipFileName);
- 
--        bool ok = zip.open(QIODevice::ReadOnly);
--        QVERIFY(ok);
-+        QVERIFY(zip.open(QIODevice::ReadOnly));
- 
-         const KArchiveDirectory* dir = zip.directory();
-         QVERIFY(dir != 0);
- 
--        const KArchiveEntry* e = dir->entry(file1 );
-+        const KArchiveEntry* e = dir->entry(file1);
-         QVERIFY(e && e->isFile());
-         const KArchiveFile* f = (KArchiveFile*)e;
-         QCOMPARE(f->data(), file1Data);
-     }
- }
-+
-+/**
-+ * @see QTest::cleanupTestCase()
-+ */
-+void KArchiveTest::cleanupTestCase()
-+{
-+    QFile::remove(s_zipMaxLengthFileName);
-+    QFile::remove(s_zipFileName);
-+    QFile::remove(s_zipLocaleFileName);
-+#ifndef Q_OS_WIN
-+    QFile::remove("test3_symlink");
-+#endif
-+}
-Index: kdecore/tests/karchivetest.h
-===================================================================
---- kdecore/tests/karchivetest.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/tests/karchivetest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -25,17 +25,27 @@
- class KArchiveTest : public QObject
- {
-     Q_OBJECT
-+
-+    void setupData();
-+
- private Q_SLOTS:
-     void initTestCase();
- 
-+    void testCreateTar_data();
-     void testCreateTar();
--    void testCreateTarGz();
--    void testCreateTarBz2();
-+    void testCreateTarXXX_data(){ setupData(); };
-+    void testCreateTarXXX();
-+    void testReadTar_data(){ setupData(); };
-     void testReadTar();
-+    void testUncompress_data(){ setupData(); };
-     void testUncompress();
-+    void testTarFileData_data(){ setupData(); };
-     void testTarFileData();
-+    void testTarCopyTo_data(){ setupData(); };
-     void testTarCopyTo();
-+    void testTarReadWrite_data(){ setupData(); };
-     void testTarReadWrite();
-+    void testTarMaxLength_data();
-     void testTarMaxLength();
- 
-     void testCreateZip();
-@@ -50,5 +60,4 @@
-     void cleanupTestCase();
- };
- 
--
- #endif
-Index: kdecore/all_languages.desktop
-===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -2012,6 +2012,7 @@
- Name[en_GB]=Catalan (Valencian)
- Name[es]=Catalán (Valenciano)
- Name[et]=Katalaani (valencia)
-+Name[eu]=Katalana (Valentziera)
- Name[fi]=Katalaani (Valencia)
- Name[fr]=Catalan (Valence)
- Name[fy]=Katalaansk (Valencia)
-@@ -6311,7 +6312,7 @@
- Name[fi]=Inupiatun
- Name[fr]=Inupiaq
- Name[fy]=Inupiaq
--Name[ga]=Inupiaq
-+Name[ga]=Iniúipiacais
- Name[gl]=Inupiaq
- Name[gu]=ઇનુપીઆક
- Name[he]=אינופיאק
-@@ -8375,7 +8376,7 @@
- Name[fi]=Lingala
- Name[fr]=Lingala
- Name[fy]=Lingala
--Name[ga]=Lingala
-+Name[ga]=Liongáilis
- Name[gl]=Lingala
- Name[gu]=લિંગાલા
- Name[he]=לינגאלה
-@@ -15334,7 +15335,7 @@
- Name[fi]=Twi
- Name[fr]=Twi
- Name[fy]=Twi
--Name[ga]=Twi
-+Name[ga]=Tiuíais
- Name[gl]=Twi
- Name[gu]=ત્વી
- Name[he]=צ'ווי
-Index: kdecore/io/ktar.cpp
-===================================================================
---- kdecore/io/ktar.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/io/ktar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -38,6 +38,13 @@
- /////////////////////////// KTar ///////////////////////////////////
- ////////////////////////////////////////////////////////////////////////
- 
-+// Mime types of known filters
-+static const char application_gzip[] = "application/x-gzip";
-+static const char application_bzip[] = "application/x-bzip";
-+static const char application_lzma[] = "application/x-lzma";
-+static const char application_xz[] = "application/x-xz";
-+static const char application_zip[] = "application/zip";
-+
- class KTar::KTarPrivate
- {
- public:
-@@ -79,76 +86,55 @@
- }
- 
- // Only called when a filename was given
--bool KTar::createDevice( QIODevice::OpenMode mode )
-+bool KTar::createDevice(QIODevice::OpenMode mode)
- {
--    if ( d->mimetype.isEmpty() ) // Find out mimetype manually
--    {
--        if ( mode != QIODevice::WriteOnly && QFile::exists( fileName() ) )
--            d->mimetype = KMimeType::findByFileContent( fileName() )->name();
--        else
--            d->mimetype = KMimeType::findByPath( fileName(), 0, true )->name();
--        kDebug(7041) << "mimetype=" << d->mimetype;
-+    if (d->mimetype.isEmpty()) {
-+        // Find out mimetype manually
- 
--        if ( d->mimetype == "application/x-compressed-tar"
--             || d->mimetype == "application/x-tgz" // old deprecated name
--             || d->mimetype == "application/x-targz" // old deprecated name
--             || d->mimetype == "application/x-webarchive" )
--        {
--            // that's a gzipped tar file, so ask for gzip filter
--            d->mimetype = "application/x-gzip";
--        }
--        else if ( d->mimetype == "application/x-bzip-compressed-tar" ) // that's a bzipped2 tar file, so ask for bz2 filter
--        {
--            d->mimetype = "application/x-bzip";
--        }
--        else if ( d->mimetype == "application/x-lzma-compressed-tar" ) // that's a lzma compressed tar file, so ask for xz filter
--        {
--            d->mimetype = "application/x-lzma";
--        }
--        else if ( d->mimetype == "application/x-xz-compressed-tar" ) // that's a xz compressed tar file, so ask for xz filter
--        {
--            d->mimetype = "application/x-xz";
--        }
--        else
--        {
--            // Something else. Check if it's not really gzip though (e.g. for old-style KOffice files)
--            QFile file( fileName() );
--            if ( file.open( QIODevice::ReadOnly ) )
--            {
--                char firstByte, secondByte, thirdByte;
--                if ( file.getChar( &firstByte ) &&
--                     file.getChar( &secondByte ) &&
--                     file.getChar( &thirdByte ) ) {
--                    if ( firstByte == 0037 && static_cast<uchar>(secondByte) == static_cast<uchar>(0213) )
--                        d->mimetype = "application/x-gzip";
--                    else if ( firstByte == 'B' && secondByte == 'Z' && thirdByte == 'h' )
--                        d->mimetype = "application/x-bzip";
--                    else if ( firstByte == '\xFD' && secondByte == '7' && thirdByte == 'z' )
--                    {
--                        char fourthByte, fifthByte, sixthByte;
--                        if ( file.getChar(&fourthByte) && fourthByte == 'X' &&
--			     file.getChar(&fifthByte) && fifthByte == 'Z' &&
--			     file.getChar(&sixthByte) && sixthByte == 0x00 )
--                            d->mimetype = "application/x-xz";
--                    }
--                    else if ( firstByte == 'P' && secondByte == 'K' && thirdByte == 3 )
--                    {
--                        char fourthByte;
--                        if ( file.getChar(&fourthByte) && fourthByte == 4 )
--                            d->mimetype = "application/zip";
--                    }
--                }
-+        KMimeType::Ptr mime;
-+        if (mode != QIODevice::WriteOnly && QFile::exists(fileName())) {
-+            // Give priority to file contents: if someone renames a .tar.bz2 to .tar.gz,
-+            // we can still do the right thing here.
-+            mime = KMimeType::findByFileContent(fileName());
-+            if (mime == KMimeType::defaultMimeTypePtr()) {
-+                // Unable to determine mimetype from contents, get it from file name
-+                mime = KMimeType::findByPath(fileName(), 0, true);
++                // Remote directories are not supported, don't try to do a file_copy on them
++                if (!skipCurrentItem) {
++                    // TODO update item.mimeType from the UDS entry, in case it wasn't set initially
++                    KMimeType::Ptr mime = d->currentItem.item.mimeTypePtr();
++                    if (mime && mime->is("inode/directory")) {
++                        skipCurrentItem = true;
++                    }
++                }
              }
--            file.close();
-+        } else {
-+            mime = KMimeType::findByPath(fileName(), 0, true);
-         }
--    }
+             if (skipCurrentItem)
+             {
+Index: kdecore/sonnet/backgroundchecker.cpp
+===================================================================
+--- kdecore/sonnet/backgroundchecker.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdecore/sonnet/backgroundchecker.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -23,6 +23,7 @@
+ #include "loader_p.h"
+ #include "backgroundengine_p.h"
+ #include "filter_p.h"
++#include "settings_p.h"
  
--    if (d->mimetype == "application/x-tar" || mode == QIODevice::WriteOnly)
--    {
--        return KArchive::createDevice( mode );
-+        kDebug(7041) << mode << mime->name();
+ #include <kdebug.h>
+ 
+@@ -64,6 +65,13 @@
+     delete d;
+ }
+ 
++void BackgroundChecker::restore(KConfig *config)
++{
++    Loader *loader = Loader::openLoader();
++    loader->settings()->restore(config);
++    d->engine->filter()->setSettings(loader->settings());
++}
 +
-+        if (mime->is("application/x-compressed-tar") || mime->is(application_gzip)) {
-+            // gzipped tar file (with possibly invalid file name), ask for gzip filter
-+            d->mimetype = application_gzip;
-+        } else if (mime->is("application/x-bzip-compressed-tar") || mime->is(application_bzip)) {
-+            // bzipped2 tar file (with possibly invalid file name), ask for bz2 filter
-+            d->mimetype = application_bzip;
-+        } else if (mime->is("application/x-lzma-compressed-tar") || mime->is(application_lzma)) {
-+            // lzma compressed tar file (with possibly invalid file name), ask for xz filter
-+            d->mimetype = application_lzma;
-+        } else if (mime->is("application/x-xz-compressed-tar") || mime->is(application_xz)) {
-+            // xz compressed tar file (with possibly invalid name), ask for xz filter
-+            d->mimetype = application_xz;
+ void BackgroundChecker::setText(const QString &text)
+ {
+     d->currentText = text;
+Index: kdecore/sonnet/backgroundchecker.h
+===================================================================
+--- kdecore/sonnet/backgroundchecker.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdecore/sonnet/backgroundchecker.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -76,6 +76,9 @@
+         bool checkWord(const QString &word);
+         QStringList suggest(const QString &word) const;
+         bool addWordToPersonal(const QString &word);
++
++        void restore(KConfig *config);
++
+     public Q_SLOTS:
+         virtual void start();
+         virtual void stop();
+Index: plasma/corona.cpp
+===================================================================
+--- plasma/corona.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ plasma/corona.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -230,6 +230,14 @@
+             containment->setFormFactor(Plasma::Planar);
+         }
+ 
++        // if this is a new containment, we need to ensure that there are no stale
++        // configuration data around
++        if (id == 0) {
++            KConfigGroup conf(q->config(), "Containments");
++            conf = KConfigGroup(&conf, QString::number(containment->id()));
++            conf.deleteGroup();
 +        }
-     }
--    else
--    {
 +
-+    if (d->mimetype == "application/x-tar") {
-+        return KArchive::createDevice(mode);
-+    } else if (mode == QIODevice::WriteOnly) {
-+        if (!KArchive::createDevice(mode))
-+            return false;
-+        if (!d->mimetype.isEmpty()) {
-+            // Create a compression filter on top of the KSaveFile device that KArchive created.
-+            kDebug(7041) << "creating KFilterDev for" << d->mimetype;
-+            QIODevice *filterDev = KFilterDev::device(device(), d->mimetype);
-+            Q_ASSERT(filterDev);
-+            setDevice(filterDev);
-+        }
-+        return true;
-+    } else {
-         // The compression filters are very slow with random access.
-         // So instead of applying the filter to the device,
-         // the file is completely extracted instead,
-@@ -164,9 +150,9 @@
-         d->tmpFile->setPrefix("ktar-");
-         d->tmpFile->setSuffix(".tar");
-         d->tmpFile->open();
--        kDebug( 7041 ) << "creating tempfile:" << d->tmpFile->fileName();
-+        kDebug(7041) << "creating tempfile:" << d->tmpFile->fileName();
- 
--        setDevice( d->tmpFile );
-+        setDevice(d->tmpFile);
-         return true;
+         applet->d->isContainment = true;
+         containment->setPos(containment->d->preferredPos(q));
+         q->addItem(containment);
+@@ -447,7 +455,7 @@
      }
+ 
+     KSharedConfigPtr conf = config();
+-    d->importLayout(*conf, conf != config());
++    d->importLayout(*conf, false);
  }
-@@ -299,8 +285,7 @@
-     kDebug( 7041 ) << "filling tmpFile of mimetype" << mimetype;
  
-     bool forced = false;
--    if( "application/x-gzip" == mimetype
--    || "application/x-bzip" == mimetype)
-+    if ( application_gzip == mimetype || application_bzip == mimetype )
-         forced = true;
- 
-     QIODevice *filterDev = KFilterDev::deviceForFile( fileName, mimetype, forced );
-@@ -509,10 +494,8 @@
-     kDebug(7041) << fileName << " " << mimetype;
- 
-     bool forced = false;
--    if( "application/x-gzip" == mimetype
--        || "application/x-bzip" == mimetype
--	|| "application/x-lzma" == mimetype
--	|| "application/x-xz" == mimetype)
-+    if ( application_gzip == mimetype || application_bzip == mimetype ||
-+         application_lzma == mimetype || application_xz == mimetype )
-         forced = true;
- 
-     // #### TODO this should use KSaveFile to avoid problems on disk full
-@@ -552,10 +535,10 @@
- 
-     bool ok = true;
- 
--    // If we are in write mode and had created
-+    // If we are in readwrite mode and had created
-     // a temporary tar file, we have to write
-     // back the changes to the original file
--    if( mode() & QIODevice::WriteOnly) {
-+    if (d->tmpFile && (mode() & QIODevice::WriteOnly)) {
-         ok = d->writeBackTempFile( fileName() );
-         delete d->tmpFile;
-         d->tmpFile = 0;
-Index: kdecore/date/kdatetime.h
-===================================================================
---- kdecore/date/kdatetime.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdecore/date/kdatetime.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -1150,6 +1150,7 @@
-      *
-      * @return current date
-      * @see currentLocalDateTime(), currentLocalTime()
-+     * @since 4.3
-      */
-     static QDate currentLocalDate();
- 
-@@ -1159,6 +1160,7 @@
-      *
-      * @return current date
-      * @see currentLocalDateTime(), currentLocalDate()
-+     * @since 4.3
-      */
-     static QTime currentLocalTime();
- 
-@@ -1600,8 +1602,8 @@
-      */
-     static KDateTime realCurrentLocalDateTime();
- 
--    friend QDataStream &operator<<(QDataStream &out, const KDateTime &dateTime);
--    friend QDataStream &operator>>(QDataStream &in, KDateTime &dateTime);
-+    friend QDataStream KDECORE_EXPORT &operator<<(QDataStream &out, const KDateTime &dateTime);
-+    friend QDataStream KDECORE_EXPORT &operator>>(QDataStream &in, KDateTime &dateTime);
- 
-   private:
-     QSharedDataPointer<KDateTimePrivate> d;
-Index: knewstuff/knewstuff3/core/installation.cpp
-===================================================================
---- knewstuff/knewstuff3/core/installation.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/core/installation.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -203,7 +203,7 @@
- 
-             // check if the app likes html files - disabled by default as too many bad links have been submitted to opendesktop.org
-             if (!acceptHtml) {
--                KMimeType::Ptr mimeType = KMimeType::findByPath(fcjob->destUrl().pathOrUrl());
-+                KMimeType::Ptr mimeType = KMimeType::findByPath(fcjob->destUrl().toLocalFile());
-                 if (mimeType->is("text/html") || mimeType->is("application/x-php")) {
-                     if (KMessageBox::questionYesNo(0, i18n("The downloaded file is a html file. This indicates a link to a website instead of the actual download. Would you like to open the site with a browser instead?"), i18n("Possibly bad download link"))
-                         == KMessageBox::Yes) {
-@@ -216,7 +216,7 @@
-                 }
-             }
- 
--            install(entry, fcjob->destUrl().pathOrUrl());
-+            install(entry, fcjob->destUrl().toLocalFile());
-             emit signalPayloadLoaded(fcjob->destUrl());
+ QList<Plasma::Containment *> Corona::importLayout(const KConfigBase &conf)
+@@ -489,6 +497,8 @@
+         if (mergeConfig) {
+             KConfigGroup realConf(q->config(), "Containments");
+             realConf = KConfigGroup(&realConf, QString::number(cid));
++            // in case something was there before us
++            realConf.deleteGroup();
+             containmentConfig.copyTo(&realConf);
          }
-     }
-@@ -262,7 +262,6 @@
-     }
-     */
- 
--
-     QString targetPath = targetInstallationPath(downloadedFile);
-     QStringList installedFiles = installDownloadedFileAndUncompress(entry, downloadedFile, targetPath);
- 
-Index: knewstuff/knewstuff3/downloadwidget.cpp
-===================================================================
---- knewstuff/knewstuff3/downloadwidget.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/downloadwidget.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -367,7 +367,6 @@
-     }
-     titleText = ui.m_titleWidget->text();
-     
--    details->setEntry(entry);
-     ui.backButton->setVisible(true);
-     ui.detailsStack->setCurrentIndex(1);
-     ui.descriptionScrollArea->verticalScrollBar()->setValue(0);
-@@ -375,6 +374,7 @@
-     ui.preview2->setImage(QImage());
-     ui.preview3->setImage(QImage());
-     ui.previewBig->setImage(QImage());
-+    details->setEntry(entry);
- }
- 
- void DownloadWidgetPrivate::slotShowOverview()
-Index: knewstuff/knewstuff3/ui/itemsviewbasedelegate.cpp
-===================================================================
---- knewstuff/knewstuff3/ui/itemsviewbasedelegate.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/ui/itemsviewbasedelegate.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -31,6 +31,7 @@
- ItemsViewBaseDelegate::ItemsViewBaseDelegate(QAbstractItemView *itemView, Engine* engine, QObject * parent)
-         : KWidgetItemDelegate(itemView, parent)
-         , m_engine(engine)
-+        , m_itemView(itemView)
-         , m_iconInvalid(KIcon("dialog-error"))
-         , m_iconInstall(KIcon("dialog-ok"))
-         , m_iconUpdate(KIcon("system-software-update"))
-@@ -87,7 +88,7 @@
- {
-     QPoint rowDownload = action->data().toPoint();
-     int row = rowDownload.x();
--    QModelIndex index = focusedIndex().model()->index(row, 0);
-+    QModelIndex index = m_itemView->model()->index(row, 0);
-     if (index.isValid()) {
-         KNS3::EntryInternal entry = index.data(Qt::UserRole).value<KNS3::EntryInternal>();
-         m_engine->install(entry, rowDownload.y());
-Index: knewstuff/knewstuff3/ui/itemsviewbasedelegate.h
-===================================================================
---- knewstuff/knewstuff3/ui/itemsviewbasedelegate.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/ui/itemsviewbasedelegate.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -69,6 +69,7 @@
- 
- protected:
-     Engine* m_engine;
-+    QAbstractItemView *m_itemView;
-     KIcon m_iconInvalid;
-     KIcon m_iconDownloadable;
-     KIcon m_iconInstall;
-Index: knewstuff/knewstuff3/ui/entrydetailsdialog.cpp
-===================================================================
---- knewstuff/knewstuff3/ui/entrydetailsdialog.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/ui/entrydetailsdialog.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -141,22 +141,27 @@
-     ui->preview2->setVisible(!hideSmallPreviews);
-     ui->preview3->setVisible(!hideSmallPreviews);
- 
-+    // in static xml we often only get a small preview, use that in details
-+    if(m_entry.previewUrl(EntryInternal::PreviewBig1).isEmpty() && !m_entry.previewUrl(EntryInternal::PreviewSmall1).isEmpty()) {
-+        m_entry.setPreviewUrl(m_entry.previewUrl(EntryInternal::PreviewSmall1), EntryInternal::PreviewBig1);
-+        m_entry.setPreviewImage(m_entry.previewImage(EntryInternal::PreviewSmall1), EntryInternal::PreviewBig1);
-+    }
-+
-     for (int type = EntryInternal::PreviewSmall1; type <= EntryInternal::PreviewBig3; ++type) {
-         if (m_entry.previewUrl(EntryInternal::PreviewSmall1).isEmpty()) {
-             ui->previewBig->setVisible(false);
-         } else
- 
--        if (!m_entry.previewUrl((EntryInternal::PreviewType)type).isEmpty()
--            && m_entry.previewImage((EntryInternal::PreviewType)type).isNull()) {
--            m_engine->loadPreview(m_entry, (EntryInternal::PreviewType)type);
--        } else {
--            slotEntryPreviewLoaded(m_entry, (EntryInternal::PreviewType)type);
-+        if (!m_entry.previewUrl((EntryInternal::PreviewType)type).isEmpty()) {
-+            kDebug() << "type: " << type << m_entry.previewUrl((EntryInternal::PreviewType)type);
-+            if (m_entry.previewImage((EntryInternal::PreviewType)type).isNull()) {
-+                m_engine->loadPreview(m_entry, (EntryInternal::PreviewType)type);
-+            } else {
-+                slotEntryPreviewLoaded(m_entry, (EntryInternal::PreviewType)type);
-+            }
-         }
-     }
--
--    if(m_entry.previewImage(EntryInternal::PreviewBig1).isNull() && !m_entry.previewUrl(EntryInternal::PreviewBig1).isEmpty()) {
--// TODO        ui->previewBig->setText(i18n("Loading preview..."));
--    }
-+    
-     updateButtons();
- }
- 
-@@ -254,30 +259,20 @@
- 
-     switch (type) {
-     case EntryInternal::PreviewSmall1:
--        kDebug() << "preview 1 loaded";
-         ui->preview1->setImage(entry.previewImage(EntryInternal::PreviewSmall1));
-         break;
-     case EntryInternal::PreviewSmall2:
--        kDebug() << "preview 2 loaded";
-         ui->preview2->setImage(entry.previewImage(EntryInternal::PreviewSmall2));
-         break;
-     case EntryInternal::PreviewSmall3:
--        kDebug() << "preview 3 loaded";
-         ui->preview3->setImage(entry.previewImage(EntryInternal::PreviewSmall3));
-         break;
-     case EntryInternal::PreviewBig1:
--        kDebug() << "preview big 1";
-         m_currentPreview = entry.previewImage(EntryInternal::PreviewBig1);
-         ui->previewBig->setImage(m_currentPreview);
-         break;
--    case EntryInternal::PreviewBig2:
--        kDebug() << "preview big 2";
--        //ui->previewBig->setPixmap(QPixmap::fromImage(entry.previewImage(EntryInternal::PreviewBig2).scaled(ui->previewBig->size(), Qt::KeepAspectRatio)));
-+    default:
-         break;
--    case EntryInternal::PreviewBig3:
--        kDebug() << "preview big 3";
--        //ui->previewBig->setPixmap(QPixmap::fromImage(entry.previewImage(EntryInternal::PreviewBig3).scaled(ui->previewBig->size(), Qt::KeepAspectRatio)));
--        break;
-     }
- }
- 
-Index: knewstuff/knewstuff3/ui/imagepreviewwidget.cpp
-===================================================================
---- knewstuff/knewstuff3/ui/imagepreviewwidget.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ knewstuff/knewstuff3/ui/imagepreviewwidget.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -70,7 +70,8 @@
-     int height = contentsRect().height();
-     
-     if (m_scaledImage.isNull()) {
--        m_scaledImage = m_image.scaled(width - 2*margin, height - 2*margin, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-+        QSize scaled = QSize(qMin(width - 2*margin, m_image.width()*2), qMin(height - 2*margin, m_image.height()*2));
-+        m_scaledImage = m_image.scaled(scaled, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-     }
-     
-     QPoint point;
-Index: plasma/windoweffects.cpp
-===================================================================
---- plasma/windoweffects.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/windoweffects.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -23,6 +23,8 @@
- 
- #include <kwindowsystem.h>
- 
-+#include "theme.h"
-+
- #ifdef Q_WS_X11
- #include <X11/Xlib.h>
- #include <X11/Xatom.h>
-@@ -38,7 +40,7 @@
- //FIXME: check if this works for any atom?
- bool isEffectAvailable(Effect effect)
- {
--    if (!KWindowSystem::compositingActive()) {
-+    if (!Plasma::Theme::defaultTheme()->windowTranslucencyEnabled()) {
-         return false;
-     }
- #ifdef Q_WS_X11
-Index: plasma/framesvg.cpp
-===================================================================
---- plasma/framesvg.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/framesvg.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -282,7 +282,9 @@
- QRegion FrameSvg::mask() const
- {
-     FrameData *frame = d->frames[d->prefix];
--    frame->cachedMask = QRegion(QBitmap(d->alphaMask().alphaChannel().createMaskFromColor(Qt::black)));
-+    if (frame->cachedMask.isEmpty()) {
-+        frame->cachedMask = QRegion(QBitmap(d->alphaMask().alphaChannel().createMaskFromColor(Qt::black)));
-+    }
-     return frame->cachedMask;
- }
- 
-Index: plasma/scripting/dataenginescript.cpp
-===================================================================
---- plasma/scripting/dataenginescript.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/scripting/dataenginescript.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -55,7 +55,7 @@
- 
- QStringList DataEngineScript::sources() const
- {
--    return d->dataEngine->sources();
-+    return d->dataEngine->containerDict().keys();
- }
- 
- bool DataEngineScript::sourceRequestEvent(const QString &name)
-Index: plasma/widgets/svgwidget.cpp
-===================================================================
---- plasma/widgets/svgwidget.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/widgets/svgwidget.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -62,6 +62,8 @@
-     // transparent"
-     if (receivers(SIGNAL(clicked(Qt::MouseButton)))) {
-         event->accept();
-+    } else {
-+        QGraphicsWidget::mousePressEvent(event);
-     }
- }
- 
-Index: plasma/widgets/pushbutton.cpp
-===================================================================
---- plasma/widgets/pushbutton.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/widgets/pushbutton.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -445,12 +445,12 @@
-         if (option->direction == Qt::LeftToRight) {
-             alphaGradient.setColorAt(0, QColor(0, 0, 0, 255));
-             alphaGradient.setColorAt(1, QColor(0, 0, 0, 0));
--            p.drawText(bufferPixmap.rect(), Qt::AlignLeft|Qt::AlignVCenter,
-+            p.drawText(bufferPixmap.rect(), Qt::AlignLeft|Qt::AlignVCenter|Qt::TextShowMnemonic,
-                        nativeWidget()->text());
-         } else {
-             alphaGradient.setColorAt(0, QColor(0, 0, 0, 0));
-             alphaGradient.setColorAt(1, QColor(0, 0, 0, 255));
--            p.drawText(bufferPixmap.rect(), Qt::AlignRight|Qt::AlignVCenter,
-+            p.drawText(bufferPixmap.rect(), Qt::AlignRight|Qt::AlignVCenter|Qt::TextShowMnemonic,
-                        nativeWidget()->text());
-         }
- 
-@@ -460,7 +460,7 @@
-         painter->drawPixmap(rect.topLeft(), bufferPixmap);
-     } else {
-         painter->setFont(widgetFont);
--        painter->drawText(rect, Qt::AlignCenter, nativeWidget()->text());
-+        painter->drawText(rect, Qt::AlignCenter|Qt::TextShowMnemonic, nativeWidget()->text());
-     }
- }
  
 Index: plasma/applet.cpp
 ===================================================================
---- plasma/applet.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -2962,6 +2962,11 @@
-     }
- }
- 
-+void AppletOverlayWidget::mousePressEvent(QGraphicsSceneMouseEvent *event)
-+{
-+    event->accept();
-+}
-+
- void AppletOverlayWidget::overlayAnimationComplete()
- {
-     if (scene()) {
-Index: plasma/private/applet_p.h
-===================================================================
---- plasma/private/applet_p.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/private/applet_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -88,6 +88,7 @@
- 
- protected:
-     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
-+    void mousePressEvent(QGraphicsSceneMouseEvent *event);
- 
- protected Q_SLOTS:
-     void overlayAnimationComplete();
-Index: plasma/version.cpp
-===================================================================
---- plasma/version.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/version.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -50,6 +50,11 @@
- 
- bool isPluginVersionCompatible(unsigned int version)
- {
-+    if (version == quint32(-1)) {
-+        // unversioned, just let it through
-+        return true;
-+    }
-+
-     // we require PLASMA_VERSION_MAJOR and PLASMA_VERSION_MINOR
-     const quint32 minVersion = PLASMA_MAKE_VERSION(PLASMA_VERSION_MAJOR, 0, 0);
-     const quint32 maxVersion = PLASMA_MAKE_VERSION(PLASMA_VERSION_MAJOR, PLASMA_VERSION_MINOR, 60);
-Index: plasma/data/servicetypes/plasma-applet-popupapplet.desktop
-===================================================================
---- plasma/data/servicetypes/plasma-applet-popupapplet.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/data/servicetypes/plasma-applet-popupapplet.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -46,6 +46,7 @@
- Comment[pt_BR]=Miniaplicativo de script do Plasma
- Comment[ro]=Miniaplicație Plasma de indicii ale scripturilor
- Comment[ru]=Аплет программируемого контекстного окна Plasma
-+Comment[se]=Plasma-skripten báhccanprográmmaš
- Comment[sk]=Skriptovací vyskakujúci Plasma aplet
- Comment[sl]=Plasma skriptni pojavni programček
- Comment[sr]=Плазма скриптовани искачући аплет
-Index: plasma/data/servicetypes/plasma-containmentactions.desktop
-===================================================================
---- plasma/data/servicetypes/plasma-containmentactions.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ plasma/data/servicetypes/plasma-containmentactions.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -40,6 +40,7 @@
- Comment[pt_BR]=Ações do contentor do Plasma
- Comment[ro]=AcțiuniContainer Plasma
- Comment[ru]=Действия для контейнеров Plasma
-+Comment[se]=Plasma ContainmentActions
- Comment[sk]=Akcie Plasma
- Comment[sr]=Плазма радње садржалаца
- Comment[sr@ijekavian]=Плазма радње садржалаца
-Index: khtml/khtml_part.cpp
-===================================================================
---- khtml/khtml_part.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/khtml_part.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -2538,7 +2538,7 @@
- // and by xml/dom_docimpl.cpp in case of http-equiv meta refresh.
- void KHTMLPart::scheduleRedirection( int delay, const QString &url, bool doLockHistory )
- {
--  kDebug(6050) << "delay=" << delay << " url=" << url;
-+  kDebug(6050) << "delay=" << delay << " url=" << url << " from=" << this->url() << "parent=" << parentPart();
-   kDebug(6050) << "current redirectURL=" << d->m_redirectURL << " with delay " << d->m_delayRedirect;
- 
-   // In case of JS redirections, some, such as jump to anchors, and javascript:
-@@ -4508,6 +4508,8 @@
-       child->m_scriptable.clear();
+--- plasma/applet.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -1279,7 +1279,8 @@
+         }
      }
  
-+    child->m_part = part;    
-+
-     child->m_serviceType = mimetype;
-     if ( child->m_partContainerElement && part->widget() )
-       child->m_partContainerElement->setWidget( part->widget() );
-@@ -4517,8 +4519,6 @@
- //  else
- //      kDebug(6031) << "AH! NO FRAME!!!!!";
+-    if ((c & Plasma::StartupCompletedConstraint) || (c & Plasma::SizeConstraint && !(c & Plasma::FormFactorConstraint))) {
++    if (!size().isEmpty() &&
++        ((c & Plasma::StartupCompletedConstraint) || (c & Plasma::SizeConstraint && !(c & Plasma::FormFactorConstraint)))) {
+         d->sizeForFormFactor[formFactor()] = size();
+     }
  
--    child->m_part = part;
+@@ -2654,6 +2655,12 @@
+     // but it doesn't actually work anyways =/
+     q->setLayoutDirection(qApp->layoutDirection());
+ 
++    //set a default size before any saved settings are read
++    QSize size(200, 200);
++    q->setBackgroundHints(Applet::DefaultBackground);
++    q->setHasConfigurationInterface(true); //FIXME why not default it to true in the constructor?
++
++
+     if (!appletDescription.isValid()) {
+         kDebug() << "Check your constructor! "
+                  << "You probably want to be passing in a Service::Ptr "
+@@ -2661,6 +2668,10 @@
+         return;
+     }
+ 
++    size = appletDescription.property("X-Plasma-DefaultSize").toSize();
++    //kDebug() << "size" << size;
++    q->resize(size);
++
+     QString api = appletDescription.property("X-Plasma-API").toString();
+ 
+     // we have a scripted plasmoid
+@@ -2716,17 +2727,6 @@
+         }
+     }
+ 
+-    //set a default size before any saved settings are read
+-    QSize size = appletDescription.property("X-Plasma-DefaultSize").toSize();
+-    if (size.isEmpty()) {
+-        size = QSize(200, 200);
+-    }
+-    //kDebug() << "size" << size;
+-    q->resize(size);
 -
-     if (qobject_cast<KHTMLPart*>(part)) {
-       static_cast<KHTMLPart*>(part)->d->m_frame = child;
-     } else if (child->m_partContainerElement) {
-Index: khtml/rendering/render_object.h
+-    q->setBackgroundHints(Applet::DefaultBackground);
+-    q->setHasConfigurationInterface(true); //FIXME why not default it to true in the constructor?
+-
+     QAction *closeApplet = actions->action("remove");
+     if (closeApplet) {
+         closeApplet->setText(i18nc("%1 is the name of the applet", "Remove this %1", q->name()));
+Index: khtml/khtmlimage.cpp
 ===================================================================
---- khtml/rendering/render_object.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/rendering/render_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -848,7 +848,7 @@
-     virtual void selectionStartEnd(int& spos, int& epos);
+--- khtml/khtmlimage.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ khtml/khtmlimage.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -93,6 +93,9 @@
+     m_ext = new KHTMLImageBrowserExtension( this );
+     m_ext->setObjectName( "be" );
  
-     virtual QRect viewRect() const;
--    void remove() { if (m_parent) m_parent->removeChild(this); }
-+    void remove();
-     void setDetached() { m_attached = false; }
-     void invalidateVerticalPosition();
-     bool attemptDirectLayerTranslation();
-Index: khtml/rendering/render_text.h
-===================================================================
---- khtml/rendering/render_text.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/rendering/render_text.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -3,7 +3,7 @@
-  *
-  * Copyright (C) 1999-2003 Lars Knoll <knoll@kde.org>
-  * Copyright (C) 2000-2003 Dirk Mueller <mueller@kde.org>
-- * Copyright (C) 2003 Apple Computer, Inc.
-+ * Copyright (C) 2003, 2006 Apple Computer, Inc.
-  *
-  * This library is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU Library General Public
-@@ -281,8 +281,10 @@
-     // (takes into account space collapsing)
-     unsigned convertToDOMPosition(unsigned position) const;
-     unsigned convertToRenderedPosition(unsigned position) const;
-+protected:
-+    virtual void setTextInternal(DOM::DOMStringImpl *text);
- 
--protected: // members
-+    // members
-     InlineTextBox* m_firstTextBox;
-     InlineTextBox* m_lastTextBox;
- 
-@@ -333,10 +335,18 @@
-     DOM::DOMStringImpl* contentString() const { return m_generatedContentStr; }
-     virtual DOM::DOMStringImpl* originalString() const;
- 
-+    RenderObject* firstLetter() const { return m_firstLetter; }
-+    void setFirstLetter(RenderObject* firstLetter) { m_firstLetter = firstLetter; }
++    m_sbExt = new KParts::StatusBarExtension( this );
++    m_sbExt->setObjectName( "sbe" );
 +
-+    // overrides
-+    virtual void detach();
- private:
-+    virtual void setTextInternal(DOM::DOMStringImpl *text);
+     // Remove unnecessary actions.
+     delete actionCollection()->action( "setEncoding" );
+     delete actionCollection()->action( "viewDocumentSource" );
+@@ -134,6 +137,9 @@
+ {
+     static const QString &html = KGlobal::staticQString( "<html><body><img src=\"%1\"></body></html>" );
+ 
++    // Propagate statusbar to our kid part.
++    KParts::StatusBarExtension::childObject( m_khtml )->setStatusBar( m_sbExt->statusBar() );
 +
-     uint m_start;
-     uint m_end;
-     DOM::DOMStringImpl* m_generatedContentStr;
-+    RenderObject* m_firstLetter;
- };
- } // end namespace
- #endif
-Index: khtml/rendering/render_object.cpp
+     disposeImage();
+ 
+     setUrl(url);
+Index: khtml/khtml_filter.cpp
 ===================================================================
---- khtml/rendering/render_object.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/rendering/render_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -2384,6 +2384,15 @@
-     arenaDelete(renderArena(), this);
+--- khtml/khtml_filter.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ khtml/khtml_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -84,7 +84,7 @@
+             filter = filter.mid(first, last - first + 1);
+ 
+         // Now, do we still have any wildcard stuff left?
+-        if (filter.contains("*") || filter.contains("?"))
++        if (filter.contains("*"))
+         {
+ //             qDebug() << "W:" << filter;
+             // check if we can use RK first (and then check full RE for the rest) for better performance
+Index: khtml/khtmlimage.h
+===================================================================
+--- khtml/khtmlimage.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ khtml/khtmlimage.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -23,6 +23,7 @@
+ #include "khtml_part.h"
+ #include <kparts/factory.h>
+ #include <kparts/browserextension.h>
++#include <kparts/statusbarextension.h>
+ 
+ #include "misc/loader_client.h"
+ 
+@@ -96,6 +97,7 @@
+ 
+     QPointer<KHTMLPart> m_khtml;
+     KParts::BrowserExtension *m_ext;
++    KParts::StatusBarExtension *m_sbExt;
+     QString m_mimeType;
+     khtml::CachedImage *m_image;
+     int m_xOffset, m_yOffset;
+Index: kdoctools/customization/pt/entities/underLGPL.docbook
+===================================================================
+--- kdoctools/customization/pt/entities/underLGPL.docbook	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
++++ kdoctools/customization/pt/entities/underLGPL.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -0,0 +1,2 @@
++<para>Este programa está licenciado ao abrigo da <ulink
++url="common/lgpl-license.html">GNU Lesser General Public License</ulink>.</para>
+Index: kdoctools/customization/pt/lang.entities
+===================================================================
+--- kdoctools/customization/pt/lang.entities	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdoctools/customization/pt/lang.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -12,6 +12,8 @@
+ <!-- Licence links -->
+ <!ENTITY underGPL           PUBLIC "-//KDE//DOCUMENT GPL Licence Declaration//PT"
+   "entities/underGPL.docbook"                       ><!-- level: para -->
++<!ENTITY underLGPL           PUBLIC "-//KDE//DOCUMENT LGPL Licence Declaration//PT"
++  "entities/underLGPL.docbook"                       ><!-- level: para -->
+ <!ENTITY underFDL           PUBLIC "-//KDE//DOCUMENT FDL Licence Declaration//PT"
+   "entities/underFDL.docbook"                       ><!-- level: para -->
+ <!ENTITY underBSDLicense    PUBLIC "-//KDE//DOCUMENT BSD Licence Declaration//PT"
+Index: kdeui/actions/kselectaction.cpp
+===================================================================
+--- kdeui/actions/kselectaction.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdeui/actions/kselectaction.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -242,7 +242,7 @@
+   //kDebug (129) << "KSelectAction::addAction(" << action << ")";
+ 
+   action->setActionGroup(selectableActionGroup());
+-  
++
+   // Re-Enable when an action is added
+   setEnabled(true);
+ 
+@@ -311,7 +311,7 @@
+ 
+   menu()->removeAction(action);
+ 
+-  
++
+   return action;
  }
  
-+void RenderObject::remove()
-+{
-+    if (m_parent) {
-+        m_parent->removeChild(this);
-+        if (isFloating() || inPosObjectList())
-+            removeFromObjectLists();
-+    }
-+}
-+
- void RenderObject::arenaDelete(RenderArena *arena, void *base)
- {
- #ifndef NDEBUG
-Index: khtml/rendering/render_text.cpp
-===================================================================
---- khtml/rendering/render_text.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/rendering/render_text.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -3,7 +3,7 @@
-  *
-  * Copyright (C) 1999-2003 Lars Knoll (knoll@kde.org)
-  *           (C) 2000-2003 Dirk Mueller (mueller@kde.org)
-- *           (C) 2003 Apple Computer, Inc.
-+ *           (C) 2003, 2006 Apple Computer, Inc.
-  *           (C) 2004-2005 Allan Sandfeld Jensen (kde@carewolf.com)
-  *           (C) 2008 Germain Garand (germain@ebooksfrance.org)
-  *
-@@ -1382,7 +1382,11 @@
- void RenderText::setText(DOMStringImpl *text, bool force)
- {
-     if( !force && str == text ) return;
-+    setTextInternal(text);
-+}
+@@ -530,6 +530,9 @@
+     switch (mode) {
+     case MenuMode: {
+       QToolButton* button = new QToolButton(toolBar);
++      button->setToolTip(toolTip());
++      button->setWhatsThis(whatsThis());
++      button->setStatusTip(statusTip());
+       button->setAutoRaise(true);
+       button->setFocusPolicy(Qt::NoFocus);
+       button->setIconSize(toolBar->iconSize());
+@@ -550,11 +553,8 @@
+     }
  
-+void RenderText::setTextInternal(DOMStringImpl *text)
-+{
-     DOMStringImpl *oldstr = str;
-     if(text && style())
-         str = text->collapseWhiteSpace(style()->preserveLF(), style()->preserveWS());
-@@ -1740,11 +1744,11 @@
- RenderTextFragment::RenderTextFragment(DOM::NodeImpl* _node, DOM::DOMStringImpl* _str,
-                                        int startOffset, int endOffset)
- :RenderText(_node, _str->substring(startOffset, endOffset)),
--m_start(startOffset), m_end(endOffset), m_generatedContentStr(0)
-+m_start(startOffset), m_end(endOffset), m_generatedContentStr(0), m_firstLetter(0)
- {}
+     case ComboBoxMode: {
+-        KComboBox* comboBox = new KComboBox(parent);
++      KComboBox* comboBox = new KComboBox(parent);
+       comboBox->installEventFilter (this);
+-      // hack for the fact that QWidgetAction does not sync all its created widgets
+-      // to its enabled state, just QToolButtons (Qt 4.4.3)
+-      installEventFilter( comboBox );
  
- RenderTextFragment::RenderTextFragment(DOM::NodeImpl* _node, DOM::DOMStringImpl* _str)
--:RenderText(_node, _str), m_start(0)
-+:RenderText(_node, _str), m_start(0), m_firstLetter(0)
- {
-     m_generatedContentStr = _str;
-     if (_str) {
-@@ -1761,6 +1765,14 @@
-         m_generatedContentStr->deref();
+       if ( d->m_maxComboViewCount != -1 )
+         comboBox->setMaxVisibleItems( d->m_maxComboViewCount );
+@@ -563,6 +563,9 @@
+         comboBox->setMaximumWidth( d->m_comboWidth );
+ 
+       comboBox->setEditable(isEditable());
++      comboBox->setToolTip(toolTip());
++      comboBox->setWhatsThis(whatsThis());
++      comboBox->setStatusTip(statusTip());
+ 
+       foreach (QAction* action, selectableActionGroup()->actions())
+         comboBox->addAction(action);
+@@ -591,6 +594,24 @@
+     KAction::deleteWidget(widget);
  }
  
-+void RenderTextFragment::detach()
++bool KSelectAction::event(QEvent *event)
 +{
-+    if (m_firstLetter)
-+        m_firstLetter->detach();
-+    
-+    RenderText::detach();
-+}
-+
- bool RenderTextFragment::isTextFragment() const
- {
-     return true;
-@@ -1778,5 +1790,14 @@
-     return result;
- }
- 
-+void RenderTextFragment::setTextInternal(DOM::DOMStringImpl *text)
-+{
-+    if (m_firstLetter) {
-+        m_firstLetter->detach();
-+        m_firstLetter = 0;
-+    }
-+    RenderText::setTextInternal(text);
-+}
-+
- #undef BIDI_DEBUG
- #undef DEBUG_LAYOUT
-Index: khtml/rendering/render_block.cpp
-===================================================================
---- khtml/rendering/render_block.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ khtml/rendering/render_block.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -269,6 +269,8 @@
-             letter->setStyle(newStyle);
-             firstLetterObject->addChild(letter);
-             oldText->deref();
-+
-+            remainingText->setFirstLetter(letter);
-         }
-         firstLetterObject->close();
-     }
-Index: kdoctools/customization/fr/user.entities
-===================================================================
---- kdoctools/customization/fr/user.entities	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdoctools/customization/fr/user.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -375,3 +375,5 @@
-                       instead of fileref -->
- <!ENTITY menuk  "menu <guimenu>K</guimenu>">
- <!ENTITY partman "Gestionnaire de partitions de &kde;">  <!-- English: &partman; -->
-+<!ENTITY Lequipe.rekonq "L'&eacute;quipe rekonq">
-+<!ENTITY Lequipe.rekonq.mail "(rekonq@kde.org)">
-\ No newline at end of file
-Index: kdoctools/customization/lt/user.entities
-===================================================================
---- kdoctools/customization/lt/user.entities	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdoctools/customization/lt/user.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -10,4 +10,5 @@
- <!ENTITY Enter  "<keycap>Enter</keycap>">
- <!ENTITY Esc    "<keycap>Esc</keycap>">
- <!ENTITY Shift  "<keycap>Shift</keycap>">
--<!ENTITY Tab    "<keycap>Tab</keycap>">
-\ No newline at end of file
-+<!ENTITY Tab    "<keycap>Tab</keycap>">
-+<!ENTITY Backspace    "<keycap>Backspace</keycap>">
-Index: sonnet/plugins/hunspell/kspell_hunspell.desktop
-===================================================================
---- sonnet/plugins/hunspell/kspell_hunspell.desktop	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ sonnet/plugins/hunspell/kspell_hunspell.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -57,6 +57,7 @@
- Name[pt_BR]=Hunspell
- Name[ro]=Hunspell
- Name[ru]=Hunspell
-+Name[se]=Hunspell
- Name[sk]=Hunspell
- Name[sl]=Hunspell
- Name[sr]=Ханспел
-Index: CMakeLists.txt
-===================================================================
---- CMakeLists.txt	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -110,8 +110,8 @@
- macro_optional_find_package(QCA2)
- macro_log_feature(QCA2_FOUND "QCA2" "Qt Cryptographic Architecture" "http://delta.affinix.com/qca" FALSE "2.0.0" "Needed for the plasma remote widgets functionality.")
- 
--find_package(DBusMenuQt)
--macro_log_feature(DBUSMENUQT_FOUND "DBusMenuQt" "API to import export QMenu instance using DBusMenu protocol" "git clone git://gitorious.org/dbusmenu/dbusmenu-qt.git" TRUE "" "dbusmenu-qt is a standalone library providing a way to import and export QMenu instances using the DBusMenu protocol.")
-+macro_optional_find_package(DBusMenuQt)
-+macro_log_feature(DBUSMENUQT_FOUND "DBusMenuQt" "API to import export QMenu instance using DBusMenu protocol" "http://people.canonical.com/~agateau/dbusmenu/" FALSE "" "dbusmenu-qt is a standalone library providing a way to import and export QMenu instances using the DBusMenu protocol.")
- 
- ################# Disallow in-source build #################
- 
-Index: kdeui/tests/klineedit_unittest.cpp
-===================================================================
---- kdeui/tests/klineedit_unittest.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/tests/klineedit_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -174,30 +174,41 @@
-     void testCompletionBox()
-     {
-         KLineEdit w;
--        w.setText("K");
-+        w.setText("/");
-         w.setCompletionMode(KGlobalSettings::CompletionPopup);
-         KCompletion completion;
-         completion.setSoundsEnabled(false);
-         w.setCompletionObject(&completion);
-         QStringList items;
--        items << "KDE is cool" << "KDE is really cool";
-+        items << "/home/" << "/hold/";
-         completion.setItems(items);
--        QTest::keyClick(&w, 'D', Qt::ShiftModifier);
--        QCOMPARE(w.text(), QString::fromLatin1("KD"));
-+        QTest::keyClick(&w, 'h');
-+        QCOMPARE(w.text(), QString::fromLatin1("/h"));
-         QCOMPARE(w.completionBox()->currentRow(), -1);
--        QTest::keyClick(&w, 'E', Qt::ShiftModifier);
--        QCOMPARE(w.text(), QString::fromLatin1("KDE"));
-+        QCOMPARE(w.completionBox()->items(), items);
-+        QTest::keyClick(&w, 'o');
-+        QCOMPARE(w.text(), QString::fromLatin1("/ho"));
-         QCOMPARE(w.completionBox()->currentRow(), -1);
-         w.completionBox()->up(); // no-op
--        QCOMPARE(w.text(), QString::fromLatin1("KDE"));
-+        QCOMPARE(w.text(), QString::fromLatin1("/ho"));
-         w.completionBox()->down(); // select 1st item
-         QCOMPARE(w.text(), items.at(0));
-         w.completionBox()->down(); // select 2nd item
-         QCOMPARE(w.text(), items.at(1));
--        w.completionBox()->up();
-+        w.completionBox()->up();   // select 1st item again
-         QCOMPARE(w.text(), items.at(0));
-         w.completionBox()->up(); // no-op
-         QCOMPARE(w.text(), items.at(0));
-+
-+        QStringList newItems;
-+        newItems << "/home/kde";
-+        completion.setItems(newItems);
-+        QTest::keyClick(&w, 'k');
-+        QCOMPARE(w.text(), QString("/home/k"));
-+        //QCOMPARE(w.completionBox()->currentRow(), -1); // #247552
-+        w.completionBox()->down(); // select the item
-+        QCOMPARE(w.completionBox()->items(), newItems);
-+        QCOMPARE(w.text(), newItems.at(0));
-     }
- 
-     void testPaste()
-Index: kdeui/widgets/klanguagebutton.cpp
-===================================================================
---- kdeui/widgets/klanguagebutton.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/widgets/klanguagebutton.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -32,7 +32,7 @@
- 
- static void checkInsertPos( QMenu *popup, const QString &str, int &index )
- {
--  if ( index == -1 )
-+  if ( index != -1 )
-     return;
- 
-   int a = 0;
-@@ -149,7 +149,7 @@
-   QAction *a = new QAction(QIcon(), text, this);
-   a->setData(languageCode);
-   if ( index >= 0 && index < d->popup->actions().count()-1)
--    d->popup->insertAction(a, d->popup->actions()[index]);
-+    d->popup->insertAction(d->popup->actions()[index], a);
-   else
-     d->popup->addAction(a);
-   d->ids.append(languageCode);
-Index: kdeui/widgets/klineedit.cpp
-===================================================================
---- kdeui/widgets/klineedit.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/widgets/klineedit.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -126,6 +126,18 @@
-         }
-     }
- 
-+    // This is called when the lineedit is readonly.
-+    // Either from setReadOnly() itself, or when we realize that
-+    // we became readonly and setReadOnly() wasn't called (because it's not virtual)
-+    // Typical case: comboBox->lineEdit()->setReadOnly(true)
-+    void adjustForReadOnly()
-+    {
-+        if (style && style.data()->m_overlap) {
-+            style.data()->m_overlap = 0;
++    Q_D(KSelectAction);
++    if (event->type() == QEvent::ActionChanged) {
++        Q_FOREACH(KComboBox* comboBox, d->m_comboBoxes) {
++            comboBox->setToolTip(toolTip());
++            comboBox->setWhatsThis(whatsThis());
++            comboBox->setStatusTip(statusTip());
++        }
++        Q_FOREACH(QToolButton* toolButton, d->m_buttons) {
++            toolButton->setToolTip(toolTip());
++            toolButton->setWhatsThis(whatsThis());
++            toolButton->setStatusTip(statusTip());
 +        }
 +    }
++    return KAction::event(event);
++}
 +
-+
+ // KSelectAction::eventFilter() is called before action->setChecked()
+ // invokes the signal to update QActionGroup so KSelectAction::currentItem()
+ // returns an old value.  There are 3 possibilities, where n actions will
+@@ -630,6 +651,7 @@
+ 
+ // A plain "QVariant (action)" results in a bool being stored.  So all
+ // QAction pointers become stored as "true".  This hacks around it.
++// TODO this is bogus, just use Q_DECLARE_METATYPE and qVariantFromValue(action)
+ static QVariant QVariantFromQAction (QAction *action)
+ {
+     // "(void *)" or "long" would be smaller than "qlonglong"
+Index: kdeui/actions/kselectaction.h
+===================================================================
+--- kdeui/actions/kselectaction.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdeui/actions/kselectaction.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -321,7 +321,7 @@
+ 
+ Q_SIGNALS:
      /**
-      * Checks whether we should/should not consume a key used as a shortcut.
-      * This makes it possible to handle shortcuts in the focused widget before any
-@@ -308,11 +320,16 @@
-     return s;
- }
+-     * This signal is emitted when an item is selected; @param action 
++     * This signal is emitted when an item is selected; @param action
+      * indicates the item selected.
+      */
+     void triggered( QAction* action );
+@@ -360,6 +360,8 @@
+      */
+     virtual void deleteWidget(QWidget *widget);
  
-+// Decides whether to show or hide the icon; called when the text changes
- void KLineEdit::updateClearButtonIcon(const QString& text)
- {
--    if (!d->clearButton || isReadOnly()) {
-+    if (!d->clearButton) {
-         return;
-     }
-+    if (isReadOnly()) {
-+        d->adjustForReadOnly();
-+        return;
-+    }
- 
-     int clearButtonState = KIconLoader::DefaultState;
- 
-@@ -332,14 +349,19 @@
-         d->clearButton->setPixmap(SmallIcon("edit-clear-locationbar-ltr", 0, clearButtonState));
-     }
- 
--    d->clearButton->setVisible(text.length());
-+    d->clearButton->setVisible(text.length() > 0);
- }
- 
-+// Determine geometry of clear button. Called initially, and on resizeEvent.
- void KLineEdit::updateClearButton()
- {
--    if (!d->clearButton || isReadOnly()) {
-+    if (!d->clearButton) {
-         return;
-     }
-+    if (isReadOnly()) {
-+        d->adjustForReadOnly();
-+        return;
-+    }
- 
-     const QSize geom = size();
-     const int frameWidth = style()->pixelMetric(QStyle::PM_DefaultFrameWidth,0,this);
-@@ -515,9 +537,7 @@
- 
-         if (d->clearButton) {
-             d->clearButton->animateVisible(false);
--            if (d->style) {
--                d->style.data()->m_overlap = 0;
--            }
-+            d->adjustForReadOnly();
-         }
-     } else {
-         if (!d->squeezedText.isEmpty()) {
-@@ -1364,7 +1384,7 @@
- 
-             kleStyle->m_subStyle = style();
-             // this guards against "wrap around" where another style, e.g. QStyleSheetStyle,
--            // is setting the style on QEvent::StyleChange 
-+            // is setting the style on QEvent::StyleChange
-             d->lastStyleClass = QLatin1String(style()->metaObject()->className());
-             setStyle(kleStyle);
-             d->lastStyleClass.clear();
-@@ -1551,11 +1571,12 @@
-             const QList<QListWidgetItem*> matchedItems = d->completionBox->findItems(currentSelection, Qt::MatchExactly);
-             QListWidgetItem* matchedItem = matchedItems.isEmpty() ? 0 : matchedItems.first();
- 
--            if ( matchedItem )
--            {
-+            if (matchedItem) {
-                 const bool blocked = d->completionBox->blockSignals( true );
-                 d->completionBox->setCurrentItem( matchedItem );
-                 d->completionBox->blockSignals( blocked );
-+            } else {
-+                d->completionBox->setCurrentRow(-1);
-             }
-         }
-         else // completion box not visible yet -> show it
-Index: kdeui/notifications/kstatusnotifieritem.cpp
-===================================================================
---- kdeui/notifications/kstatusnotifieritem.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/notifications/kstatusnotifieritem.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -18,6 +18,8 @@
-    Boston, MA 02110-1301, USA.
- */
- 
-+#include "config.h"
++    virtual bool event(QEvent *event);
 +
- #include "kstatusnotifieritem.h"
- #include "kstatusnotifieritemprivate_p.h"
- #include "kstatusnotifieritemdbus_p.h"
-@@ -45,12 +47,15 @@
+     virtual bool eventFilter (QObject *watched, QEvent *event);
  
- #include <netinet/in.h>
- 
-+#ifdef HAVE_DBUSMENUQT
- #include <dbusmenuexporter.h>
+     /**
+Index: kdeui/tests/kselectaction_unittest.h
+===================================================================
+--- kdeui/tests/kselectaction_unittest.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
++++ kdeui/tests/kselectaction_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -0,0 +1,43 @@
++/* This file is part of the KDE libraries
++    Copyright (c) 2009 Daniel Calviño Sánchez <danxuliu@gmail.com>
++
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Library General Public
++    License as published by the Free Software Foundation; either
++    version 2 of the License, or (at your option) any later version.
++
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Library General Public License for more details.
++
++    You should have received a copy of the GNU Library General Public License
++    along with this library; see the file COPYING.LIB.  If not, write to
++    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
++    Boston, MA 02110-1301, USA.
++*/
++
++#ifndef KSELECTACTION_UNITTEST_H
++#define KSELECTACTION_UNITTEST_H
++
++#include <QtCore/QObject>
++
++class KSelectAction_UnitTest : public QObject
++{
++    Q_OBJECT
++
++private Q_SLOTS:
++
++    void testSetToolTipBeforeRequestingComboBoxWidget();
++    void testSetToolTipAfterRequestingComboBoxWidget();
++    void testSetToolTipBeforeRequestingToolButtonWidget();
++    void testSetToolTipAfterRequestingToolButtonWidget();
++    
++    void testSetWhatsThisBeforeRequestingComboBoxWidget();
++    void testSetWhatsThisAfterRequestingComboBoxWidget();
++    void testSetWhatsThisBeforeRequestingToolButtonWidget();
++    void testSetWhatsThisAfterRequestingToolButtonWidget();
++
++};
++
 +#endif
- 
- #include "statusnotifieritemadaptor.h"
- 
- static const QString s_statusNotifierWatcherServiceName("org.kde.StatusNotifierWatcher");
- 
-+#ifdef HAVE_DBUSMENUQT
- /**
-  * Specialization to provide access to KDE icon names
-  */
-@@ -97,6 +102,7 @@
- #endif
-     }
- };
-+#endif // HAVE_DBUSMENUQT
- 
- KStatusNotifierItem::KStatusNotifierItem(QObject *parent)
-       : QObject(parent),
-@@ -373,17 +379,21 @@
-     if (d->systemTrayIcon) {
-         d->systemTrayIcon->setContextMenu(menu);
-     } else if (d->menu != menu) {
-+#ifdef HAVE_DBUSMENUQT
-         if (getenv("KSNI_NO_DBUSMENU")) {
-+#endif // HAVE_DBUSMENUQT
-             // This is a hack to make it possible to disable DBusMenu in an
-             // application. The string "/NO_DBUSMENU" must be the same as in
-             // DBusSystemTrayWidget::findDBusMenuInterface() in the Plasma
-             // systemtray applet.
-             d->menuObjectPath = "/NO_DBUSMENU";
-             menu->installEventFilter(this);
-+#ifdef HAVE_DBUSMENUQT
-         } else {
-             d->menuObjectPath = "/MenuBar";
-             new KDBusMenuExporter(d->menuObjectPath, menu, d->statusNotifierItemDBus->dbusConnection());
-         }
-+#endif // HAVE_DBUSMENUQT
- 
-         connect(menu, SIGNAL(aboutToShow()), this, SLOT(contextMenuAboutToShow()));
-     }
-Index: kdeui/icons/kicontheme.cpp
+Index: kdeui/tests/kselectaction_unittest.cpp
 ===================================================================
---- kdeui/icons/kicontheme.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/icons/kicontheme.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -133,7 +133,6 @@
-     QStringList icnlibs;
-     QStringList::ConstIterator it, itDir;
-     QStringList themeDirs;
--    QString cDir;
-     QSet<QString> addedDirs; // Used for avoiding duplicates.
- 
-     // Applications can have local additions to the global "locolor" and
-@@ -144,7 +143,7 @@
-        ( name == defaultThemeName() || name== "hicolor" || name == "locolor" ) ) {
-         icnlibs = KGlobal::dirs()->resourceDirs("data");
-         for (it=icnlibs.constBegin(); it!=icnlibs.constEnd(); ++it) {
--            cDir = *it + appName + "/icons/" + name;
-+            const QString cDir = *it + appName + "/icons/" + name;
-             if (QFile::exists( cDir )) {
-                 themeDirs += cDir + '/';
-             }
-@@ -154,33 +153,35 @@
- 
-     icnlibs = KGlobal::dirs()->resourceDirs("icon")
-         << KGlobal::dirs()->resourceDirs("xdgdata-icon")
--        << "/usr/share/pixmaps"
-+        << "/usr/share/pixmaps/"
-         // These are not in the icon spec, but e.g. GNOME puts some icons there anyway.
-         << KGlobal::dirs()->resourceDirs("xdgdata-pixmap");
-+    icnlibs.removeDuplicates();
+--- kdeui/tests/kselectaction_unittest.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
++++ kdeui/tests/kselectaction_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -0,0 +1,175 @@
++/* This file is part of the KDE libraries
++    Copyright (c) 2009 Daniel Calviño Sánchez <danxuliu@gmail.com>
 +
-+    QString fileName, mainSection;
-     for (it=icnlibs.constBegin(); it!=icnlibs.constEnd(); ++it) {
--        cDir = *it + name + '/';
-+        const QString cDir = *it + name + '/';
-         if (KStandardDirs::exists(cDir)) {
-             themeDirs += cDir;
--            if (d->mDir.isEmpty() &&
--                (KStandardDirs::exists( cDir + "index.desktop") || KStandardDirs::exists( cDir + "index.theme"))) {
--                d->mDir = cDir;
-+            if (d->mDir.isEmpty()) {
-+                if (KStandardDirs::exists(cDir + "index.theme")) {
-+                    d->mDir = cDir;
-+                    fileName = d->mDir + "index.theme";
-+                    mainSection = "Icon Theme";
-+                } else if (KStandardDirs::exists(cDir + "index.desktop")) {
-+                    d->mDir = cDir;
-+                    fileName = d->mDir + "index.desktop";
-+                    mainSection = "KDE Icon Theme";
-+                }
-             }
-         }
-     }
- 
-     if (d->mDir.isEmpty()) {
--        kDebug(264) << "Icon theme " << name << " not found.\n";
-+        kDebug(264) << "Icon theme" << name << "not found.";
-         return;
-     }
- 
--    QString fileName, mainSection;
--    if (QFile::exists(d->mDir + "index.desktop")) {
--        fileName = d->mDir + "index.desktop";
--        mainSection="KDE Icon Theme";
--    } else {
--        fileName = d->mDir + "index.theme";
--        mainSection="Icon Theme";
--    }
-     // Use KSharedConfig to avoid parsing the file many times, from each kinstance.
-     // Need to keep a ref to it to make this useful
-     d->sharedConfig = KSharedConfig::openConfig(fileName);
-@@ -207,7 +208,7 @@
-         KConfigGroup cg(d->sharedConfig, *it);
-         for (itDir=themeDirs.constBegin(); itDir!=themeDirs.constEnd(); ++itDir) {
-             const QString currentDir(*itDir + *it + '/');
--            if (KStandardDirs::exists(currentDir) && !addedDirs.contains(currentDir)) {
-+            if (!addedDirs.contains(currentDir) && KStandardDirs::exists(currentDir)) {
-                 addedDirs.insert(currentDir);
-                 KIconThemeDir *dir = new KIconThemeDir(*itDir, *it, cg);
-                 if (!dir->isValid()) {
-@@ -636,7 +637,7 @@
- {
-     mbValid = false;
-     mBaseDirThemeDir = basedir + themedir;
--    
++    This library is free software; you can redistribute it and/or
++    modify it under the terms of the GNU Library General Public
++    License as published by the Free Software Foundation; either
++    version 2 of the License, or (at your option) any later version.
 +
-     mSize = config.readEntry("Size", 0);
-     mMinSize = 1;    // just set the variables to something
-     mMaxSize = 50;   // meaningful in case someone calls minSize or maxSize
-Index: kdeui/icons/kiconcache.cpp
++    This library is distributed in the hope that it will be useful,
++    but WITHOUT ANY WARRANTY; without even the implied warranty of
++    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++    Library General Public License for more details.
++
++    You should have received a copy of the GNU Library General Public License
++    along with this library; see the file COPYING.LIB.  If not, write to
++    the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
++    Boston, MA 02110-1301, USA.
++*/
++
++#include "kselectaction_unittest.h"
++#include "kselectaction_unittest.moc"
++#include "qtest_kde.h"
++#include <kselectaction.h>
++#include <kcombobox.h>
++#include <qtoolbar.h>
++
++QTEST_KDEMAIN( KSelectAction_UnitTest, GUI )
++
++void KSelectAction_UnitTest::testSetToolTipBeforeRequestingComboBoxWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::ComboBoxMode);
++    selectAction.setToolTip("Test");
++    selectAction.setEnabled(false); // also test disabling the action
++
++    QWidget parent;
++    QWidget* widget = selectAction.requestWidget(&parent);
++
++    QVERIFY(widget);
++    KComboBox* comboBox = qobject_cast<KComboBox*>(widget);
++    QVERIFY(comboBox);
++    QCOMPARE(comboBox->toolTip(), QString("Test"));
++    QCOMPARE(comboBox->isEnabled(), false);
++}
++
++void KSelectAction_UnitTest::testSetToolTipAfterRequestingComboBoxWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::ComboBoxMode);
++
++    QWidget parent;
++    QWidget* widget = selectAction.requestWidget(&parent);
++
++    selectAction.setToolTip("Test");
++    selectAction.setEnabled(false); // also test disabling the action
++
++    QVERIFY(widget);
++    KComboBox* comboBox = qobject_cast<KComboBox*>(widget);
++    QVERIFY(comboBox);
++    QCOMPARE(comboBox->toolTip(), QString("Test"));
++    QCOMPARE(comboBox->isEnabled(), false);
++}
++
++void KSelectAction_UnitTest::testSetToolTipBeforeRequestingToolButtonWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::MenuMode);
++    selectAction.setToolTip("Test");
++
++    QToolBar toolBar;
++    //Don't use requestWidget, as it needs a releaseWidget when used in MenuMode
++    //(in ComboBoxMode the widget is released automatically when it is
++    //destroyed). When the action is added to the QToolBar, it requests and
++    //releases the widget as needed.
++    toolBar.addAction(&selectAction);
++    QWidget* widget = toolBar.widgetForAction(&selectAction);
++
++    QVERIFY(widget);
++    QToolButton* toolButton = qobject_cast<QToolButton*>(widget);
++    QVERIFY(toolButton);
++    QCOMPARE(toolButton->toolTip(), QString("Test"));
++}
++
++void KSelectAction_UnitTest::testSetToolTipAfterRequestingToolButtonWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::MenuMode);
++
++    QToolBar toolBar;
++    //Don't use requestWidget, as it needs a releaseWidget when used in MenuMode
++    //(in ComboBoxMode the widget is released automatically when it is
++    //destroyed). When the action is added to the QToolBar, it requests and
++    //releases the widget as needed.
++    toolBar.addAction(&selectAction);
++    QWidget* widget = toolBar.widgetForAction(&selectAction);
++
++    selectAction.setToolTip("Test");
++
++    QVERIFY(widget);
++    QToolButton* toolButton = qobject_cast<QToolButton*>(widget);
++    QVERIFY(toolButton);
++    QCOMPARE(toolButton->toolTip(), QString("Test"));
++}
++
++void KSelectAction_UnitTest::testSetWhatsThisBeforeRequestingComboBoxWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::ComboBoxMode);
++    selectAction.setWhatsThis("Test");
++
++    QWidget parent;
++    QWidget* widget = selectAction.requestWidget(&parent);
++
++    QVERIFY(widget);
++    KComboBox* comboBox = qobject_cast<KComboBox*>(widget);
++    QVERIFY(comboBox);
++    QCOMPARE(comboBox->whatsThis(), QString("Test"));
++}
++
++void KSelectAction_UnitTest::testSetWhatsThisAfterRequestingComboBoxWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::ComboBoxMode);
++
++    QWidget parent;
++    QWidget* widget = selectAction.requestWidget(&parent);
++
++    selectAction.setWhatsThis("Test");
++
++    QVERIFY(widget);
++    KComboBox* comboBox = qobject_cast<KComboBox*>(widget);
++    QVERIFY(comboBox);
++    QCOMPARE(comboBox->whatsThis(), QString("Test"));
++}
++
++void KSelectAction_UnitTest::testSetWhatsThisBeforeRequestingToolButtonWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::MenuMode);
++    selectAction.setWhatsThis("Test");
++
++    QToolBar toolBar;
++    //Don't use requestWidget, as it needs a releaseWidget when used in MenuMode
++    //(in ComboBoxMode the widget is released automatically when it is
++    //destroyed). When the action is added to the QToolBar, it requests and
++    //releases the widget as needed.
++    toolBar.addAction(&selectAction);
++    QWidget* widget = toolBar.widgetForAction(&selectAction);
++
++    QVERIFY(widget);
++    QToolButton* toolButton = qobject_cast<QToolButton*>(widget);
++    QVERIFY(toolButton);
++    QCOMPARE(toolButton->whatsThis(), QString("Test"));
++}
++
++void KSelectAction_UnitTest::testSetWhatsThisAfterRequestingToolButtonWidget()
++{
++    KSelectAction selectAction("selectAction", 0);
++    selectAction.setToolBarMode(KSelectAction::MenuMode);
++
++    QToolBar toolBar;
++    //Don't use requestWidget, as it needs a releaseWidget when used in MenuMode
++    //(in ComboBoxMode the widget is released automatically when it is
++    //destroyed). When the action is added to the QToolBar, it requests and
++    //releases the widget as needed.
++    toolBar.addAction(&selectAction);
++    QWidget* widget = toolBar.widgetForAction(&selectAction);
++
++    selectAction.setWhatsThis("Test");
++
++    QVERIFY(widget);
++    QToolButton* toolButton = qobject_cast<QToolButton*>(widget);
++    QVERIFY(toolButton);
++    QCOMPARE(toolButton->whatsThis(), QString("Test"));
++}
+Index: kdeui/tests/CMakeLists.txt
 ===================================================================
---- kdeui/icons/kiconcache.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/icons/kiconcache.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -190,16 +190,17 @@
- {
-     // Find all possible icontheme dirs
-     // This has been taken from kicontheme.cpp
--    const QStringList icondirs = KGlobal::dirs()->resourceDirs("icon")
-+    QStringList icondirs = KGlobal::dirs()->resourceDirs("icon")
-             << KGlobal::dirs()->resourceDirs("xdgdata-icon")
--            << "/usr/share/pixmaps"
-+            << "/usr/share/pixmaps/"
-             // These are not in the icon spec, but e.g. GNOME puts some icons there anyway.
-             << KGlobal::dirs()->resourceDirs("xdgdata-pixmap");
-+    icondirs.removeDuplicates();
- 
-     // Check which of theme actually contain existing dir of one of the
-     //  given themes
-     QSet<QString> dirs;
--    for (QStringList::ConstIterator it = icondirs.begin(); it != icondirs.end(); ++it) {
-+    for (QStringList::ConstIterator it = icondirs.constBegin(); it != icondirs.constEnd(); ++it) {
-         QStringList::ConstIterator themeIt;
-         for (themeIt = themeNames.begin(); themeIt != themeNames.end(); ++themeIt) {
-             QString dirName = *it + *themeIt + '/';
-Index: kdeui/itemviews/kmodelindexproxymapper.cpp
-===================================================================
---- kdeui/itemviews/kmodelindexproxymapper.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/itemviews/kmodelindexproxymapper.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -124,7 +124,7 @@
- 
-     if (targetIndex != -1)
-     {
--      m_proxyChainDown = proxyChainDown.mid(targetIndex, proxyChainDown.size());
-+      m_proxyChainDown = proxyChainDown.mid(targetIndex + 1, proxyChainDown.size());
-       return;
-     }
-   }
-Index: kdeui/itemviews/kselectionproxymodel.h
-===================================================================
---- kdeui/itemviews/kselectionproxymodel.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/itemviews/kselectionproxymodel.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -310,10 +310,7 @@
-     Q_PRIVATE_SLOT(d_func(), void sourceDataChanged(const QModelIndex &, const QModelIndex &))
-     Q_PRIVATE_SLOT(d_func(), void selectionChanged(const QItemSelection & selected, const QItemSelection & deselected))
-     Q_PRIVATE_SLOT(d_func(), void sourceModelDestroyed())
--    Q_PRIVATE_SLOT(d_func(), void selectionModelSourceAboutToBeReset())
--    Q_PRIVATE_SLOT(d_func(), void selectionModelSourceReset())
- 
--
-     //@endcond
- 
- };
-Index: kdeui/itemviews/kselectionproxymodel.cpp
-===================================================================
---- kdeui/itemviews/kselectionproxymodel.cpp	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/itemviews/kselectionproxymodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -396,6 +396,7 @@
-             m_rowsRemoved(false),
-             m_rowsMoved(false),
-             m_resetting(false),
-+            m_doubleResetting(false),
-             m_ignoreNextLayoutAboutToBeChanged(false),
-             m_ignoreNextLayoutChanged(false),
-             m_selectionModel(selectionModel),
-@@ -517,8 +518,6 @@
- 
-     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
-     void sourceModelDestroyed();
--    void selectionModelSourceAboutToBeReset();
--    void selectionModelSourceReset();
- 
-     void resetInternalData();
- 
-@@ -558,6 +557,7 @@
-     QPair<int, int> m_proxyRemoveRows;
-     bool m_rowsMoved;
-     bool m_resetting;
-+    bool m_doubleResetting;
-     bool m_layoutChanging;
-     bool m_ignoreNextLayoutAboutToBeChanged;
-     bool m_ignoreNextLayoutChanged;
-@@ -797,8 +797,14 @@
-     // sourceModelReset
-     // sourceModelReset
-     // So we ensure that we just emit one.
--    if (m_resetting)
-+    if (m_resetting) {
-+
-+      // If both the source model and the selection source model are reset,
-+      // We want to begin our reset before the first one is reset and end
-+      // it after the second one is reset.
-+      m_doubleResetting = true;
-       return;
-+    }
- 
-     q->beginResetModel();
-     m_resetting = true;
-@@ -808,39 +814,15 @@
- {
-     Q_Q(KSelectionProxyModel);
- 
--    if (!m_resetting)
-+    if (m_doubleResetting) {
-+      m_doubleResetting = false;
-       return;
-+    }
- 
--    // No need to try to refill this. When the model is reset it doesn't have a meaningful selection anymore,
--    // but when it gets one we'll be notified anyway.
--    m_selectionModel->clear();
-     resetInternalData();
--    m_resetting = false;
--    q->endResetModel();
--}
--
--void KSelectionProxyModelPrivate::selectionModelSourceAboutToBeReset()
--{
--    Q_Q(KSelectionProxyModel);
--
--    if (m_resetting)
--      return;
--
--    q->beginResetModel();
--    m_resetting = true;
--}
--
--void KSelectionProxyModelPrivate::selectionModelSourceReset()
--{
--    Q_Q(KSelectionProxyModel);
--
--    if (!m_resetting)
--      return;
--
-     // No need to try to refill this. When the model is reset it doesn't have a meaningful selection anymore,
-     // but when it gets one we'll be notified anyway.
--    m_selectionModel->clear();
--    resetInternalData();
-+    m_selectionModel->reset();
-     m_resetting = false;
-     q->endResetModel();
- }
-@@ -1130,13 +1112,22 @@
- 
- void KSelectionProxyModelPrivate::endRemoveRows(const QModelIndex &sourceParent, int proxyStart, int proxyEnd)
- {
--    const QModelIndex proxyParent = mapParentFromSource(sourceParent);
-+    // We need to make sure to remove entries from the mappings before updating internal indexes.
- 
--    if (proxyParent.isValid())
--        updateInternalIndexes(proxyParent, proxyEnd + 1, -1*(proxyEnd - proxyStart + 1));
--    else
--        updateInternalTopIndexes(proxyEnd + 1, -1*(proxyEnd - proxyStart + 1));
-+    // - A
-+    // - - B
-+    // - C
-+    // - - D
- 
-+    // If A and C are selected, B and D are in the proxy. B maps to row 0 and D maps to row 1.
-+    // If B is then deleted leaving only D in the proxy, D needs to be updated to be a mapping
-+    // to row 0 instead of row 1. If that is done before removing the mapping for B, then the mapping
-+    // for D would overwrite the mapping for B and then the code for removing mappings would incorrectly
-+    // remove D.
-+    // So we first remove B and then update D.
-+
-+    const QModelIndex proxyParent = mapParentFromSource(sourceParent);
-+
-     {
-         SourceProxyIndexMapping::right_iterator it = m_mappedParents.rightBegin();
- 
-@@ -1175,6 +1166,12 @@
-         }
-     }
- 
-+    if (proxyParent.isValid())
-+        updateInternalIndexes(proxyParent, proxyEnd + 1, -1*(proxyEnd - proxyStart + 1));
-+    else
-+        updateInternalTopIndexes(proxyEnd + 1, -1*(proxyEnd - proxyStart + 1));
-+
-+
-     QList<QPersistentModelIndex>::iterator rootIt = m_rootIndexList.begin();
-     while (rootIt != m_rootIndexList.end()) {
-         if (!rootIt->isValid())
-@@ -1824,19 +1821,15 @@
-     if (_sourceModel == sourceModel())
-         return;
- 
-+    disconnect(d->m_selectionModel->model(), SIGNAL(modelAboutToBeReset()), this, SLOT(sourceModelAboutToBeReset()));
-+    connect(d->m_selectionModel->model(), SIGNAL(modelAboutToBeReset()), this, SLOT(sourceModelAboutToBeReset()));
-+    disconnect(d->m_selectionModel->model(), SIGNAL(modelReset()), this, SLOT(sourceModelReset()));
-+    connect(d->m_selectionModel->model(), SIGNAL(modelReset()), this, SLOT(sourceModelReset()));
- 
-     disconnect(d->m_selectionModel, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-             this, SLOT(selectionChanged(const QItemSelection &, const QItemSelection &)));
-     connect(d->m_selectionModel, SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-             SLOT(selectionChanged(const QItemSelection &, const QItemSelection &)));
--    disconnect(d->m_selectionModel->model(), SIGNAL(modelAboutToBeReset()),
--            this, SLOT(selectionModelSourceAboutToBeReset()));
--    connect(d->m_selectionModel->model(), SIGNAL(modelAboutToBeReset()),
--            this, SLOT(selectionModelSourceAboutToBeReset()));
--    disconnect(d->m_selectionModel->model(), SIGNAL(modelReset()),
--            this, SLOT(selectionModelSourceReset()));
--    connect(d->m_selectionModel->model(), SIGNAL(modelReset()),
--            this, SLOT(selectionModelSourceReset()));
- 
-     beginResetModel();
-     d->m_resetting = true;
-Index: kdeui/CMakeLists.txt
-===================================================================
---- kdeui/CMakeLists.txt	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdeui/CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -1,6 +1,14 @@
- 
- project(kdeui)
- 
-+if ( DBUSMENUQT_FOUND )
-+   set( _kdeui_DBUSMENUQT_INCLUDE_DIR ${DBUSMENUQT_INCLUDE_DIR} )
-+   set( _kdeui_DBUSMENUQT_LIBRARIES ${DBUSMENUQT_LIBRARIES} )
-+else ( DBUSMENUQT_FOUND )
-+   set( _kdeui_DBUSMENUQT_INCLUDE_DIR )
-+   set( _kdeui_DBUSMENUQT_LIBRARIES )
-+endif ( DBUSMENUQT_FOUND )
-+
- include_directories(
-  ${CMAKE_SOURCE_DIR}/interfaces
-  ${CMAKE_SOURCE_DIR}/interfaces/kregexpeditor
-@@ -26,7 +34,7 @@
-  ${CMAKE_CURRENT_SOURCE_DIR}/widgets
-  ${CMAKE_CURRENT_SOURCE_DIR}/windowmanagement
-  ${CMAKE_CURRENT_SOURCE_DIR}/xmlgui
-- ${DBUSMENUQT_INCLUDE_DIR}
-+ ${_kdeui_DBUSMENUQT_INCLUDE_DIR}
+--- kdeui/tests/CMakeLists.txt	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdeui/tests/CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -65,6 +65,7 @@
+   ktabwidget_unittest
+   ktoolbar_unittest
+   krichtextedittest
++  kselectaction_unittest
  )
  
- add_subdirectory( about )
-@@ -352,7 +360,7 @@
- 
- kde4_add_library(kdeui SHARED ${kdeui_LIB_SRCS})
- 
--target_link_libraries(kdeui  ${QT_QTSVG_LIBRARY} ${KDE4_KDECORE_LIBS} ${X11_LIBRARIES} ${QT_QTGUI_LIBRARY} ${QT_QTXML_LIBRARY} ${DBUSMENUQT_LIBRARIES})
-+target_link_libraries(kdeui  ${QT_QTSVG_LIBRARY} ${KDE4_KDECORE_LIBS} ${X11_LIBRARIES} ${QT_QTGUI_LIBRARY} ${QT_QTXML_LIBRARY} ${_kdeui_DBUSMENUQT_LIBRARIES})
- 
- if(MINGW)
-    target_link_libraries(kdeui gdi32 oleaut32)
-Index: kdewebkit/kwebview_p.h
+ KDEUI_PROXYMODEL_TESTS(
+Index: kdeui/widgets/kcombobox.cpp
 ===================================================================
---- kdewebkit/kwebview_p.h	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdewebkit/kwebview_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -36,6 +36,8 @@
- #include <kurl.h>
- #include <kurifilter.h>
+--- kdeui/widgets/kcombobox.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
++++ kdeui/widgets/kcombobox.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+@@ -175,17 +175,9 @@
+         d->klineEdit->rotateText( type );
+ }
  
-+#define QL1S(x)   QLatin1String(x)
-+
- template <class T>
- class KWebViewPrivate
++// Not needed anymore
+ bool KComboBox::eventFilter( QObject* o, QEvent* ev )
  {
-@@ -111,14 +113,22 @@
-                 return true;
- 
-             if (!hitTest.linkUrl().isValid() && !hitTest.isContentEditable() && !page->isModified()) {
--                const QClipboard *clipboard = QApplication::clipboard();
--                const QString clipboardText (clipboard->text(QClipboard::Selection));
-+                QString subType (QLatin1String("plain"));
-+                const QString clipboardText = QApplication::clipboard()->text(subType, QClipboard::Selection);
-                 if (!clipboardText.isEmpty()) {
--                    KUriFilterData data (clipboardText.left(256).trimmed());
-+                    KUriFilterData data (clipboardText.left(250).trimmed());
-                     data.setCheckForExecutables(false); // don't allow executables...
--                    if ((KUriFilter::self()->filterUri(data, QStringList() << "kshorturifilter") ||
--                         KUriFilter::self()->filterUri(data, QStringList() << "kuriikwsfilter")) &&
--                        data.uriType() == KUriFilterData::NetProtocol) {
-+                    if (KUriFilter::self()->filterUri(data, QStringList(QL1S("kshorturifilter")))) {
-+                        switch (data.uriType()) {
-+                        case KUriFilterData::LocalFile:
-+                        case KUriFilterData::LocalDir:
-+                        case KUriFilterData::NetProtocol:
-+                            emit q->selectionClipboardUrlPasted(data.uri());
-+                            return true;
-+                        default:
-+                            break;
-+                        }
-+                    } else if (KUriFilter::self()->filterUri(data, QStringList(QL1S("kuriikwsfilter")))) {
-                         emit q->selectionClipboardUrlPasted(data.uri());
-                         return true;
-                     }
-Index: kdewebkit/ISSUES
-===================================================================
---- kdewebkit/ISSUES	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ kdewebkit/ISSUES	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -1,37 +1,38 @@
- Known Issues [PENDING]:
- ===========================
--* [kdewebkit] Handling unsupported content always requires more than one
--  connection to the same server to download a single request. The fix for
--  this requires an upstream patch that allows us to determine the content
--  types by the rendering engine, i.e. webkit.
--  See https://bugs.webkit.org/show_bug.cgi?id=37880
-+* [QtWebKit] HTML 5 <video> tag will not properly work for most users depending
-+  on how their distro created their Qt library package. As a result of differences
-+  between the Phonon library needed by KDE and bundled with Qt, most distros opt for
-+  disabling Phonon support (-no-phonon) when compiling Qt and simply use the Phonon
-+  libraries from kdesupport to ensure multimedia in KDE is functional. Unfortunately,
-+  compiling Qt without phonon support means no HTML 5 <video> support in the QtWebKit
-+  module. This is supposed to change in some future release, perhaps QtWebKit 2.1 ??
-+  For more details see the links below:
-+    http://bugreports.qt.nokia.com/browse/QTWEBKIT-9
-+    http://webkit.org/b/34631.
- 
--* [QtWebKit] HTML 5 <video> tag will not work properly until Qt 4.7 for most users
--  depending on how their distro created their Qt library package. As a result of
--  differences between the Phonon library needed by KDE and bundled with Qt, most
--  distros opt for disabling Phonon support (-no-phonon) when compiling Qt and simply
--  use the Phonon libraries from kdesupport to ensure multimedia in KDE is funational.
--  Unfortunately, compiling Qt without phonon support means no HTML 5 <video> support
--  in the QtWebKit module. This is going to change in the upcoming Qt 4.7 release. For
--  details, see https://bugs.webkit.org/show_bug.cgi?id=34631.
-+* [QtWebKit] Spell checking support. See http://webkit.org/b/44114.
- 
--* [QtWebKit] Missing Java applet support. See https://bugs.webkit.org/show_bug.cgi?id=33044.
-+* [QtWebKit] Missing Java applet support. See http://webkit.org/b/33044.
- 
- * [QtWebKit] No access to the input/control widgets making it very difficult to
--  implement very useful features such as:
--    ** Form completion like the one available when using native Qt widgets such as
--       QLineEdit and QComboBox. See https://bugs.webkit.org/show_bug.cgi?id=36668
--    ** Spell checking!!
-+  implement very useful features such as form completion like the one available
-+  when using native Qt widgets, e.g. QLineEdit. See http://webkit.org/b/36668
- 
-+* [kdewebkit] Handling unsupported content always requires more than one
-+  connection to the same server to download a single request. The fix for
-+  this requires an upstream patch that allows us to determine the content
-+  types by the rendering engine, i.e. webkit. See http://webkit.org/b/37880
-+
- Known Issues [FIXED]:
- =========================
- * [QtWebKit] Crash while browsing facebook. [QtWebKit 2.0/Qt 4.7]
--  See https://bugs.webkit.org/show_bug.cgi?id=35204.
-+  See http://webkit.org/b/35204.
- 
- * [QtWebKit] Does not have support "Content-Disposition". [QtWebKit 2.0/Qt 4.7]
-   Specifically when it contains the keyword "attachement" the content returned
-   is not supposed to be rendered. Test case site: http://greenbytes.de/tech/tc2231/
--  See https://bugs.webkit.org/show_bug.cgi?id=36395.
-+  See http://webkit.org/b/36395.
- 
- * [QtWebKit] No way to stop <meta> tag based page refresh. [QtWebKit 2.0/Qt 4.7]
--  See https://bugs.webkit.org/show_bug.cgi?id=29899
-+  See http://webkit.org/b/29899
-Index: config.h.cmake
-===================================================================
---- config.h.cmake	(.../tags/KDE/4.5.0/kdelibs)	(wersja 1165573)
-+++ config.h.cmake	(.../branches/KDE/4.5/kdelibs)	(wersja 1165573)
-@@ -187,6 +187,8 @@
- /* Defined to 1 if you have a d_type member in struct dirent */
- #cmakedefine HAVE_DIRENT_D_TYPE 1
- 
-+/* Defined to 1 if you have the dbusmenuqt library */
-+#cmakedefine HAVE_DBUSMENUQT 1
- 
- #include "kdecore/kdefakes.h"
+-    // hack for the fact that QWidgetAction does not sync all its created widgets
+-    // to its enabled state, just QToolButtons (Qt 4.4.3)
+-    if( ev->type() == QEvent::ActionChanged )
+-    {
+-        KSelectAction* selectAction = qobject_cast<KSelectAction*>( o );
+-        if ( selectAction )
+-            setEnabled( selectAction->isEnabled() );
+-    }
+-
+     return QComboBox::eventFilter( o, ev );
+ }
  
 
 Zmiany atrybutów dla: .

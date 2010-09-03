@@ -236,7 +236,7 @@ diff -ru kdelibs-4.4.3/kdeui/widgets/khelpmenu.cpp kdelibs-4.4.3-bs/kdeui/widget
 +    
 +    if (KAuthorized::authorizeKAction("help_about_pld"))
 +    {
-+      d->mAboutPLDAction = d->mMenu->addAction( KIcon("kde"), i18n( "About PLD Linux" ), this, SLOT( aboutPLD() ) );
++      d->mAboutPLDAction = d->mMenu->addAction( KIcon("kde-pld"), i18n( "About PLD Linux" ), this, SLOT( aboutPLD() ) );
 +    }
    }
  

@@ -1,7 +1,1958 @@
+Index: interfaces/kimproxy/interface/dbusinstantmessenger.desktop
+===================================================================
+--- interfaces/kimproxy/interface/dbusinstantmessenger.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ interfaces/kimproxy/interface/dbusinstantmessenger.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -34,7 +34,7 @@
+ Comment[hne]=डी-बस इंटरफेस के साथ इंस्टैंट मैसेंजर
+ Comment[hr]=Aplikacija za komunikaciju s D-Bus sučeljem
+ Comment[hsb]=Instant Messenger z DCOP-interfejsom
+-Comment[hu]=Azonnali üzenetküldő DBus felülettel
++Comment[hu]=Azonnali üzenetküldő D-Bus felülettel
+ Comment[ia]=Messagero Instante con interfacie D-Bus 
+ Comment[id]=Pesan Instan dengan antarmuka D-Bus
+ Comment[is]=Spjallforrit með D-Bus viðmóti
+Index: knotify/config/knotifyconfigactionswidgetbase.ui
+===================================================================
+--- knotify/config/knotifyconfigactionswidgetbase.ui	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ knotify/config/knotifyconfigactionswidgetbase.ui	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -116,7 +116,7 @@
+       </sizepolicy>
+      </property>
+      <property name="whatsThis" >
+-      <string>&lt;qt>Specifies how KTTS should speak the event when received.  If you select "Speak custom text", enter the text in the box.  You may use the following substitution strings in the text:&lt;dl>&lt;dt>%e&lt;/dt>&lt;dd>Name of the event&lt;/dd>&lt;dt>%a&lt;/dt>&lt;dd>Application that sent the event&lt;/dd>&lt;dt>%m&lt;/dt>&lt;dd>The message sent by the application&lt;/dd>&lt;/dl>&lt;/qt></string>
++      <string>&lt;qt>Specifies how Jovie should speak the event when received.  If you select "Speak custom text", enter the text in the box.  You may use the following substitution strings in the text:&lt;dl>&lt;dt>%e&lt;/dt>&lt;dd>Name of the event&lt;/dd>&lt;dt>%a&lt;/dt>&lt;dd>Application that sent the event&lt;/dd>&lt;dt>%m&lt;/dt>&lt;dd>The message sent by the application&lt;/dd>&lt;/dl>&lt;/qt></string>
+      </property>
+      <item>
+       <property name="text" >
+@@ -138,7 +138,7 @@
+    <item row="5" column="3" >
+     <widget class="KLineEdit" name="KTTS_select" >
+      <property name="whatsThis" >
+-      <string>&lt;qt>Specifies how KTTS should speak the event when received.  If you select "Speak custom text", enter the text in the box.  You may use the following substitution strings in the text:&lt;dl>&lt;dt>%e&lt;/dt>&lt;dd>Name of the event&lt;/dd>&lt;dt>%a&lt;/dt>&lt;dd>Application that sent the event&lt;/dd>&lt;dt>%m&lt;/dt>&lt;dd>The message sent by the application&lt;/dd>&lt;/dl>&lt;/qt></string>
++      <string>&lt;qt>Specifies how Jovie should speak the event when received.  If you select "Speak custom text", enter the text in the box.  You may use the following substitution strings in the text:&lt;dl>&lt;dt>%e&lt;/dt>&lt;dd>Name of the event&lt;/dd>&lt;dt>%a&lt;/dt>&lt;dd>Application that sent the event&lt;/dd>&lt;dt>%m&lt;/dt>&lt;dd>The message sent by the application&lt;/dd>&lt;/dl>&lt;/qt></string>
+      </property>
+     </widget>
+    </item>
+Index: kate/search/katesearchbar.cpp
+===================================================================
+--- kate/search/katesearchbar.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/search/katesearchbar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -351,7 +351,9 @@
+ 
+ 
+ void KateSearchBar::selectRange2(const KTextEditor::Range & range) {
++    disconnect(m_view, SIGNAL(selectionChanged(KTextEditor::View *)), this, SLOT(updateSelectionOnly()));
+     selectRange(m_view, range);
++    connect(m_view, SIGNAL(selectionChanged(KTextEditor::View *)), this, SLOT(updateSelectionOnly()));
+ }
+ 
+ 
+@@ -774,7 +776,7 @@
+                 }
+ 
+                 // Replace
+-                const Range afterReplace = match.replace(*replacement, ++matchCounter);
++                const Range afterReplace = match.replace(*replacement, false, ++matchCounter);
+ 
+                 // Highlight and continue after adjusted match
+                 //highlightReplacement(*afterReplace);
+Index: kate/search/kateregexpsearch.cpp
+===================================================================
+--- kate/search/kateregexpsearch.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/search/kateregexpsearch.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -32,7 +32,7 @@
+ // #define FAST_DEBUG_ENABLE
+ 
+ #ifdef FAST_DEBUG_ENABLE
+-# define FAST_DEBUG(x) (kDebug( 13020 ) << x)
++# define FAST_DEBUG(x) kDebug( 13020 ) << x
+ #else
+ # define FAST_DEBUG(x)
+ #endif
+@@ -246,7 +246,7 @@
+     QVector<int> lineLens (inputLineCount);
+ 
+     // first line
+-    if (firstLineIndex < 0 || m_document->lines() >= firstLineIndex)
++    if (firstLineIndex < 0 || m_document->lines() <= firstLineIndex)
+     {
+       QVector<KTextEditor::Range> result;
+       result.append(KTextEditor::Range::invalid());
+@@ -265,7 +265,7 @@
+     for (int i = 1; i < inputLineCount; i++)
+     {
+       const int lineNum = firstLineIndex + i;
+-      if (lineNum < 0 || m_document->lines() >= lineNum)
++      if (lineNum < 0 || m_document->lines() <= lineNum)
+       {
+         QVector<KTextEditor::Range> result;
+         result.append(KTextEditor::Range::invalid());
+@@ -496,7 +496,8 @@
+         const int numCaptures = regexp.numCaptures();
+         QVector<KTextEditor::Range> result(1 + numCaptures);
+         result[0] = KTextEditor::Range(j, foundAt, j, foundAt + regexp.matchedLength());
+-        FAST_DEBUG("result range " << 0 << ": (" << j << ", " << foundAt << ")..(" << j << ", " << foundAt + myMatchLen << ")");
++        FAST_DEBUG("result range " << 0 << ": (" << j << ", " << foundAt << ")..(" << j << ", " <<
++                foundAt + regexp.matchedLength() << ")");
+         for (int y = 1; y <= numCaptures; y++)
+         {
+           const int openIndex = regexp.pos(y);
+Index: kate/buffer/katetexthistory.h
+===================================================================
+--- kate/buffer/katetexthistory.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/buffer/katetexthistory.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -99,6 +99,14 @@
+          * @param moveOnInsert behavior of this cursor on insert of text at it's position
+          */
+         void transformCursor (int &line, int &column, bool moveOnInsert) const;
++        
++        /**
++         * reverse transform cursor for this history entry
++         * @param line line number of the cursor to transform
++         * @param column column number of the cursor to transform
++         * @param moveOnInsert behavior of this cursor on insert of text at it's position
++         */
++        void reverseTransformCursor (int &line, int &column, bool moveOnInsert) const;
+ 
+         /**
+          * Types of entries, matching editing primitives of buffer and placeholder
+@@ -195,8 +203,9 @@
+     /**
+      * Notify about remove text at given range.
+      * @param range range of text to remove, must be on one line only.
++     * @param oldLineLength text length of the line before this remove
+      */
+-    void removeText (const KTextEditor::Range &range);
++    void removeText (const KTextEditor::Range &range, int oldLineLength);
+ 
+     /**
+      * Generic function to add a entry to the history. Is used by the above functions for the different editing primitives.
+Index: kate/buffer/katetextblock.cpp
+===================================================================
+--- kate/buffer/katetextblock.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/buffer/katetextblock.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -355,6 +355,7 @@
+ 
+   // get text
+   QString &textOfLine = m_lines[line]->textReadWrite ();
++  int oldLength = textOfLine.size ();
+ 
+   // check if valid column
+   Q_ASSERT (range.start().column() >= 0);
+@@ -371,7 +372,7 @@
+   /**
+    * notify the text history
+    */
+-  m_buffer->history().removeText (range);
++  m_buffer->history().removeText (range, oldLength);
+ 
+   /**
+    * cursor and range handling below
+Index: kate/buffer/katetexthistory.cpp
+===================================================================
+--- kate/buffer/katetexthistory.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/buffer/katetexthistory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -94,7 +94,7 @@
+   addEntry (entry);
+ }
+ 
+-void TextHistory::removeText (const KTextEditor::Range &range)
++void TextHistory::removeText (const KTextEditor::Range &range, int oldLineLength)
+ {
+   // create and add new entry
+   Entry entry;
+@@ -102,6 +102,7 @@
+   entry.line = range.start().line ();
+   entry.column = range.start().column ();
+   entry.length = range.end().column() - range.start().column();
++  entry.oldLineLength = oldLineLength;
+   addEntry (entry);
+ }
+ 
+@@ -315,11 +316,131 @@
+   }
+ }
+ 
++void TextHistory::Entry::reverseTransformCursor (int &cursorLine, int &cursorColumn, bool moveOnInsert) const
++{   
++  /**
++   * handle all history types
++   */
++  switch (type) {
++    /**
++     * Wrap a line
++     */
++    case WrapLine:
++      /**
++       * ignore this line
++       */
++      if (cursorLine <= line)
++          return;
++        
++      /**
++       * next line is unwrapped
++       */
++      if (cursorLine == line + 1) {
++        /**
++         * adjust column
++         */
++        cursorColumn = cursorColumn + column;
++      }
++
++      /**
++       * always decrement cursor line
++       */
++      cursorLine -=  1;
++      return;
++
++    /**
++     * Unwrap a line
++     */
++    case UnwrapLine:
++      /**
++       * ignore lines before unwrapped one
++       */
++      if (cursorLine < line - 1)
++          return;
++        
++      /**
++       * we unwrap this line, try to adjust cursor column if needed
++       */
++      if (cursorLine == line - 1) {
++        /**
++         * skip cursors with to small columns
++         */
++        if (cursorColumn <= oldLineLength) {
++            if (cursorColumn < oldLineLength || !moveOnInsert)
++                return;
++        }
++          
++        cursorColumn -= oldLineLength;
++      }
++      
++      /**
++       * increase cursor line
++       */
++      cursorLine += 1;
++      return;
++
++    /**
++     * Insert text
++     */
++    case InsertText:
++      /**
++       * only interesting, if same line
++       */
++      if (cursorLine != line)
++        return;
++
++      // skip cursors with too small column
++      if (cursorColumn <= column)
++        return;
++
++      // patch column of cursor
++      if (cursorColumn - length < column)
++        cursorColumn = column;
++      else
++        cursorColumn -= length;
++
++      return;
++
++    /**
++     * Remove text
++     */
++    case RemoveText:
++      /**
++       * only interesting, if same line
++       */
++      if (cursorLine != line)
++        return;
++
++      // skip cursors with too small column
++      if (cursorColumn <= column)
++        if (cursorColumn < column || !moveOnInsert)
++          return;
++
++      // patch column of cursor
++      if (cursorColumn <= oldLineLength)
++        cursorColumn += length;
++
++      // special handling if cursor behind the real line, e.g. non-wrapping cursor in block selection mode
++      else if (cursorColumn < oldLineLength + length)
++        cursorColumn =  oldLineLength + length;
++      return;
++
++    /**
++     * nothing
++     */
++    default:
++      return;
++  }
++}
++
+ void TextHistory::transformCursor (int& line, int& column, KTextEditor::MovingCursor::InsertBehavior insertBehavior, qint64 fromRevision, qint64 toRevision)
+ {
+   /**
+-   * -1 special meaning for toRevision
++   * -1 special meaning for from/toRevision
+    */
++  if (fromRevision == -1)
++    fromRevision = revision ();
++  
+   if (toRevision == -1)
+     toRevision = revision ();
+ 
+@@ -333,7 +454,7 @@
+    * some invariants must hold
+    */
+   Q_ASSERT (!m_historyEntries.empty ());
+-  Q_ASSERT (fromRevision < toRevision);
++  Q_ASSERT (fromRevision != toRevision);
+   Q_ASSERT (fromRevision >= m_firstHistoryEntryRevision);
+   Q_ASSERT (fromRevision < (m_firstHistoryEntryRevision + m_historyEntries.size()));
+   Q_ASSERT (toRevision >= m_firstHistoryEntryRevision);
+@@ -343,9 +464,20 @@
+    * transform cursor
+    */
+   bool moveOnInsert = insertBehavior == KTextEditor::MovingCursor::MoveOnInsert;
+-  for (int rev = fromRevision - m_firstHistoryEntryRevision + 1; rev <= (toRevision - m_firstHistoryEntryRevision); ++rev) {
+-    const Entry &entry = m_historyEntries[rev];
+-    entry.transformCursor (line, column, moveOnInsert);
++  
++  /**
++   * forward or reverse transform?
++   */
++  if (toRevision > fromRevision) {
++    for (int rev = fromRevision - m_firstHistoryEntryRevision + 1; rev <= (toRevision - m_firstHistoryEntryRevision); ++rev) {
++        const Entry &entry = m_historyEntries[rev];
++        entry.transformCursor (line, column, moveOnInsert);
++    }
++  } else {
++    for (int rev = fromRevision - m_firstHistoryEntryRevision; rev >= (toRevision - m_firstHistoryEntryRevision + 1); --rev) {
++        const Entry &entry = m_historyEntries[rev];
++        entry.reverseTransformCursor (line, column, moveOnInsert);
++    }
+   }
+ }
+ 
+@@ -361,8 +493,11 @@
+   }
+ 
+   /**
+-   * -1 special meaning for toRevision
++   * -1 special meaning for from/toRevision
+    */
++  if (fromRevision == -1)
++    fromRevision = revision ();
++
+   if (toRevision == -1)
+     toRevision = revision ();
+ 
+@@ -376,41 +511,69 @@
+    * some invariants must hold
+    */
+   Q_ASSERT (!m_historyEntries.empty ());
+-  Q_ASSERT (fromRevision < toRevision);
++  Q_ASSERT (fromRevision != toRevision);
+   Q_ASSERT (fromRevision >= m_firstHistoryEntryRevision);
+   Q_ASSERT (fromRevision < (m_firstHistoryEntryRevision + m_historyEntries.size()));
+   Q_ASSERT (toRevision >= m_firstHistoryEntryRevision);
+   Q_ASSERT (toRevision < (m_firstHistoryEntryRevision + m_historyEntries.size()));
+-
++  
+   /**
+    * transform cursors
+    */
+-
++      
+   // first: copy cursors, without range association
+   int startLine = range.start().line(), startColumn = range.start().column(), endLine = range.end().line(), endColumn = range.end().column();
+   
+   bool moveOnInsertStart = !(insertBehaviors & KTextEditor::MovingRange::ExpandLeft);
+   bool moveOnInsertEnd = (insertBehaviors & KTextEditor::MovingRange::ExpandRight);
+-  for (int rev = fromRevision - m_firstHistoryEntryRevision + 1; rev <= (toRevision - m_firstHistoryEntryRevision); ++rev) {
+-    const Entry &entry = m_historyEntries[rev];
+-    
+-    entry.transformCursor (startLine, startColumn, moveOnInsertStart);
+-    
+-    entry.transformCursor (endLine, endColumn, moveOnInsertEnd);
++  
++  /**
++   * forward or reverse transform?
++   */
++  if (toRevision > fromRevision) {
++    for (int rev = fromRevision - m_firstHistoryEntryRevision + 1; rev <= (toRevision - m_firstHistoryEntryRevision); ++rev) {
++        const Entry &entry = m_historyEntries[rev];
++        
++        entry.transformCursor (startLine, startColumn, moveOnInsertStart);
++        
++        entry.transformCursor (endLine, endColumn, moveOnInsertEnd);
+ 
+-    // got empty?
+-    if(endLine < startLine || (endLine == startLine && endColumn <= startColumn))
+-    {
+-      if (invalidateIfEmpty) {
+-        range = KTextEditor::Range::invalid();
+-        return;
+-      }
+-      else{
+-        // else normalize them
+-        endLine = startLine;
+-        endColumn = startColumn;
+-      }
++        // got empty?
++        if(endLine < startLine || (endLine == startLine && endColumn <= startColumn))
++        {
++            if (invalidateIfEmpty) {
++                range = KTextEditor::Range::invalid();
++                return;
++            }
++            else{
++                // else normalize them
++                endLine = startLine;
++                endColumn = startColumn;
++            }
++        }
+     }
++  } else {
++    for (int rev = fromRevision - m_firstHistoryEntryRevision ; rev >= (toRevision - m_firstHistoryEntryRevision + 1); --rev) {
++        const Entry &entry = m_historyEntries[rev];
++        
++        entry.reverseTransformCursor (startLine, startColumn, moveOnInsertStart);
++        
++        entry.reverseTransformCursor (endLine, endColumn, moveOnInsertEnd);
++
++        // got empty?
++        if(endLine < startLine || (endLine == startLine && endColumn <= startColumn))
++        {
++            if (invalidateIfEmpty) {
++                range = KTextEditor::Range::invalid();
++                return;
++            }
++            else{
++                // else normalize them
++                endLine = startLine;
++                endColumn = startColumn;
++            }
++        }
++    }
+   }
+ 
+   // now, copy cursors back
+Index: kate/view/kateviewinternal.cpp
+===================================================================
+--- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -2271,7 +2271,9 @@
+     case QEvent::WindowBlocked:
+       // next focus originates from an internal dialog:
+       // don't show the modonhd prompt
+-      doc()->ignoreModifiedOnDiskOnce();
++      if (isVisible()) {
++        doc()->ignoreModifiedOnDiskOnce();
++      }
+       break;
+ 
+     default:
+Index: kate/document/katedocument.cpp
+===================================================================
+--- kate/document/katedocument.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/document/katedocument.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1267,6 +1267,7 @@
+ 
+   history()->doEdit( new KateEditInfo(m_editSources.top(), KTextEditor::Range(line, col, line+1, 0), QStringList(QString()), KTextEditor::Range(line, col, line, col), QStringList()) );
+   emit KTextEditor::Document::textRemoved(this, KTextEditor::Range(line, col, line+1, 0));
++  emit KTextEditor::Document::textRemoved(this, KTextEditor::Range(line, col, line+1, 0), "\n");
+ 
+   editEnd ();
+ 
+@@ -1415,6 +1416,7 @@
+ 
+   history()->doEdit(new KateEditInfo(m_editSources.top(), rangeRemoved, oldText, KTextEditor::Range(rangeRemoved.start(), rangeRemoved.start()), QStringList()));
+   emit KTextEditor::Document::textRemoved(this, rangeRemoved);
++  emit KTextEditor::Document::textRemoved(this, rangeRemoved, oldText.join("\n"));
+ 
+   editEnd();
+ 
+@@ -1983,6 +1985,7 @@
+   // do we have success ?
+   history()->doEdit( new KateEditInfo(Kate::CloseFileEdit, documentRange(), QStringList(), KTextEditor::Range(0,0,0,0), QStringList()) );
+   emit KTextEditor::Document::textRemoved(this, documentRange());
++  emit KTextEditor::Document::textRemoved(this, documentRange(), m_buffer->text());
+ 
+   bool success = m_buffer->openFile (localFilePath());
+ 
+@@ -2427,17 +2430,18 @@
+   }
+ 
+   emit KTextEditor::Document::textRemoved(this, documentRange());
++  emit KTextEditor::Document::textRemoved(this, documentRange(), m_buffer->text());
+ 
+   {
+     QMutexLocker l(smartMutex());
+     history()->doEdit( new KateEditInfo(Kate::CloseFileEdit, documentRange(), QStringList(), KTextEditor::Range(0,0,0,0), QStringList()) );
+ 
++    // remove all marks
++    clearMarks ();
++
+     // clear the buffer
+     m_buffer->clear();
+ 
+-    // remove all marks
+-    clearMarks ();
+-
+     // clear undo/redo history
+     m_undoManager->clearUndo();
+     m_undoManager->clearRedo();
+@@ -3684,14 +3688,14 @@
+ 
+   range.end() = range.start();
+   QScopedPointer<KTextEditor::MovingCursor> cursor(newMovingCursor(range.start()));
+-  int validAttr = plainKateTextLine(cursor->line())->attribute(cursor->column());
++  int validAttr = kateTextLine(cursor->line())->attribute(cursor->column());
+ 
+   while( cursor->line() >= minLine && cursor->line() <= maxLine ) {
+ 
+     if (!cursor->move(searchDir))
+       return false;
+ 
+-    if (plainKateTextLine(cursor->line())->attribute(cursor->column()) == validAttr )
++    if (kateTextLine(cursor->line())->attribute(cursor->column()) == validAttr )
+     {
+       /* Check for match */
+       QChar c = character(cursor->toCursor());
+@@ -5419,9 +5423,14 @@
+     return KTextEditor::Attribute::Ptr(0);
+   }
+ 
+-  KateAttributeList list;
+-  return highlight()->attributes(view->renderer()->config()->schema()).at(ds);
++  KTextEditor::Attribute::Ptr style = highlight()->attributes(view->renderer()->config()->schema()).at(ds);
++  if (!style->hasProperty(QTextFormat::BackgroundBrush)) {
++    // make sure the returned style has the default background color set
++    style.attach(new KTextEditor::Attribute(*style));
++    style->setBackground( QBrush(view->renderer()->config()->backgroundColor()) );
+ }
++  return style;
++}
+ 
+ QList< KTextEditor::HighlightInterface::AttributeBlock > KateDocument::lineAttributes(const unsigned int line)
+ {
+Index: kate/plugins/autobrace/ktexteditor_autobrace.desktop
+===================================================================
+--- kate/plugins/autobrace/ktexteditor_autobrace.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/plugins/autobrace/ktexteditor_autobrace.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -36,7 +36,7 @@
+ Name[gl]=Parénteses automáticos
+ Name[hi]=आटोब्रेस
+ Name[hr]=AutoBrace
+-Name[hu]=Automatikus járójelbezáró
++Name[hu]=Automatikus zárójelbezáró
+ Name[ia]=AutoParenthese
+ Name[id]=KurawalOtomatis
+ Name[is]=SjálfvirkirSvigar
+@@ -57,6 +57,7 @@
+ Name[pt_BR]=Parênteses automático
+ Name[ro]=ParantezeAutomate
+ Name[ru]=Автоматическое закрытие скобок
++Name[se]=AutoRuohtu
+ Name[sk]=Automatické zátvorky
+ Name[sl]=SamodejniOklepaji
+ Name[sr]=Аутоматске заграде
+@@ -109,6 +110,7 @@
+ Comment[pt_BR]=Inserir parênteses de fechamento ao pressionar Enter
+ Comment[ro]=Inserează paranteze de închidere la apăsarea Enter
+ Comment[ru]=Вставка парной скобки при нажатии клавиши Enter
++Comment[se]=Lasit ruođu loahpas go deaddilat Enter-boalu
+ Comment[sk]=Vloží uzatváracie zátvorky po stlačení klávesy Enter
+ Comment[sl]=Vstavi zaključne oklepaje ob pritisku na Enter
+ Comment[sr]=Умеће затварајуће заграде кад се притисне Enter
+Index: kate/plugins/autobrace/ktexteditor_autobrace_config.desktop
+===================================================================
+--- kate/plugins/autobrace/ktexteditor_autobrace_config.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/plugins/autobrace/ktexteditor_autobrace_config.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -14,12 +14,13 @@
+ Name[en_GB]=AutoBrace Configuration
+ Name[es]=Configuración de los paréntesis automáticos
+ Name[et]=Automaatsete sulgude seadistamine
+-Name[eu]=Parentesi automatikoen konfiguraketa
++Name[eu]=Parentesi automatikoen konfigurazioa
+ Name[fr]=Configuration des accolades automatiques
+ Name[fy]=Ynstellings for automatyske heakjes
+ Name[ga]=Cumraíocht AutoBrace
+ Name[gl]=Configuración de AutoBrace
+ Name[hi]=आटोब्रेस कॉन्फ़िगरेशन
++Name[hu]=Az automatikus zárójelbezáró beállítás
+ Name[ia]=Configuration de AutoBrace (Parentheses Automatic)
+ Name[id]=Konfigurasi KurawalOtomatis
+ Name[is]=Stillingar Sjálfvirkra Sviga
+@@ -35,8 +36,9 @@
+ Name[pa]=AutoBrace ਸੰਰਚਨਾ
+ Name[pl]=Konfiguracja autonawiasów
+ Name[pt]=Configuração dos Parêntesis Automáticos
+-Name[pt_BR]=Configuração automática do parêntesis
++Name[pt_BR]=Configuração automática dos parênteses
+ Name[ru]=Настройка автоматического закрытия скобок
++Name[se]=AutoRuohtu-heivehus
+ Name[sk]=Nastavenie automatických zátvoriek
+ Name[sl]=Nastavitev samodejnih oklepajev
+ Name[sr]=Подешавање аутоматских заграда
+Index: kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop
+===================================================================
+--- kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -27,6 +27,7 @@
+ Name[fy]=Insane (net ZEN) HTML kode sjen (lighte edysje)
+ Name[ga]=Códú HTML Insane (seachas ZEN) (leagan éadrom)
+ Name[gl]=Código HTML Insane (non ZEN) (edición light)
++Name[hu]=Pokolian nehéz (nem ZEN) HTML-kódolás (könnyűsúlyi kiadás)
+ Name[ia]=Codifica Insane (non ZEN) de HTML (edition legier)
+ Name[id]=Pengodean HTML (edisi ringan) Insane (bukan ZEN)
+ Name[is]=Insane (ekki ZEN) HTML kóðun (léttútgáfa)
+@@ -39,6 +40,7 @@
+ Name[nl]=Insane (niet ZEN) HTML-codering (lichte editie)
+ Name[pt]=Codificação de HTML louca (não ZEN) HTML (edição leve)
+ Name[pt_BR]=Codificação de HTML louca (não ZEN) HTML (edição leve)
++Name[se]=Jallas (ii-ZEN) HTML-koden (geahppes veršuvdna)
+ Name[sr]=Лудо кодирање ХТМЛ‑а (лагано издање)
+ Name[sr@ijekavian]=Лудо кодирање ХТМЛ‑а (лагано издање)
+ Name[sr@ijekavianlatin]=Ludo kodiranje HTML‑a (lagano izdanje)
+@@ -64,6 +66,7 @@
+ Comment[fy]=In plugyn, dy't zen-kodearring docht lykas kar-foltôging
+ Comment[ga]=Breiseán a dhéanann códú zen mar shampla comhlánú roghnóirí
+ Comment[gl]=Unha extensión que fai selección de completado de código estilo zen
++Comment[hu]=Bővítmény szelektorkiegészítőszerű zen-kódolásra
+ Comment[ia]=Un plugin, que il face completion de selector al modo de codifica zen.
+ Comment[id]=Plugin, yang melakukan penyelesaian pemilih seperti pengodean zen
+ Comment[is]=Íforrit sem framkvæmir zen-kóðun á borð við valklárun
+@@ -76,6 +79,7 @@
+ Comment[nl]=Een plugin, die zen-codering doet zoals keuze-voltooiing
+ Comment[pt]=Um 'plugin' que efectua uma codificação 'zen, como a completação de selectores
+ Comment[pt_BR]=Um plug-in que efetua uma codificação zen, como a completação de seletores
++Comment[se]=Lassemoduvla mii bargá zen-lágankodema, nugo válljenollášuhttin
+ Comment[sr]=Прикључак за проширивање налик на зен‑кодирање
+ Comment[sr@ijekavian]=Прикључак за проширивање налик на зен‑кодирање
+ Comment[sr@ijekavianlatin]=Priključak za proširivanje nalik na zen‑kodiranje
+Index: kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop
+===================================================================
+--- kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/plugins/kte_iconinserter/ktexteditor_iconinserter.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -16,6 +16,7 @@
+ Comment[ga]=Roghnaigh deilbhín agus bain úsáid as mar KIcon i do chód foinseach
+ Comment[gl]=Escolle unha icona e emprégaa como un KIcon no código fonte
+ Comment[hr]=Odaberite ikonu i koristite je kao KIcon u svom izvornom kodu
++Comment[hu]=Ikon kiválasztása és használata KIconként a forráskódban
+ Comment[ia]=Il Selectiona un icone e le usa como un Kicon in tu codice fonte
+ Comment[id]=Pilih sebuah ikon dan gunakan itu sebagai KIcon di kode program anda
+ Comment[is]=Veldu táknmynd og notaðu hana sem KIcon í grunnkóðanum þínum
+@@ -31,6 +32,7 @@
+ Comment[pt]=Seleccione um ícone e use-o como um KIcon no seu código-fonte
+ Comment[pt_BR]=Selecione um ícone e use-o como um KIcon no seu código-fonte
+ Comment[ru]=Вставка значка для использования как KIcon в коде программы
++Comment[se]=Válljes muhton govaža ja geavat dan KIcon:n iežat gáldokodas
+ Comment[sk]=Vyberte ikonu a použije ju ako KIcon vo svojom zdrojovom kóde
+ Comment[sl]=Izberite ikono in jo v svoji izvorni kodi uporabite kot KIcon
+ Comment[sr]=Изаберите икону која ће бити KIcon у вашем изворном коду
+@@ -62,6 +64,7 @@
+ Name[gl]=IconInserter
+ Name[hi]=IconInserter
+ Name[hr]=IconInserter
++Name[hu]=Ikonbeszúró
+ Name[ia]=Insertator de Icones
+ Name[id]=IconInserter
+ Name[is]=TáknmyndaInnsetning
+@@ -79,6 +82,7 @@
+ Name[pt]=Inserção de Ícones
+ Name[pt_BR]=Inserção de Ícones
+ Name[ru]=Вставка значка
++Name[se]=GovašLasiheadji
+ Name[sk]=Vkladanie ikon
+ Name[sl]=Vstavljalnik ikon
+ Name[sr]=Уметач икона
+@@ -109,6 +113,7 @@
+ GenericName[ga]=Ionsáigh cód le haghaidh cruthaithe KIcon
+ GenericName[gl]=Insere código para a creación de KIcon
+ GenericName[hr]=Umetnite kod za KIcon-Creation
++GenericName[hu]=Kód beszúrása a KIcon-készítőbe
+ GenericName[ia]=Il Inserta codice pro le creation de KIcon
+ GenericName[id]=Masukkan Kode untuk Membuat KIcon
+ GenericName[is]=Settu inn kóða fyrir KIcon-gerð
+@@ -124,6 +129,7 @@
+ GenericName[pl]=Wstawianie kodu do tworzenia KIcon
+ GenericName[pt]=Inserir o Código de Criação de KIcon's
+ GenericName[pt_BR]=Inserir o código de criação de KIcons
++GenericName[se]=Lasihankoda KIcon-ráhkadeami várás
+ GenericName[sk]=Vloží kód pre vytvorenie KIcon
+ GenericName[sl]=Vstavi kodo za ustvaritev KIcon
+ GenericName[sr]=Уметање кода за стварање KIcon‑а
+Index: kate/plugins/exporter/ktexteditor_exporter.desktop
+===================================================================
+--- kate/plugins/exporter/ktexteditor_exporter.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/plugins/exporter/ktexteditor_exporter.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -57,6 +57,7 @@
+ Name[pt_BR]=Exportação
+ Name[ro]=Exportator
+ Name[ru]=Экспорт
++Name[se]=Olggosfievrrideaddji
+ Name[sk]=Export
+ Name[sl]=Izvoznik
+ Name[sr]=Извозник
+@@ -109,6 +110,7 @@
+ Comment[pt_BR]=Exportar o documento selecionado para HTML
+ Comment[ro]=Exportă documentul evidențiat în HTML
+ Comment[ru]=Экспорт документов в HTML
++Comment[se]=Olggosfievrrit merkejuvvon fiilla HTML:n
+ Comment[sk]=Exportuje zvýraznený dokument do HTML
+ Comment[sl]=Izvozi označen dokument v HTML
+ Comment[sr]=Извози документе с истицањем у ХТМЛ
+Index: kate/syntax/data/haskell.xml
+===================================================================
+--- kate/syntax/data/haskell.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/syntax/data/haskell.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1,406 +1,380 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE language SYSTEM "language.dtd">
+-<!-- Haskell syntax highlighting by Marcel Martin <mmar@freenet.de> -->
++<language name="Haskell" version="2.0.3" kateversion="2.3" section="Sources" extensions="*.hs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell">
++  <highlighting>
++  <list name="keywords">
++    <item> as </item>
++    <item> case </item>
++    <item> class </item>
++    <item> data </item>
++    <item> deriving </item>
++    <item> do </item>
++    <item> else </item>
++    <item> hiding </item>
++    <item> if </item>
++    <item> import </item>
++    <item> in </item>
++    <item> infixl </item>
++    <item> infixr </item>
++    <item> instance </item>
++    <item> let </item>
++    <item> module </item>
++    <item> newtype </item>
++    <item> of </item>
++    <item> primitive </item>
++    <item> qualified </item>
++    <item> then </item>
++    <item> type </item>
++    <item> where </item>
++  </list>
++  <list name="prelude function">
++    <item> FilePath </item>
++    <item> IOError </item>
++    <item> abs </item>
++    <item> acos </item>
++    <item> acosh </item>
++    <item> all </item>
++    <item> and </item>
++    <item> any </item>
++    <item> appendFile </item>
++    <item> approxRational </item>
++    <item> asTypeOf </item>
++    <item> asin </item>
++    <item> asinh </item>
++    <item> atan </item>
++    <item> atan2 </item>
++    <item> atanh </item>
++    <item> basicIORun </item>
++    <item> break </item>
++    <item> catch </item>
++    <item> ceiling </item>
++    <item> chr </item>
++    <item> compare </item>
++    <item> concat </item>
++    <item> concatMap </item>
++    <item> const </item>
++    <item> cos </item>
++    <item> cosh </item>
++    <item> curry </item>
++    <item> cycle </item>
++    <item> decodeFloat </item>
++    <item> denominator </item>
++    <item> digitToInt </item>
++    <item> div </item>
++    <item> divMod </item>
++    <item> drop </item>
++    <item> dropWhile </item>
++    <item> either </item>
++    <item> elem </item>
++    <item> encodeFloat </item>
++    <item> enumFrom </item>
++    <item> enumFromThen </item>
++    <item> enumFromThenTo </item>
++    <item> enumFromTo </item>
++    <item> error </item>
++    <item> even </item>
++    <item> exp </item>
++    <item> exponent </item>
++    <item> fail </item>
++    <item> filter </item>
++    <item> flip </item>
++    <item> floatDigits </item>
++    <item> floatRadix </item>
++    <item> floatRange </item>
++    <item> floor </item>
++    <item> fmap </item>
++    <item> foldl </item>
++    <item> foldl1 </item>
++    <item> foldr </item>
++    <item> foldr1 </item>
++    <item> fromDouble </item>
++    <item> fromEnum </item>
++    <item> fromInt </item>
++    <item> fromInteger </item>
++    <item> fromIntegral </item>
++    <item> fromRational </item>
++    <item> fst </item>
++    <item> gcd </item>
++    <item> getChar </item>
++    <item> getContents </item>
++    <item> getLine </item>
++    <item> group </item>
++    <item> head </item>
++    <item> id </item>
++    <item> inRange </item>
++    <item> index </item>
++    <item> init </item>
++    <item> intToDigit </item>
++    <item> interact </item>
++    <item> ioError </item>
++    <item> isAlpha </item>
++    <item> isAlphaNum </item>
++    <item> isAscii </item>
++    <item> isControl </item>
++    <item> isDenormalized </item>
++    <item> isDigit </item>
++    <item> isHexDigit </item>
++    <item> isIEEE </item>
++    <item> isInfinite </item>
++    <item> isLower </item>
++    <item> isNaN </item>
++    <item> isNegativeZero </item>
++    <item> isOctDigit </item>
++    <item> isPrint </item>
++    <item> isSpace </item>
++    <item> isUpper </item>
++    <item> iterate </item>
++    <item> last </item>
++    <item> lcm </item>
++    <item> length </item>
++    <item> lex </item>
++    <item> lexDigits </item>
++    <item> lexLitChar </item>
++    <item> lines </item>
++    <item> log </item>
++    <item> logBase </item>
++    <item> lookup </item>
++    <item> map </item>
++    <item> mapM </item>
++    <item> mapM_ </item>
++    <item> max </item>
++    <item> maxBound </item>
++    <item> maximum </item>
++    <item> maybe </item>
++    <item> min </item>
++    <item> minBound </item>
++    <item> minimum </item>
++    <item> mod </item>
++    <item> negate </item>
++    <item> not </item>
++    <item> notElem </item>
++    <item> null </item>
++    <item> numerator </item>
++    <item> odd </item>
++    <item> or </item>
++    <item> ord </item>
++    <item> otherwise </item>
++    <item> pack </item>
++    <item> pi </item>
++    <item> pred </item>
++    <item> primExitWith </item>
++    <item> print </item>
++    <item> product </item>
++    <item> properFraction </item>
++    <item> putChar </item>
++    <item> putStr </item>
++    <item> putStrLn </item>
++    <item> quot </item>
++    <item> quotRem </item>
++    <item> range </item>
++    <item> rangeSize </item>
++    <item> read </item>
++    <item> readDec </item>
++    <item> readFile </item>
++    <item> readFloat </item>
++    <item> readHex </item>
++    <item> readIO </item>
++    <item> readInt </item>
++    <item> readList </item>
++    <item> readLitChar </item>
++    <item> readLn </item>
++    <item> readOct </item>
++    <item> readParen </item>
++    <item> readSigned </item>
++    <item> reads </item>
++    <item> readsPrec </item>
++    <item> realToFrac </item>
++    <item> recip </item>
++    <item> rem </item>
++    <item> repeat </item>
++    <item> replicate </item>
++    <item> return </item>
++    <item> reverse </item>
++    <item> round </item>
++    <item> scaleFloat </item>
++    <item> scanl </item>
++    <item> scanl1 </item>
++    <item> scanr </item>
++    <item> scanr1 </item>
++    <item> seq </item>
++    <item> sequence </item>
++    <item> sequence_ </item>
++    <item> show </item>
++    <item> showChar </item>
++    <item> showInt </item>
++    <item> showList </item>
++    <item> showLitChar </item>
++    <item> showParen </item>
++    <item> showSigned </item>
++    <item> showString </item>
++    <item> shows </item>
++    <item> showsPrec </item>
++    <item> significand </item>
++    <item> signum </item>
++    <item> sin </item>
++    <item> sinh </item>
++    <item> snd </item>
++    <item> sort </item>
++    <item> span </item>
++    <item> splitAt </item>
++    <item> sqrt </item>
++    <item> subtract </item>
++    <item> succ </item>
++    <item> sum </item>
++    <item> tail </item>
++    <item> take </item>
++    <item> takeWhile </item>
++    <item> tan </item>
++    <item> tanh </item>
++    <item> threadToIOResult </item>
++    <item> toEnum </item>
++    <item> toInt </item>
++    <item> toInteger </item>
++    <item> toLower </item>
++    <item> toRational </item>
++    <item> toUpper </item>
++    <item> truncate </item>
++    <item> uncurry </item>
++    <item> undefined </item>
++    <item> unlines </item>
++    <item> until </item>
++    <item> unwords </item>
++    <item> unzip </item>
++    <item> unzip3 </item>
++    <item> userError </item>
++    <item> words </item>
++    <item> writeFile </item>
++    <item> zip </item>
++    <item> zip3 </item>
++    <item> zipWith </item>
++    <item> zipWith3 </item>
++  </list>
++  <list name="prelude class">
++    <item> Bounded </item>
++    <item> Enum </item>
++    <item> Eq </item>
++    <item> Floating </item>
++    <item> Fractional </item>
++    <item> Functor </item>
++    <item> Integral </item>
++    <item> Ix </item>
++    <item> Monad </item>
++    <item> Num </item>
++    <item> Ord </item>
++    <item> Read </item>
++    <item> Real </item>
++    <item> RealFloat </item>
++    <item> RealFrac </item>
++    <item> Show </item>
++  </list>
++  <list name="prelude type">
++    <item> Bool </item>
++    <item> Char </item>
++    <item> Double </item>
++    <item> Either </item>
++    <item> FilePath </item>
++    <item> Float </item>
++    <item> Int </item>
++    <item> Integer </item>
++    <item> IO </item>
++    <item> IOError </item>
++    <item> Maybe </item>
++    <item> Ordering </item>
++    <item> Ratio </item>
++    <item> Rational </item>
++    <item> ReadS </item>
++    <item> ShowS </item>
++    <item> String </item>
++    <item> ByteString </item>
++  </list>
++  <list name="prelude data">
++    <item> False </item>
++    <item> True </item>
++    <item> Left </item>
++    <item> Right </item>
++    <item> Just </item>
++    <item> Nothing </item>
++    <item> EQ </item>
++    <item> LT </item>
++    <item> GT </item>
++  </list>
++  <contexts>
++    <context attribute="Normal" lineEndContext="#stay" name="code">
++      <RegExpr attribute="Pragma"  context="#stay" String="\{-#.*#-\}"/>
++      <RegExpr attribute="Comment" context="comments" String="\{-[^#]?" />
++      <RegExpr attribute="Comment" context="comment"  String="--[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:].*$" />
+ 
+-<!-- If you add or fix things here, change literate-haskell.xml too (if applicable) -->
++      <keyword attribute="Keyword"          context="#stay" String="keywords" />
++      <keyword attribute="Function Prelude" context="#stay" String="prelude function" />
++      <keyword attribute="Type Prelude"     context="#stay" String="prelude type" />
++      <keyword attribute="Data Prelude"     context="#stay" String="prelude data" />
++      <keyword attribute="Class Prelude"    context="#stay" String="prelude class" />
+ 
+-<language name="Haskell" version="1.9" kateversion="2.3" section="Sources" extensions="*.hs" mimetype="text/x-haskell" author="Marcel Martin (mmar@freenet.de)" license="" indenter="haskell">
+-	<highlighting>
+-	<list name="keywords">
+-		<item> as </item>
+-		<item> case </item>
+-		<item> class </item>
+-		<item> data </item>
+-		<item> deriving </item>
+-		<item> do </item>
+-		<item> else </item>
+-		<item> hiding </item>
+-		<item> if </item>
+-		<item> import </item>
+-		<item> in </item>
+-		<item> infixl </item>
+-		<item> infixr </item>
+-		<item> instance </item>
+-		<item> let </item>
+-		<item> module </item>
+-		<item> newtype </item>
+-		<item> of </item>
+-		<item> primitive </item>
+-		<item> qualified </item>
+-		<item> then </item>
+-		<item> type </item>
+-		<item> where </item>
+-	</list>
+-        <list name="infix operators">
+-		<item> quot </item>
+-		<item> rem </item>
+-		<item> div </item>
+-		<item> mod </item>
+-		<item> elem </item>
+-		<item> notElem </item>
+-		<item> seq </item>
+-	</list>
+-	<list name="functions">
+-		<!--
+-                These operators are not handled yet.
+-		<item> !! </item>
+-		<item> % </item>
+-		<item> && </item>
+-		<item> $! </item>
+-		<item> $ </item>
+-		<item> * </item>
+-		<item> ** </item>
+-		<item> - </item>
+-		<item> . </item>
+-		<item> /= </item>
+-		<item> < </item>
+-		<item> <= </item>
+-		<item> =<< </item>
+-		<item> == </item>
+-		<item> > </item>
+-		<item> >= </item>
+-		<item> >> </item>
+-		<item> >>= </item>
+-		<item> ^ </item>
+-		<item> ^^ </item>
+-		<item> ++ </item>
+-		<item> || </item>
+-		//-->
++      <RegExpr attribute="Special"          context="#stay" String="(::|=&gt;|\-&gt;|&lt;\-)" />
++      <AnyChar attribute="Special"          context="#stay" String="∷⇒→←∀∃" />
++      <RegExpr attribute="Signature"        context="#stay" String="\s*[a-z][a-zA-Z0-9_']*\s*(?=::[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:])" />
++      <RegExpr attribute="Signature"        context="#stay" String="\s*(\([\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:]*\))*\s*(?=::[^\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:])" />
++      <RegExpr attribute="Function"         context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[a-z][a-zA-Z0-9_']*" />
++      <RegExpr attribute="Operator"         context="#stay" String="([A-Z][a-zA-Z0-0_']*\.)*[\-!#\$%&amp;\*\+/&lt;=&gt;\?&#92;@\^\|~\.:]+" />
++      <RegExpr attribute="Type"             context="#stay" String="([A-Z][a-zA-Z0-9_']*\.)*[A-Z][a-zA-Z0-9_']*" />
+ 
+-		<item> FilePath </item>
+-		<item> IOError </item>
+-		<item> abs </item>
+-		<item> acos </item>
+-		<item> acosh </item>
+-		<item> all </item>
+-		<item> and </item>
+-		<item> any </item>
+-		<item> appendFile </item>
+-		<item> approxRational </item>
+-		<item> asTypeOf </item>
+-		<item> asin </item>
+-		<item> asinh </item>
+-		<item> atan </item>
+-		<item> atan2 </item>
+-		<item> atanh </item>
+-		<item> basicIORun </item>
+-		<item> break </item>
+-		<item> catch </item>
+-		<item> ceiling </item>
+-		<item> chr </item>
+-		<item> compare </item>
+-		<item> concat </item>
+-		<item> concatMap </item>
+-		<item> const </item>
+-		<item> cos </item>
+-		<item> cosh </item>
+-		<item> curry </item>
+-		<item> cycle </item>
+-		<item> decodeFloat </item>
+-		<item> denominator </item>
+-		<item> digitToInt </item>
+-		<item> div </item>
+-		<item> divMod </item>
+-		<item> drop </item>
+-		<item> dropWhile </item>
+-		<item> either </item>
+-		<item> elem </item>
+-		<item> encodeFloat </item>
+-		<item> enumFrom </item>
+-		<item> enumFromThen </item>
+-		<item> enumFromThenTo </item>
+-		<item> enumFromTo </item>
+-		<item> error </item>
+-		<item> even </item>
+-		<item> exp </item>
+-		<item> exponent </item>
+-		<item> fail </item>
+-		<item> filter </item>
+-		<item> flip </item>
+-		<item> floatDigits </item>
+-		<item> floatRadix </item>
+-		<item> floatRange </item>
+-		<item> floor </item>
+-		<item> fmap </item>
+-		<item> foldl </item>
+-		<item> foldl1 </item>
+-		<item> foldr </item>
+-		<item> foldr1 </item>
+-		<item> fromDouble </item>
+-		<item> fromEnum </item>
+-		<item> fromInt </item>
+-		<item> fromInteger </item>
+-		<item> fromIntegral </item>
+-		<item> fromRational </item>
+-		<item> fst </item>
+-		<item> gcd </item>
+-		<item> getChar </item>
+-		<item> getContents </item>
+-		<item> getLine </item>
+-		<item> group </item>
+-		<item> head </item>
+-		<item> id </item>
+-		<item> inRange </item>
+-		<item> index </item>
+-		<item> init </item>
+-		<item> intToDigit </item>
+-		<item> interact </item>
+-		<item> ioError </item>
+-		<item> isAlpha </item>
+-		<item> isAlphaNum </item>
+-		<item> isAscii </item>
+-		<item> isControl </item>
+-		<item> isDenormalized </item>
+-		<item> isDigit </item>
+-		<item> isHexDigit </item>
+-		<item> isIEEE </item>
+-		<item> isInfinite </item>
+-		<item> isLower </item>
+-		<item> isNaN </item>
+-		<item> isNegativeZero </item>
+-		<item> isOctDigit </item>
+-		<item> isPrint </item>
+-		<item> isSpace </item>
+-		<item> isUpper </item>
+-		<item> iterate </item>
+-		<item> last </item>
+-		<item> lcm </item>
+-		<item> length </item>
+-		<item> lex </item>
+-		<item> lexDigits </item>
+-		<item> lexLitChar </item>
+-		<item> lines </item>
+-		<item> log </item>
+-		<item> logBase </item>
+-		<item> lookup </item>
+-		<item> map </item>
+-		<item> mapM </item>
+-		<item> mapM_ </item>
+-		<item> max </item>
+-		<item> maxBound </item>
+-		<item> maximum </item>
+-		<item> maybe </item>
+-		<item> min </item>
+-		<item> minBound </item>
+-		<item> minimum </item>
+-		<item> mod </item>
+-		<item> negate </item>
+-		<item> not </item>
+-		<item> notElem </item>
+-		<item> null </item>
+-		<item> numerator </item>
+-		<item> odd </item>
+-		<item> or </item>
+-		<item> ord </item>
+-		<item> otherwise </item>
+-		<item> pack </item>
+-		<item> pi </item>
+-		<item> pred </item>
+-		<item> primExitWith </item>
+-		<item> print </item>
+-		<item> product </item>
+-		<item> properFraction </item>
+-		<item> putChar </item>
+-		<item> putStr </item>
+-		<item> putStrLn </item>
+-		<item> quot </item>
+-		<item> quotRem </item>
+-		<item> range </item>
+-		<item> rangeSize </item>
+-		<item> read </item>
+-		<item> readDec </item>
+-		<item> readFile </item>
+-		<item> readFloat </item>
+-		<item> readHex </item>
+-		<item> readIO </item>
+-		<item> readInt </item>
+-		<item> readList </item>
+-		<item> readLitChar </item>
+-		<item> readLn </item>
+-		<item> readOct </item>
+-		<item> readParen </item>
+-		<item> readSigned </item>
+-		<item> reads </item>
+-		<item> readsPrec </item>
+-		<item> realToFrac </item>
+-		<item> recip </item>
+-		<item> rem </item>
+-		<item> repeat </item>
+-		<item> replicate </item>
+-		<item> return </item>
+-		<item> reverse </item>
+-		<item> round </item>
+-		<item> scaleFloat </item>
+-		<item> scanl </item>
+-		<item> scanl1 </item>
+-		<item> scanr </item>
+-		<item> scanr1 </item>
+-		<item> seq </item>
+-		<item> sequence </item>
+-		<item> sequence_ </item>
+-		<item> show </item>
+-		<item> showChar </item>
+-		<item> showInt </item>
+-		<item> showList </item>
+-		<item> showLitChar </item>
+-		<item> showParen </item>
+-		<item> showSigned </item>
+-		<item> showString </item>
+-		<item> shows </item>
+-		<item> showsPrec </item>
+-		<item> significand </item>
+-		<item> signum </item>
+-		<item> sin </item>
+-		<item> sinh </item>
+-		<item> snd </item>
+-		<item> sort </item>
+-		<item> span </item>
+-		<item> splitAt </item>
+-		<item> sqrt </item>
+-		<item> subtract </item>
+-		<item> succ </item>
+-		<item> sum </item>
+-		<item> tail </item>
+-		<item> take </item>
+-		<item> takeWhile </item>
+-		<item> tan </item>
+-		<item> tanh </item>
+-		<item> threadToIOResult </item>
+-		<item> toEnum </item>
+-		<item> toInt </item>
+-		<item> toInteger </item>
+-		<item> toLower </item>
+-		<item> toRational </item>
+-		<item> toUpper </item>
+-		<item> truncate </item>
+-		<item> uncurry </item>
+-		<item> undefined </item>
+-		<item> unlines </item>
+-		<item> until </item>
+-		<item> unwords </item>
+-		<item> unzip </item>
+-		<item> unzip3 </item>
+-		<item> userError </item>
+-		<item> words </item>
+-		<item> writeFile </item>
+-		<item> zip </item>
+-		<item> zip3 </item>
+-		<item> zipWith </item>
+-		<item> zipWith3 </item>
+-	</list>
+-	<list name="type constructors">
+-		<item> Bool </item>
+-		<item> Char </item>
+-		<item> Double </item>
+-		<item> Either </item>
+-		<item> Float </item>
+-		<item> IO </item>
+-		<item> Integer </item>
+-		<item> Int </item>
+-		<item> Maybe </item>
+-		<item> Ordering </item>
+-		<item> Rational </item>
+-		<item> Ratio </item>
+-		<item> ReadS </item>
+-		<item> ShowS </item>
+-		<item> String </item>
+-		<item> ByteString </item>
++      <Int        attribute="Decimal" context="#stay" />
++      <RegExpr    attribute="Float"   context="#stay" String="\d+\.\d+" />
++      <DetectChar attribute="Char"    context="char" char="'" />
++      <DetectChar attribute="String"  context="string" char="&quot;" />
+ 
+-	</list>
+-	<list name="classes">
+-		<item> Bounded </item>
+-		<item> Enum </item>
+-		<item> Eq </item>
+-		<item> Floating </item>
+-		<item> Fractional </item>
+-		<item> Functor </item>
+-		<item> Integral </item>
+-		<item> Ix </item>
+-		<item> Monad </item>
+-		<item> Num </item>
+-		<item> Ord </item>
+-		<item> Read </item>
+-		<item> RealFloat </item>
+-		<item> RealFrac </item>
+-		<item> Real </item>
+-		<item> Show </item>
+-	</list>
+-	<list name="data constructors">
+-		<item> EQ </item>
+-		<item> False </item>
+-		<item> GT </item>
+-		<item> Just </item>
+-		<item> LT </item>
+-		<item> Left </item>
+-		<item> Nothing </item>
+-		<item> Right </item>
+-		<item> True </item>
+-	</list>
+-	<contexts>
+-		<context attribute="Normal Text" lineEndContext="#stay" name="normal">
+-			<RegExpr attribute="Comment" context="comment_multi_line" String="\{-[^#]" />
+-			<RegExpr attribute="Comment" context="comment_single_line" String="--$" />
+-			<RegExpr attribute="Comment" context="comment_single_line" String="--[ A-Za-z0-9\-,;`].*$" />
+-			<RegExpr attribute="Module Name" context="#stay" String="([A-Z][A-Za-z0-9]*\.)+[A-Z][A-Za-z0-9]*"/>
+-			<RegExpr attribute="Language Pragma" context="#stay" String="\{-#.*#-\}"/>
+-			<keyword attribute="Keyword" context="#stay" String="keywords" />
+-			<keyword attribute="Class" context="#stay" String="classes" />
+-			<keyword attribute="Type Constructor" context="#stay" String="type constructors" />
+-			<keyword attribute="Function" context="#stay" String="functions" />
+-			<keyword attribute="Data Constructor" context="#stay" String="data constructors" />
+-			<DetectChar attribute="String" context="string" char="&quot;" />
+-			<DetectChar attribute="Infix Operator" context="infix" char="`"/>
+-			<RegExpr attribute="Normal Text" context="#stay" String="\w[']+" />
+-			<DetectChar attribute="Char" context="single_char" char="'" />
+-			<RegExpr attribute="Function Definition" context="#stay" String="[a-z_]+\w*'*\s*::" />
+-			<RegExpr attribute="Float" context="#stay" String="\d+\.\d+" />
+-			<Int attribute="Decimal" context="#stay" />
+-			<Detect2Chars attribute="EnumFromTo" context="#stay" char ="." char1="." />
+-		</context>
+-		<context attribute="Comment" lineEndContext="#pop" name="comment_single_line" />
+-		<context attribute="Comment" lineEndContext="#stay" name="comment_multi_line">
+-			<Detect2Chars attribute="Comment" context="#pop" char="-" char1="}" />
+-		</context>
+-		<context attribute="String" lineEndContext="#stay" name="string">
+-			<RegExpr attribute="String" context="#stay" String="\\." />
+-			<DetectChar attribute="String" context="#pop" char="&quot;" />
+-		</context>
+-		<context attribute="Infix Operator" lineEndContext="#stay" name="infix">
+-			<DetectChar attribute="Infix Operator" context="#pop" char="`"/>
+-		</context>
+-		<context attribute="Char" lineEndContext="#pop" name="single_char">
+-			<RegExpr attribute="Char" context="#stay" String="\\." />
+-			<DetectChar attribute="Char" context="#pop" char="'" />
+-		</context>
+-		<context attribute="Function Definition" lineEndContext="#pop" name="function_definition">
+-			<DetectChar attribute="Function Definition" context="#pop" char=";" />
+-		</context>
+-	</contexts>
+-	<itemDatas>
+-		<itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false" />
+-		<itemData name="Module Name" defStyleNum="dsNormal" spellChecking="false" />
+-		<itemData name="Keyword" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Function" defStyleNum="dsFunction" spellChecking="false" />
+-		<itemData name="Function Definition" defStyleNum="dsFunction" spellChecking="false" />
+-		<itemData name="Class" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Decimal" defStyleNum="dsDecVal" spellChecking="false" />
+-		<itemData name="Float" defStyleNum="dsFloat" spellChecking="false" />
+-		<itemData name="Char" defStyleNum="dsChar" spellChecking="false" />
+-		<itemData name="String" defStyleNum="dsString" />
+-		<itemData name="Constructor" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="Language Pragma" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="Comment" defStyleNum="dsComment" />
+-		<itemData name="Data Constructor" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Type Constructor" defStyleNum="dsDataType" spellChecking="false" />
+-		<itemData name="Infix Operator" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="EnumFromTo" defStyleNum="dsFunction" spellChecking="false" />
+-	</itemDatas>
+-	</highlighting>
+-	<general>
+-		<folding indentationsensitive="1" />
+-		<comments>
+-			<comment name="singleLine" start="--" />
+-		</comments>
+-		<keywords casesensitive="1" />
+-	</general>
++      <DetectChar attribute="Function Infix" context="infix" char="`"/>
++      <Detect2Chars attribute="EnumFromTo" context="#stay" char ="." char1="." />
++      <AnyChar      attribute="EnumFromTo" context="#stay" String="‥" />
++    </context>
++    <context attribute="Comment" lineEndContext="#pop" name="comment" />
++    <context attribute="Comment" lineEndContext="#stay" name="comments">
++      <Detect2Chars attribute="Comment" context="#pop" char="-" char1="}" />
++    </context>
++    <context attribute="Char" lineEndContext="#pop" name="char">
++      <RegExpr attribute="Char" context="#stay" String="\\." />
++      <DetectChar attribute="Char" context="#pop" char="'" />
++    </context>
++    <context attribute="String" lineEndContext="#stay" name="string">
++      <RegExpr attribute="String" context="#stay" String="\\." />
++      <DetectChar attribute="String" context="#pop" char="&quot;" />
++    </context>
++    <context attribute="Function Infix" lineEndContext="#stay" name="infix">
++      <DetectChar attribute="Function Infix" context="#pop" char="`"/>
++    </context>
++  </contexts>
++  <itemDatas>
++    <itemData name="Normal"           defStyleNum="dsNormal"   spellChecking="false" />
++    <itemData name="Comment"          defStyleNum="dsComment" />
++    <itemData name="Pragma"           defStyleNum="dsOthers"   spellChecking="false" />
++
++    <itemData name="Keyword"          defStyleNum="dsKeyword"  spellChecking="false" />
++    <itemData name="Type Prelude"     defStyleNum="dsDataType" spellChecking="false" />
++    <itemData name="Function Prelude" defStyleNum="dsFunction" spellChecking="false" />
++    <itemData name="Data Prelude"     defStyleNum="dsKeyword"  spellChecking="false" />
++    <itemData name="Class Prelude"    defStyleNum="dsKeyword"  spellChecking="false" />
++
++    <itemData name="Signature"        defStyleNum="dsOthers"  spellChecking="false" />
++    <itemData name="Function"         defStyleNum="dsNormal"   spellChecking="false" />
++    <itemData name="Operator"         defStyleNum="dsFunction" spellChecking="false" />
++    <itemData name="Type"             defStyleNum="dsDataType" spellChecking="false" />
++    <itemData name="Special"          defStyleNum="dsOthers"  spellChecking="false" />
++
++    <itemData name="Decimal"          defStyleNum="dsDecVal"   spellChecking="false" />
++    <itemData name="Float"            defStyleNum="dsFloat"    spellChecking="false" />
++    <itemData name="Char"             defStyleNum="dsChar"     spellChecking="false" />
++    <itemData name="String"           defStyleNum="dsString" />
++
++    <itemData name="Function Infix"   defStyleNum="dsOthers"   spellChecking="false" />
++    <itemData name="EnumFromTo"       defStyleNum="dsOthers"   spellChecking="false" />
++  </itemDatas>
++  </highlighting>
++  <general>
++    <folding indentationsensitive="1"/>
++    <comments>
++      <comment name="singleLine" start="--" />
++      <comment name="multiLine" start="{-" end="-}" />
++    </comments>
++    <keywords casesensitive="1" />
++</general>
+ </language>
+Index: kate/syntax/data/literate-haskell.xml
+===================================================================
+--- kate/syntax/data/literate-haskell.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/syntax/data/literate-haskell.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1,420 +1,38 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <!DOCTYPE language SYSTEM "language.dtd">
+-
+-<!-- If you add or fix things here, change haskell.xml too (if applicable) -->
+-
+-<language name="Literate Haskell" version="1.9" kateversion="2.4" section="Sources" extensions="*.lhs" author="Marcel Martin (mmar@freenet.de)" license="">
+-	<highlighting>
+-	<list name="keywords">
+-		<item> as </item>
+-		<item> case </item>
+-		<item> class </item>
+-		<item> data </item>
+-		<item> deriving </item>
+-		<item> do </item>
+-		<item> else </item>
+-		<item> hiding </item>
+-		<item> if </item>
+-		<item> import </item>
+-		<item> in </item>
+-		<item> infixl </item>
+-		<item> infixr </item>
+-		<item> instance </item>
+-		<item> let </item>
+-		<item> module </item>
+-		<item> newtype </item>
+-		<item> of </item>
+-		<item> primitive </item>
+-		<item> qualified </item>
+-		<item> then </item>
+-		<item> type </item>
+-		<item> where </item>
+-	</list>
+-        <list name="infix operators">
+-		<item> quot </item>
+-		<item> rem </item>
+-		<item> div </item>
+-		<item> mod </item>
+-		<item> elem </item>
+-		<item> notElem </item>
+-		<item> seq </item>
+-	</list>
+-	<list name="functions">
+-		<!--
+-		These operators are not handled yet.
+-		<item> !! </item>
+-		<item> % </item>
+-		<item> && </item>
+-		<item> $! </item>
+-		<item> $ </item>
+-		<item> * </item>
+-		<item> ** </item>
+-		<item> - </item>
+-		<item> . </item>
+-		<item> /= </item>
+-		<item> < </item>
+-		<item> <= </item>
+-		<item> =<< </item>
+-		<item> == </item>
+-		<item> > </item>
+-		<item> >= </item>
+-		<item> >> </item>
+-		<item> >>= </item>
+-		<item> ^ </item>
+-		<item> ^^ </item>
+-		<item> ++ </item>
+-		<item> || </item>
+-		//-->
+-
+-		<item> FilePath </item>
+-		<item> IOError </item>
+-		<item> abs </item>
+-		<item> acos </item>
+-		<item> acosh </item>
+-		<item> all </item>
+-		<item> and </item>
+-		<item> any </item>
+-		<item> appendFile </item>
+-		<item> approxRational </item>
+-		<item> asTypeOf </item>
+-		<item> asin </item>
+-		<item> asinh </item>
+-		<item> atan </item>
+-		<item> atan2 </item>
+-		<item> atanh </item>
+-		<item> basicIORun </item>
+-		<item> break </item>
+-		<item> catch </item>
+-		<item> ceiling </item>
+-		<item> chr </item>
+-		<item> compare </item>
+-		<item> concat </item>
+-		<item> concatMap </item>
+-		<item> const </item>
+-		<item> cos </item>
+-		<item> cosh </item>
+-		<item> curry </item>
+-		<item> cycle </item>
+-		<item> decodeFloat </item>
+-		<item> denominator </item>
+-		<item> digitToInt </item>
+-		<item> div </item>
+-		<item> divMod </item>
+-		<item> drop </item>
+-		<item> dropWhile </item>
+-		<item> either </item>
+-		<item> elem </item>
+-		<item> encodeFloat </item>
+-		<item> enumFrom </item>
+-		<item> enumFromThen </item>
+-		<item> enumFromThenTo </item>
+-		<item> enumFromTo </item>
+-		<item> error </item>
+-		<item> even </item>
+-		<item> exp </item>
+-		<item> exponent </item>
+-		<item> fail </item>
+-		<item> filter </item>
+-		<item> flip </item>
+-		<item> floatDigits </item>
+-		<item> floatRadix </item>
+-		<item> floatRange </item>
+-		<item> floor </item>
+-		<item> fmap </item>
+-		<item> foldl </item>
+-		<item> foldl1 </item>
+-		<item> foldr </item>
+-		<item> foldr1 </item>
+-		<item> fromDouble </item>
+-		<item> fromEnum </item>
+-		<item> fromInt </item>
+-		<item> fromInteger </item>
+-		<item> fromIntegral </item>
+-		<item> fromRational </item>
+-		<item> fst </item>
+-		<item> gcd </item>
+-		<item> getChar </item>
+-		<item> getContents </item>
+-		<item> getLine </item>
+-		<item> group </item>
+-		<item> head </item>
+-		<item> id </item>
+-		<item> inRange </item>
+-		<item> index </item>
+-		<item> init </item>
+-		<item> intToDigit </item>
+-		<item> interact </item>
+-		<item> ioError </item>
+-		<item> isAlpha </item>
+-		<item> isAlphaNum </item>
+-		<item> isAscii </item>
+-		<item> isControl </item>
+-		<item> isDenormalized </item>
+-		<item> isDigit </item>
+-		<item> isHexDigit </item>
+-		<item> isIEEE </item>
+-		<item> isInfinite </item>
+-		<item> isLower </item>
+-		<item> isNaN </item>
+-		<item> isNegativeZero </item>
+-		<item> isOctDigit </item>
+-		<item> isPrint </item>
+-		<item> isSpace </item>
+-		<item> isUpper </item>
+-		<item> iterate </item>
+-		<item> last </item>
+-		<item> lcm </item>
+-		<item> length </item>
+-		<item> lex </item>
+-		<item> lexDigits </item>
+-		<item> lexLitChar </item>
+-		<item> lines </item>
+-		<item> log </item>
+-		<item> logBase </item>
+-		<item> lookup </item>
+-		<item> map </item>
+-		<item> mapM </item>
+-		<item> mapM_ </item>
+-		<item> max </item>
+-		<item> maxBound </item>
+-		<item> maximum </item>
+-		<item> maybe </item>
+-		<item> min </item>
+-		<item> minBound </item>
+-		<item> minimum </item>
+-		<item> mod </item>
+-		<item> negate </item>
+-		<item> not </item>
+-		<item> notElem </item>
+-		<item> null </item>
+-		<item> numerator </item>
+-		<item> odd </item>
+-		<item> or </item>
+-		<item> ord </item>
+-		<item> otherwise </item>
+-		<item> pack </item>
+-		<item> pi </item>
+-		<item> pred </item>
+-		<item> primExitWith </item>
+-		<item> print </item>
+-		<item> product </item>
+-		<item> properFraction </item>
+-		<item> putChar </item>
+-		<item> putStr </item>
+-		<item> putStrLn </item>
+-		<item> quot </item>
+-		<item> quotRem </item>
+-		<item> range </item>
+-		<item> rangeSize </item>
+-		<item> read </item>
+-		<item> readDec </item>
+-		<item> readFile </item>
+-		<item> readFloat </item>
+-		<item> readHex </item>
+-		<item> readIO </item>
+-		<item> readInt </item>
+-		<item> readList </item>
+-		<item> readLitChar </item>
+-		<item> readLn </item>
+-		<item> readOct </item>
+-		<item> readParen </item>
+-		<item> readSigned </item>
+-		<item> reads </item>
+-		<item> readsPrec </item>
+-		<item> realToFrac </item>
+-		<item> recip </item>
+-		<item> rem </item>
+-		<item> repeat </item>
+-		<item> replicate </item>
+-		<item> return </item>
+-		<item> reverse </item>
+-		<item> round </item>
+-		<item> scaleFloat </item>
+-		<item> scanl </item>
+-		<item> scanl1 </item>
+-		<item> scanr </item>
+-		<item> scanr1 </item>
+-		<item> seq </item>
+-		<item> sequence </item>
+-		<item> sequence_ </item>
+-		<item> show </item>
+-		<item> showChar </item>
+-		<item> showInt </item>
+-		<item> showList </item>
+-		<item> showLitChar </item>
+-		<item> showParen </item>
+-		<item> showSigned </item>
+-		<item> showString </item>
+-		<item> shows </item>
+-		<item> showsPrec </item>
+-		<item> significand </item>
+-		<item> signum </item>
+-		<item> sin </item>
+-		<item> sinh </item>
+-		<item> snd </item>
+-		<item> sort </item>
+-		<item> span </item>
+-		<item> splitAt </item>
+-		<item> sqrt </item>
+-		<item> subtract </item>
+-		<item> succ </item>
+-		<item> sum </item>
+-		<item> tail </item>
+-		<item> take </item>
+-		<item> takeWhile </item>
+-		<item> tan </item>
+-		<item> tanh </item>
+-		<item> threadToIOResult </item>
+-		<item> toEnum </item>
+-		<item> toInt </item>
+-		<item> toInteger </item>
+-		<item> toLower </item>
+-		<item> toRational </item>
+-		<item> toUpper </item>
+-		<item> truncate </item>
+-		<item> uncurry </item>
+-		<item> undefined </item>
+-		<item> unlines </item>
+-		<item> until </item>
+-		<item> unwords </item>
+-		<item> unzip </item>
+-		<item> unzip3 </item>
+-		<item> userError </item>
+-		<item> words </item>
+-		<item> writeFile </item>
+-		<item> zip </item>
+-		<item> zip3 </item>
+-		<item> zipWith </item>
+-		<item> zipWith3 </item>
+-	</list>
+-	<list name="type constructors">
+-		<item> Bool </item>
+-		<item> Char </item>
+-		<item> Double </item>
+-		<item> Either </item>
+-		<item> Float </item>
+-		<item> IO </item>
+-		<item> Integer </item>
+-		<item> Int </item>
+-		<item> Maybe </item>
+-		<item> Ordering </item>
+-		<item> Rational </item>
+-		<item> Ratio </item>
+-		<item> ReadS </item>
+-		<item> ShowS </item>
+-		<item> String </item>
+-		<item> ByteString </item>
+-
+-	</list>
+-	<list name="classes">
+-		<item> Bounded </item>
+-		<item> Enum </item>
+-		<item> Eq </item>
+-		<item> Floating </item>
+-		<item> Fractional </item>
+-		<item> Functor </item>
+-		<item> Integral </item>
+-		<item> Ix </item>
+-		<item> Monad </item>
+-		<item> Num </item>
+-		<item> Ord </item>
+-		<item> Read </item>
+-		<item> RealFloat </item>
+-		<item> RealFrac </item>
+-		<item> Real </item>
+-		<item> Show </item>
+-	</list>
+-	<list name="data constructors">
+-		<item> EQ </item>
+-		<item> False </item>
+-		<item> GT </item>
+-		<item> Just </item>
+-		<item> LT </item>
+-		<item> Left </item>
+-		<item> Nothing </item>
+-		<item> Right </item>
+-		<item> True </item>
+-	</list>
+-	<contexts>
+-		<context attribute="Comment" lineEndContext="#stay" name="literate-normal">
+-			<DetectChar attribute="Special" context="normal" char="&gt;" column="0"/>
+-			<StringDetect attribute="Comment" context="normal-sticky" String="&#92;begin&#123;code&#125;"/>
+-		</context>
+-		<context attribute="Normal Text" lineEndContext="#stay" name="normal-shared">
+-			<RegExpr attribute="Comment" context="comment_multi_line" String="\{-[^#]" />
+-			<StringDetect attribute="Comment" context="literate-normal" String="&#92;end&#123;code&#125;" />
+-			<RegExpr attribute="Module Name" context="#stay" String="([A-Z][A-Za-z0-9]*\.)+[A-Z][A-Za-z0-9]*"/>
+-			<RegExpr attribute="Language Pragma" context="#stay" String="\{-#.*#-\}"/>
+-			<keyword attribute="Keyword" context="#stay" String="keywords" />
+-			<keyword attribute="Class" context="#stay" String="classes" />
+-			<keyword attribute="Type Constructor" context="#stay" String="type constructors" />
+-			<keyword attribute="Function" context="#stay" String="functions" />
+-			<keyword attribute="Data Constructor" context="#stay" String="data constructors" />
+-			<DetectChar attribute="String" context="string" char="&quot;" />
+-			<DetectChar attribute="Infix Operator" context="infix" char="`"/>
+-			<RegExpr attribute="Normal Text" context="#stay" String="\w[']+" />
+-			<DetectChar attribute="Char" context="single_char" char="'" />
+-			<RegExpr attribute="Function Definition" context="#stay" String="\s*[a-z_]+\w*'*\s*::" />
+-			<RegExpr  attribute="Float" context="#stay" String="\d+\.\d+" />
+-			<Int attribute="Decimal" context="#stay" />
+-			<Detect2Chars attribute="EnumFromTo" context="#stay" char ="." char1="." />
+-		</context>
+-		<context attribute="Normal Text" lineEndContext="#stay" name="normal-sticky">
+-			<RegExpr attribute="Comment" context="comment_single_line-sticky" String="--$" />
+-			<RegExpr attribute="Comment" context="comment_single_line-sticky" String="--[ A-Za-z0-9\-,;`].*$" />
+-			<IncludeRules context="normal-shared" includeAttrib="true" />
+-		</context>
+-		<context attribute="Normal Text" lineEndContext="#pop" name="normal">
+-			<RegExpr attribute="Comment" context="comment_single_line" String="--$" />
+-			<RegExpr attribute="Comment" context="comment_single_line" String="--[ A-Za-z0-9\-,;`].*$" />
+-			<IncludeRules context="normal-shared" includeAttrib="true" />
+-		</context>
+-		<context attribute="Comment" lineEndContext="#pop#pop" name="comment_single_line" />
+-		<context attribute="Comment" lineEndContext="#pop" name="comment_single_line-sticky" />
+-		<context attribute="Comment" lineEndContext="#stay" name="comment_multi_line">
+-			<Detect2Chars attribute="Comment" context="#pop" char="-" char1="}" />
+-			<Detect2Chars attribute="Comment" context="comment_multi_line" char="{" char1="-" />
+-		</context>
+-		<context attribute="String" lineEndContext="#stay" name="string">
+-			<RegExpr attribute="String" context="#stay" String="\\." />
+-			<DetectChar attribute="String" context="#pop" char="&quot;" />
+-		</context>
+-		<context attribute="Infix Operator" lineEndContext="#stay" name="infix">
+-			<DetectChar attribute="Infix Operator" context="#pop" char="`"/>
+-		</context>
+-		<context attribute="Char" lineEndContext="#pop" name="single_char">
+-			<RegExpr attribute="Char" context="#stay" String="\\." />
+-			<DetectChar attribute="Char" context="#pop" char="'" />
+-		</context>
+-		<context attribute="Function Definition" lineEndContext="#pop" name="function_definition">
+-			<DetectChar attribute="Function Definition" context="#pop" char=";" />
+-		</context>
+-	</contexts>
+-	<itemDatas>
+-		<itemData name="Normal Text" defStyleNum="dsNormal" spellChecking="false" />
+-		<itemData name="Module Name" defStyleNum="dsNormal" spellChecking="false" />
+-		<itemData name="Keyword" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Function" defStyleNum="dsFunction" spellChecking="false" />
+-		<itemData name="Function Definition" defStyleNum="dsFunction" spellChecking="false" />
+-		<itemData name="Class" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Decimal" defStyleNum="dsDecVal" spellChecking="false" />
+-		<itemData name="Float" defStyleNum="dsFloat" spellChecking="false" />
+-		<itemData name="Char" defStyleNum="dsChar" spellChecking="false" />
+-		<itemData name="String" defStyleNum="dsString" />
+-		<itemData name="Constructor" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="Language Pragma" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="Comment" defStyleNum="dsComment"/>
+-		<itemData name="Data Constructor" defStyleNum="dsKeyword" spellChecking="false" />
+-		<itemData name="Type Constructor" defStyleNum="dsDataType" spellChecking="false" />
+-		<itemData name="Infix Operator" defStyleNum="dsOthers" spellChecking="false" />
+-		<itemData name="Special" defStyleNum="dsChar" spellChecking="false" />
+-		<itemData name="EnumFromTo" defStyleNum="dsOthers" spellChecking="false" />
+-	</itemDatas>
+-	</highlighting>
+-	<general>
+-		<comments>
+-			<comment name="singleLine" start="--" />
+-		</comments>
+-		<keywords casesensitive="1" />
+-	</general>
++<language name="Literate Haskell" version="2.0.1" kateversion="2.3" section="Sources" extensions="*.lhs" mimetype="text/x-haskell" author="Nicolas Wu (zenzike@gmail.com)" license="LGPL" indenter="haskell">
++  <highlighting>
++  <contexts>
++    <context attribute="Text" lineEndContext="#stay" name="text">
++      <DetectChar attribute="BirdTrack" context="normal" char="&gt;" column="0"/>
++      <DetectChar attribute="BirdTrack" context="normal" char="&lt;" column="0"/>
++      <StringDetect attribute="Text" context="normals" String="&#92;begin&#123;code&#125;"/>
++      <StringDetect attribute="Text" context="normals" String="&#92;begin&#123;spec&#125;"/>
++    </context>
++    <context attribute="Normal" lineEndContext="#pop" name="normal">
++      <RegExpr attribute="Comment" context="comments'" String="\{-[^#]" />
++      <IncludeRules context="##Haskell" />
++    </context>
++    <context attribute="Normal" lineEndContext="#stay" name="normals">
++      <StringDetect attribute="Normal" context="#pop" String="&#92;end&#123;code&#125;"/>
++      <StringDetect attribute="Normal" context="#pop" String="&#92;end&#123;spec&#125;"/>
++      <IncludeRules context="##Haskell" />
++    </context>
++    <context attribute="Comment" lineEndContext="uncomments" name="comments'" >
++      <Detect2Chars attribute="Comment" context="#pop" char="-" char1="}" />
++    </context>
++    <context attribute="Text" lineEndContext="#stay" name="uncomments">
++      <DetectChar attribute="BirdTrack" context="recomments" char="&gt;" column="0"/>
++      <DetectChar attribute="BirdTrack" context="recomments" char="&lt;" column="0"/>
++    </context>
++    <context attribute="Comment" lineEndContext="#pop" name="recomments">
++      <Detect2Chars attribute="Comment" context="#pop#pop#pop" char="-" char1="}" />
++    </context>
++  </contexts>
++  <itemDatas>
++    <itemData name="Text"             defStyleNum="dsNormal" spellChecking="true" />
++    <itemData name="BirdTrack"        defStyleNum="dsOthers"  spellChecking="false" />
++    <itemData name="Comment"          defStyleNum="dsComment" />
++  </itemDatas>
++  </highlighting>
+ </language>
 Index: kate/syntax/data/latex.xml
 ===================================================================
---- kate/syntax/data/latex.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kate/syntax/data/latex.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kate/syntax/data/latex.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/syntax/data/latex.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -1,6 +1,6 @@
  <?xml version="1.0" encoding="UTF-8"?>
  <!DOCTYPE language SYSTEM "language.dtd">
@@ -42,10 +1993,90 @@ Index: kate/syntax/data/latex.xml
    </highlighting>
  
    <general>
+Index: kate/syntax/data/javadoc.xml
+===================================================================
+--- kate/syntax/data/javadoc.xml	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/syntax/data/javadoc.xml	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -78,12 +78,12 @@
+ 				<RegExpr attribute="JavadocParam" context="#pop#pop" String="\S*(?=\*/)" />
+ 				<RegExpr attribute="JavadocParam" context="#pop" String="\S*(\s|$)" />
+ 			</context>
+-			<context attribute="InlineTag" lineEndContext="#pop" name="InlineTagar">
++			<context attribute="InlineTag" name="InlineTagar">
+ 				<DetectChar attribute="InlineTag" context="#pop" char="}" />
+ 				<Detect2Chars attribute="JavadocFS" context="#pop#pop#pop" char="*" char1="/" />
+ 				<IncludeRules context="##HTML"/>
+ 			</context>
+-			<context attribute="InlineTag" lineEndContext="#pop" name="LiteralTagar">
++			<context attribute="InlineTag" name="LiteralTagar">
+ 				<DetectChar attribute="InlineTag" context="#pop" char="}" />
+ 				<Detect2Chars attribute="JavadocFS" context="#pop#pop#pop" char="*" char1="/" />
+ 			</context>
+Index: kate/utils/katetemplatehandler.cpp
+===================================================================
+--- kate/utils/katetemplatehandler.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/utils/katetemplatehandler.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -119,13 +119,12 @@
+   /// - create view => ranges are added
+   /// for now simply "just insert" the code when we have no active view
+ 
++  handleTemplateString(initial_Values);
++  m_undoManager->undoSafePoint();
++  doc()->editEnd();
++
+   if (!initialValues.isEmpty() && m_view) {
+     // only do complex stuff when required
+-
+-    handleTemplateString(initial_Values);
+-    m_undoManager->undoSafePoint();
+-    doc()->editEnd();
+-
+     if (!m_templateRanges.isEmpty()) {
+       foreach(View* view, doc()->views()) {
+         setupEventHandler(view);
+@@ -150,9 +149,6 @@
+     }
+ 
+   } else {
+-    m_undoManager->undoSafePoint();
+-    doc()->editEnd();
+-    // simple templates just need to be (which gets done in handleTemplateString())
+     cleanupAndExit();
+   }
+ }
+@@ -268,6 +264,7 @@
+       // terminate
+       jumpToFinalCursorPosition();
+       cleanupAndExit();
++      keyEvent->accept();
+       return true;
+ 
+     } else if (keyEvent->key() == Qt::Key_Escape) {
+@@ -275,6 +272,7 @@
+         // terminate
+         jumpToFinalCursorPosition();
+         cleanupAndExit();
++        keyEvent->accept();
+         return true;
+       }
+ 
+@@ -286,10 +284,12 @@
+         jumpToNextRange();
+       }
+ 
++      keyEvent->accept();
+       return true;
+ 
+     } else if (keyEvent->key() == Qt::Key_Backtab && !m_view->isCompletionActive()) {
+       jumpToPreviousRange();
++      keyEvent->accept();
+       return true;
+     }
+   }
 Index: kate/spellcheck/ontheflycheck.cpp
 ===================================================================
---- kate/spellcheck/ontheflycheck.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kate/spellcheck/ontheflycheck.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kate/spellcheck/ontheflycheck.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/spellcheck/ontheflycheck.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -60,6 +60,10 @@
            this, SLOT(updateConfig()));
    connect(document, SIGNAL(respellCheckBlock(KateDocument*, int, int)),
@@ -77,8 +2108,8 @@ Index: kate/spellcheck/ontheflycheck.cpp
  void KateOnTheFlyChecker::refreshSpellCheck(const KTextEditor::Range &range)
 Index: kate/spellcheck/spellcheckdialog.cpp
 ===================================================================
---- kate/spellcheck/spellcheckdialog.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kate/spellcheck/spellcheckdialog.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kate/spellcheck/spellcheckdialog.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kate/spellcheck/spellcheckdialog.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -110,15 +110,13 @@
    {
      m_speller = new Sonnet::Speller();
@@ -97,10 +2128,144 @@ Index: kate/spellcheck/spellcheckdialog.cpp
  
    if ( !m_sonnetDialog )
    {
+Index: kfile/kfilepreviewgenerator.cpp
+===================================================================
+--- kfile/kfilepreviewgenerator.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kfile/kfilepreviewgenerator.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -28,6 +28,7 @@
+ #include <kio/previewjob.h>
+ #include <kdirlister.h>
+ #include <kdirmodel.h>
++#include <kdebug.h>
+ #include <ksharedconfig.h>
+ 
+ #include <QApplication>
+@@ -357,7 +358,7 @@
+     QTimer* m_iconUpdateTimer;
+     QTimer* m_scrollAreaTimer;
+     QList<KJob*> m_previewJobs;
+-    KDirModel* m_dirModel;
++    QPointer<KDirModel> m_dirModel;
+     QAbstractProxyModel* m_proxyModel;
+ 
+     /**
+@@ -648,6 +649,12 @@
+ 
+ void KFilePreviewGenerator::Private::updateCutItems()
+ {
++    if (m_dirModel == 0) {
++        // see bug #196681
++        kWarning() << "KDirModel has been deleted before deleting KFilePreviewGenerator.";
++        return;
++    }
++
+     DataChangeObtainer obt(this);
+     clearCutItemsCache();
+ 
+Index: kfile/kfilemodule.desktop
+===================================================================
+--- kfile/kfilemodule.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kfile/kfilemodule.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -43,6 +43,7 @@
+ Name[pt_BR]=KFileModule
+ Name[ro]=KFileModule
+ Name[ru]=KFileModule
++Name[se]=KFileModule
+ Name[sk]=KFile modul
+ Name[sl]=Modul KFile
+ Name[sr]=Модул к‑фајла
+@@ -96,6 +97,7 @@
+ Comment[pt_BR]=O módulo de arquivos padrão do KDE, que fornece o diálogo de arquivos padronizado
+ Comment[ro]=Modulul de fișier KDE implicit, furnizînd dialogul standard de fișiere
+ Comment[ru]=Модуль по умолчанию диалогового окна выбора файла
++Comment[se]=Standárda KDE-fiilamodula mii sisttisdoallá standárdafiilaláseža
+ Comment[sk]=Štandardný súborový modul KDE, ktorý poskytuje štandardný súborový dialóg
+ Comment[sl]=Privzeti modul KDE za datoteke, ki ponuja običajno pogovorno okno za datoteke
+ Comment[sr]=Подразумевани КДЕ‑ов модул фајлова који даје стандардни фајл дијалог
+Index: kioslave/http/kcookiejar/kcookiejar.cpp
+===================================================================
+--- kioslave/http/kcookiejar/kcookiejar.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kioslave/http/kcookiejar/kcookiejar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -684,17 +684,19 @@
+     KDateTime epoch;
+     epoch.setTime_t(0);
+ 
++    // Check for cross-domain flag from kio_http
++    if (strncmp(cookieStr, "Cross-Domain\n", 13) == 0)
++    {
++        cookieStr += 13;
++        crossDomain = true;
++    }
++
+     //  The hard stuff :)
+     for(;;)
+     {
+         // check for "Set-Cookie"
+-        if (strncmp(cookieStr, "Cross-Domain\n", 13) == 0)
++        if (strncasecmp(cookieStr, "Set-Cookie:", 11) == 0)
+         {
+-            cookieStr += 13;
+-            crossDomain = true;
+-        }
+-        else if (strncasecmp(cookieStr, "Set-Cookie:", 11) == 0)
+-        {
+             cookieStr = parseNameValue(cookieStr+11, Name, Value, true);
+ 
+             // Host = FQDN
+Index: kioslave/http/kcookiejar/kcookiejar.desktop
+===================================================================
+--- kioslave/http/kcookiejar/kcookiejar.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kioslave/http/kcookiejar/kcookiejar.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -19,6 +19,7 @@
+ Name[gl]=Bote de cookies
+ Name[hi]=कुकी जार
+ Name[hr]=Cookie Jar
++Name[hu]=Cookie-tároló
+ Name[ia]=Cookie Jar
+ Name[id]=Jar Kuki
+ Name[is]=Smákökukrukka
+@@ -35,6 +36,7 @@
+ Name[pl]=Przechowywanie ciasteczek
+ Name[pt]=Repositório de 'Cookies'
+ Name[pt_BR]=Repositório de cookies
++Name[se]=Diehtočoahkorádju
+ Name[sk]=Úložisko cookie
+ Name[sl]=Posoda s piškotki
+ Name[sr]=Тегла за колачиће
+@@ -67,6 +69,7 @@
+ Comment[gl]=Garda cookies da rede
+ Comment[hi]=नेटवर्क कुकी सहेजता है
+ Comment[hr]=Sprema mrežne kolačiće
++Comment[hu]=Hálózati sütik tárolása
+ Comment[ia]=Il immagazina le cookies de rete
+ Comment[id]=Simpan kuki jaringan
+ Comment[is]=Geymir smákökur af netum
+@@ -83,6 +86,8 @@
+ Comment[pl]=Przechowuje ciasteczka sieciowe
+ Comment[pt]=Guarda os 'cookies' da rede
+ Comment[pt_BR]=Armazena os cookies da rede
++Comment[ro]=Stochează cookie-uri de rețea
++Comment[se]=Vurke fierpmádatdiehtočoahkuid
+ Comment[sk]=Ukladá sieťové cookies
+ Comment[sl]=Hrani omrežne piškotke
+ Comment[sr]=Складишти мрежне колачиће
+Index: nepomuk/test/querytest.cpp
+===================================================================
+--- nepomuk/test/querytest.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/test/querytest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -352,7 +352,7 @@
+     QString sparql = QString::fromLatin1("select distinct ?r count(?v5) as ?cnt where { { "
+                                          "{ ?r a ?v1 . ?v1 %1 %2 . } UNION { ?r a ?v2 . ?v2 %1 %3 . } . "
+                                          "FILTER(!bif:exists((select (1) where { <nepomuk:/res/foobar> ?v3 ?r . }))) . "
+-                                         "?r ?v4 ?v5 . } . } ORDER BY DESC ( ?cnt )")
++                                         "?v5 ?v4 ?r . } . } ORDER BY DESC ( ?cnt )")
+                      .arg(Soprano::Node::resourceToN3(Soprano::Vocabulary::RDFS::subClassOf()),
+                           Soprano::Node::resourceToN3(Nepomuk::Vocabulary::NFO::RasterImage()),
+                           Soprano::Node::resourceToN3(Nepomuk::Vocabulary::NFO::Audio()));
 Index: nepomuk/types/entitymanager.cpp
 ===================================================================
---- nepomuk/types/entitymanager.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ nepomuk/types/entitymanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- nepomuk/types/entitymanager.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/types/entitymanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -1,5 +1,5 @@
  /* This file is part of the Nepomuk-KDE libraries
 -    Copyright (c) 2007 Sebastian Trueg <trueg@kde.org>
@@ -220,8 +2385,8 @@ Index: nepomuk/types/entitymanager.cpp
  
 Index: nepomuk/types/entitymanager.h
 ===================================================================
---- nepomuk/types/entitymanager.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ nepomuk/types/entitymanager.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- nepomuk/types/entitymanager.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/types/entitymanager.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -1,5 +1,5 @@
  /* This file is part of the Nepomuk-KDE libraries
 -   Copyright (c) 2007 Sebastian Trueg <trueg@kde.org>
@@ -253,8 +2418,8 @@ Index: nepomuk/types/entitymanager.h
              QHash<QUrl, QExplicitlySharedDataPointer<OntologyPrivate> > m_ontologyMap;
 Index: nepomuk/types/entity.cpp
 ===================================================================
---- nepomuk/types/entity.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ nepomuk/types/entity.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- nepomuk/types/entity.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/types/entity.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -275,7 +275,8 @@
  
  void Nepomuk::Types::Entity::reset( bool recursive )
@@ -289,10 +2454,417 @@ Index: nepomuk/types/entity.cpp
  }
  
  
+Index: nepomuk/query/comparisonterm.cpp
+===================================================================
+--- nepomuk/query/comparisonterm.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/query/comparisonterm.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -114,8 +114,12 @@
+     if ( !m_subTerm.isValid() ) {
+         QString prop = propertyToString( qbd );
+         QString ov = getMainVariableName( qbd );
+-        return QString::fromLatin1( "%1 %2 %3 . " )
+-            .arg( resourceVarName, prop, ov );
++        if( m_inverted )
++            return QString::fromLatin1( "%1 %2 %3 . " )
++                .arg( ov, prop, resourceVarName );
++        else
++            return QString::fromLatin1( "%1 %2 %3 . " )
++                .arg( resourceVarName, prop, ov );
+     }
+ 
+     else if ( m_property.literalRangeType().isValid() ) {
+@@ -335,6 +339,10 @@
+     }
+     if( m_sortWeight != 0 ) {
+         qbd->addOrderVariable( sortVar, m_sortWeight, m_sortOrder );
++
++        // trueg: there seems to be a bug in Virtuoso which gives wrong search order if the sort variable is not in the select list.
++        if( m_aggregateFunction == ComparisonTerm::NoAggregateFunction )
++            qbd->addCustomVariable( sortVar );
+     }
+     return v;
+ }
+Index: nepomuk/core/resourcedata.cpp
+===================================================================
+--- nepomuk/core/resourcedata.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/core/resourcedata.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -52,7 +52,7 @@
+ 
+ using namespace Soprano;
+ 
+-#define MAINMODEL m_rm->resourceFilterModel
++#define MAINMODEL static_cast<ResourceFilterModel*>(m_rm->m_manager->mainModel())
+ 
+ 
+ Nepomuk::ResourceData::ResourceData( const QUrl& uri, const QUrl& kickOffUri, const QUrl& type, ResourceManagerPrivate* rm )
+Index: nepomuk/core/resourcemanager.cpp
+===================================================================
+--- nepomuk/core/resourcemanager.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ nepomuk/core/resourcemanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -107,12 +107,12 @@
+ 
+ QList<Nepomuk::ResourceData*> Nepomuk::ResourceManagerPrivate::allResourceDataOfType( const QUrl& type )
+ {
+-    QMutexLocker lock( &mutex );
+-
+     QList<ResourceData*> l;
+ 
+     if( !type.isEmpty() ) {
++        mutex.lock();
+         QSet<ResourceData*> rdl = m_uriKickoffData.values().toSet();
++        mutex.unlock();
+         for( QSet<ResourceData*>::iterator rdIt = rdl.begin();
+              rdIt != rdl.end(); ++rdIt ) {
+             ResourceData* rd = *rdIt;
+@@ -133,15 +133,15 @@
+ 
+ QList<Nepomuk::ResourceData*> Nepomuk::ResourceManagerPrivate::allResourceDataWithProperty( const QUrl& uri, const Variant& v )
+ {
+-    QMutexLocker lock( &mutex );
+-
+     QList<ResourceData*> l;
+ 
+     //
+     // We need to cache m_uriKickoffData since it might be changed
+     // in the loop by ResourceData::load()
+     //
++    mutex.lock();
+     QSet<ResourceData*> rdl = m_uriKickoffData.values().toSet();
++    mutex.unlock();
+ 
+     //
+     // make sure none of the ResourceData objects are deleted by ResourceData::load below
+Index: kimgio/pic_io_handler.h
+===================================================================
+--- kimgio/pic_io_handler.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kimgio/pic_io_handler.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -22,8 +22,8 @@
+ #define __PIC_IO_HANDLER_H__
+ 
+ #include "pic_rw.h"
+-#include <qimage.h>
+-#include <Qt/qvariant.h>
++#include <QtCore/QVariant>
++#include <QtGui/QImage>
+ 
+ #include <iostream>
+ 
+Index: kimgio/ras.desktop
+===================================================================
+--- kimgio/ras.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kimgio/ras.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -18,6 +18,7 @@
+ Name[gl]=RAS
+ Name[hi]=RAS
+ Name[hr]=RAS
++Name[hu]=RAS
+ Name[ia]=RAS
+ Name[id]=RAS
+ Name[is]=RAS
+@@ -38,6 +39,7 @@
+ Name[pt_BR]=RAS
+ Name[ro]=RAS
+ Name[ru]=RAS
++Name[se]=RAS
+ Name[sk]=RAS
+ Name[sl]=RAS
+ Name[sr]=РАС
+Index: kimgio/pic_rw.h
+===================================================================
+--- kimgio/pic_rw.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kimgio/pic_rw.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -30,10 +30,10 @@
+ 
+ #define PIC_MAGIC_NUMBER  0x5380f634
+ 
++#include <kdebug.h>
++#include <QtCore/QFile>
+ #include <QtGui/QImageIOPlugin>
+-#include <qfile.h>
+-#include <Qt/qcolor.h>
+-#include <kdebug.h>
++#include <QtGui/QColor>
+ 
+ /**
+  * How fields are distributed over the image
+Index: kio/kio/slavebase.cpp
+===================================================================
+--- kio/kio/slavebase.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/slavebase.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -979,6 +979,7 @@
+         disconnectSlave();
+         d->isConnectedToApp = true;
+         connectSlave(app_socket);
++        virtual_hook(AppConnectionMade, 0);
+     } break;
+     case CMD_SLAVE_HOLD: {
+         KUrl url;
+Index: kio/kio/slave.cpp
+===================================================================
+--- kio/kio/slave.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/slave.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -276,6 +276,9 @@
+ void Slave::setJob(KIO::SimpleJob *job)
+ {
+     Q_D(Slave);
++    if (!d->sslMetaData.isEmpty()) {
++        emit metaData(d->sslMetaData);
++    }
+     d->m_job = job;
+ }
+ 
+@@ -379,6 +382,7 @@
+     d->m_port = port;
+     d->m_user = user;
+     d->m_passwd = passwd;
++    d->sslMetaData.clear();
+ 
+     QByteArray data;
+     QDataStream stream( &data, QIODevice::WriteOnly );
+@@ -389,6 +393,7 @@
+ void Slave::resetHost()
+ {
+     Q_D(Slave);
++    d->sslMetaData.clear();
+     d->m_host = "<reset>";
+ }
+ 
+Index: kio/kio/tcpslavebase.cpp
+===================================================================
+--- kio/kio/tcpslavebase.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/tcpslavebase.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -4,6 +4,7 @@
+  * Copyright (C) 2001 Dawit Alemayehu <adawit@kde.org>
+  * Copyright (C) 2007,2008 Andreas Hartmetz <ahartmetz@gmail.com>
+  * Copyright (C) 2008 Roland Harnau <tau@gmx.eu>
++ * Copyright (C) 2010 Richard Moore <rich@kde.org>
+  *
+  * This file is part of the KDE project
+  *
+@@ -105,19 +106,20 @@
+ public:
+     TcpSlaveBasePrivate(TCPSlaveBase* qq) : q(qq) {}
+ 
+-    void prepareSslRelatedMetaData()
++    void setSslMetaData()
+     {
++        sslMetaData.insert("ssl_in_use", "TRUE");
+         KSslCipher cipher = socket.sessionCipher();
+-        q->setMetaData("ssl_protocol_version", socket.negotiatedSslVersionName());
++        sslMetaData.insert("ssl_protocol_version", socket.negotiatedSslVersionName());
+         QString sslCipher = cipher.encryptionMethod() + '\n';
+         sslCipher += cipher.authenticationMethod() + '\n';
+         sslCipher += cipher.keyExchangeMethod() + '\n';
+         sslCipher += cipher.digestMethod();
+-        q->setMetaData("ssl_cipher", sslCipher);
+-        q->setMetaData("ssl_cipher_name", cipher.name());
+-        q->setMetaData("ssl_cipher_used_bits", QString::number(cipher.usedBits()));
+-        q->setMetaData("ssl_cipher_bits", QString::number(cipher.supportedBits()));
+-        q->setMetaData("ssl_peer_ip", ip);
++        sslMetaData.insert("ssl_cipher", sslCipher);
++        sslMetaData.insert("ssl_cipher_name", cipher.name());
++        sslMetaData.insert("ssl_cipher_used_bits", QString::number(cipher.usedBits()));
++        sslMetaData.insert("ssl_cipher_bits", QString::number(cipher.supportedBits()));
++        sslMetaData.insert("ssl_peer_ip", ip);
+ 
+         // try to fill in the blanks, i.e. missing certificates, and just assume that
+         // those belong to the peer (==website or similar) certificate.
+@@ -142,7 +144,7 @@
+             errorStr += '\n';
+         }
+         errorStr.chop(1);
+-        q->setMetaData("ssl_cert_errors", errorStr);
++        sslMetaData.insert("ssl_cert_errors", errorStr);
+ 
+         QString peerCertChain;
+         Q_FOREACH (const QSslCertificate &cert, socket.peerCertificateChain()) {
+@@ -150,8 +152,24 @@
+             peerCertChain.append('\x01');
+         }
+         peerCertChain.chop(1);
+-        q->setMetaData("ssl_peer_chain", peerCertChain);
++        sslMetaData.insert("ssl_peer_chain", peerCertChain);
++        sendSslMetaData();
+     }
++    
++    void clearSslMetaData()
++    {
++        sslMetaData.clear();
++        sslMetaData.insert("ssl_in_use", "FALSE");
++        sendSslMetaData();
++    }
++    
++    void sendSslMetaData()
++    {
++        MetaData::ConstIterator it = sslMetaData.constBegin();
++        for (; it != sslMetaData.constEnd(); ++it) {
++            q->setMetaData(it.key(), it.value());
++        }
++    }
+ 
+     TCPSlaveBase* q;
+ 
+@@ -170,6 +188,8 @@
+     bool sslNoUi; // If true, we just drop the connection silently
+                   // if SSL certificate check fails in some way.
+     QList<KSslError> sslErrors;
++    
++    MetaData sslMetaData;
+ };
+ 
+ 
+@@ -241,7 +261,7 @@
+ ssize_t TCPSlaveBase::read(char* data, ssize_t len)
+ {
+     if (d->usingSSL && (d->socket.encryptionMode() != KTcpSocket::SslClientMode)) {
+-        setMetaData("ssl_in_use", "FALSE");
++        d->clearSslMetaData();
+         kDebug(7029) << "lost SSL connection.";
+         return -1;
+     }
+@@ -266,7 +286,7 @@
+ ssize_t TCPSlaveBase::readLine(char *data, ssize_t len)
+ {
+     if (d->usingSSL && (d->socket.encryptionMode() != KTcpSocket::SslClientMode)) {
+-        setMetaData("ssl_in_use", "FALSE");
++        d->clearSslMetaData();
+         kDebug(7029) << "lost SSL connection.";
+         return -1;
+     }
+@@ -291,7 +311,7 @@
+                                  const QString &host,
+                                  quint16 port)
+ {
+-    setMetaData("ssl_in_use", "FALSE"); //We have separate connection and SSL setup phases
++    d->clearSslMetaData(); //We have separate connection and SSL setup phases
+ 
+     //  - leaving SSL - warn before we even connect
+     //### see if it makes sense to move this into the HTTP ioslave which is the only
+@@ -433,7 +453,50 @@
+     return startTLSInternal(KTcpSocket::TlsV1) & ResultOk;
+ }
+ 
++// Find out if a hostname matches an SSL certificate's Common Name (including wildcards)
++static bool isMatchingHostname(const QString &cnIn, const QString &hostnameIn)
++{
++    const QString cn = cnIn.toLower();
++    const QString hostname = hostnameIn.toLower();
+ 
++    const int wildcard = cn.indexOf(QLatin1Char('*'));
++
++    // Check this is a wildcard cert, if not then just compare the strings
++    if (wildcard < 0)
++        return cn == hostname;
++
++    const int firstCnDot = cn.indexOf(QLatin1Char('.'));
++    const int secondCnDot = cn.indexOf(QLatin1Char('.'), firstCnDot+1);
++
++    // Check at least 3 components
++    if ((-1 == secondCnDot) || (secondCnDot+1 >= cn.length()))
++        return false;
++
++    // Check * is last character of 1st component (ie. there's a following .)
++    if (wildcard+1 != firstCnDot)
++        return false;
++
++    // Check only one star
++    if (cn.lastIndexOf(QLatin1Char('*')) != wildcard)
++        return false;
++
++    // Check characters preceding * (if any) match
++    if (wildcard && (hostname.leftRef(wildcard) != cn.leftRef(wildcard)))
++        return false;
++
++    // Check characters following first . match
++    if (hostname.midRef(hostname.indexOf(QLatin1Char('.'))) != cn.midRef(firstCnDot))
++        return false;
++
++    // Check if the hostname is an IP address, if so then wildcards are not allowed
++    QHostAddress addr(hostname);
++    if (!addr.isNull())
++        return false;
++
++    // Ok, I guess this was a wildcard CN and the hostname matches.
++    return true;
++}
++
+ TCPSlaveBase::SslResult TCPSlaveBase::startTLSInternal(uint v_)
+ {
+     KTcpSocket::SslVersion sslVersion = static_cast<KTcpSocket::SslVersion>(v_);
+@@ -443,7 +506,6 @@
+     //### we don't support session reuse for now...
+ 
+     d->usingSSL = true;
+-    setMetaData("ssl_in_use", "TRUE");
+ 
+     d->socket.setAdvertisedSslVersion(sslVersion);
+ 
+@@ -461,7 +523,7 @@
+     if (!encryptionStarted || d->socket.encryptionMode() != KTcpSocket::SslClientMode
+         || cipher.isNull() || cipher.usedBits() == 0 || d->socket.peerCertificateChain().isEmpty()) {
+         d->usingSSL = false;
+-        setMetaData("ssl_in_use", "FALSE");
++        d->clearSslMetaData();
+         kDebug(7029) << "Initial SSL handshake failed. encryptionStarted is"
+                      << encryptionStarted << ", cipher.isNull() is" << cipher.isNull()
+                      << ", cipher.usedBits() is" << cipher.usedBits()
+@@ -489,7 +551,6 @@
+     QSslCertificate peerCert = d->socket.peerCertificateChain().first();
+     QStringList domainPatterns(peerCert.subjectInfo(QSslCertificate::CommonName));
+     domainPatterns += peerCert.alternateSubjectNames().values(QSsl::DnsEntry);
+-    QRegExp domainMatcher(QString(), Qt::CaseInsensitive, QRegExp::Wildcard);
+     QMutableListIterator<KSslError> it(d->sslErrors);
+     while (it.hasNext()) {
+         // As of 4.4.0 Qt does not assign a certificate to the QSslError it emits
+@@ -500,13 +561,13 @@
+             continue;
+         }
+         Q_FOREACH (const QString &dp, domainPatterns) {
+-            domainMatcher.setPattern(dp);
+-            if (domainMatcher.exactMatch(d->host)) {
++            if (isMatchingHostname(dp, d->host)) {
+                 it.remove();
+             }
+         }
+     }
+ 
++    // TODO: review / rewrite / remove the comment
+     // The app side needs the metadata now for the SSL error dialog (if any) but
+     // the same metadata will be needed later, too. When "later" arrives the slave
+     // may actually be connected to a different application that doesn't know
+@@ -515,13 +576,13 @@
+     // from here, for example. And Konqi will be the second application to connect
+     // to the slave.
+     // Therefore we choose to have our metadata and send it, too :)
+-    d->prepareSslRelatedMetaData();
++    d->setSslMetaData();
+     sendAndKeepMetaData();
+ 
+     SslResult rc = verifyServerCertificate();
+     if (rc & ResultFailed) {
+         d->usingSSL = false;
+-        setMetaData("ssl_in_use", "FALSE");
++        d->clearSslMetaData();
+         kDebug(7029) << "server certificate verification failed.";
+         d->socket.disconnectFromHost();     //Make the connection fail (cf. ignoreSslErrors())
+         return ResultFailed;
+@@ -931,7 +992,9 @@
+ 
+ void TCPSlaveBase::virtual_hook(int id, void* data)
+ {
+-    SlaveBase::virtual_hook(id, data);
++    if (id == SlaveBase::AppConnectionMade) {
++        d->sendSslMetaData();
++    } else {
++        SlaveBase::virtual_hook(id, data);
++    }
+ }
+-
+-
 Index: kio/kio/kurifilter.h
 ===================================================================
---- kio/kio/kurifilter.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kio/kio/kurifilter.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kio/kio/kurifilter.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/kurifilter.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -247,14 +247,22 @@
      /**
       * Returns a list of the names of the preferred search providers.
@@ -384,8 +2956,8 @@ Index: kio/kio/kurifilter.h
      void setAlternateDefaultSearchProvider(const QString &provider);
 Index: kio/kio/previewjob.cpp
 ===================================================================
---- kio/kio/previewjob.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kio/kio/previewjob.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kio/kio/previewjob.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/previewjob.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -22,6 +22,7 @@
  */
  
@@ -394,7 +2966,17 @@ Index: kio/kio/previewjob.cpp
  
  #include <sys/stat.h>
  #ifdef __FreeBSD__
-@@ -361,6 +362,15 @@
+@@ -352,7 +353,8 @@
+ 
+             bool skipCurrentItem = false;
+             const KIO::filesize_t size = (KIO::filesize_t)entry.numberValue( KIO::UDSEntry::UDS_SIZE, 0 );
+-            if (d->currentItem.item.url().isLocalFile())
++            bool local = false;
++            if (d->currentItem.item.mostLocalUrl(local).isLocalFile())
+             {
+                 skipCurrentItem = !d->ignoreMaximumSize && size > d->maximumLocalSize
+                                   && !d->currentItem.plugin->property("IgnoreMaximumSize").toBool();
+@@ -361,6 +363,15 @@
              {
                  // For remote items the "IgnoreMaximumSize" plugin property is not respected
                  skipCurrentItem = !d->ignoreMaximumSize && size > d->maximumRemoteSize;
@@ -410,10 +2992,692 @@ Index: kio/kio/previewjob.cpp
              }
              if (skipCurrentItem)
              {
+@@ -413,7 +424,8 @@
+     if ( thumbPath.isEmpty() )
+         return false;
+ 
+-    KUrl url = currentItem.item.url();
++    bool local = false;
++    KUrl url = currentItem.item.mostLocalUrl(local);
+     // Don't include the password if any
+     url.setPass(QString());
+     origName = url.url();
+@@ -475,7 +487,8 @@
+         localFile.open();
+         KUrl localURL;
+         localURL.setPath( tempName = localFile.fileName() );
+-        const KUrl currentURL = item.url();
++        bool local = false;
++        const KUrl currentURL = item.mostLocalUrl(local);
+         KIO::Job * job = KIO::file_copy( currentURL, localURL, -1, KIO::Overwrite | KIO::HideProgressInfo /* No GUI */ );
+         job->addMetaData("thumbnail","1");
+         q->addSubjob(job);
+Index: kio/kio/slaveinterface_p.h
+===================================================================
+--- kio/kio/slaveinterface_p.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/slaveinterface_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -44,8 +44,8 @@
+     Connection *connection;
+     QTimer speed_timer;
+ 
+-    // We keep a copy; Job does too but we need it here for the SSL code.
+-    MetaData m_incomingMetaData;
++    // We need some metadata here for our SSL code in messageBox() and for sslMetaData().
++    MetaData sslMetaData;
+ 
+     KIO::filesize_t sizes[max_nums];
+     long times[max_nums];
+Index: kio/kio/scheduler_p.h
+===================================================================
+--- kio/kio/scheduler_p.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/scheduler_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -30,7 +30,7 @@
+ public:
+     SlaveKeeper();
+     void returnSlave(KIO::Slave *slave);
+-    // pick suitable slave for job and return it, return zero if no slave found.
++    // pick suitable slave for job and return it, return null if no slave found.
+     // the slave is removed from the keeper.
+     KIO::Slave *takeSlaveForJob(KIO::SimpleJob *job);
+     // remove slave from keeper
+@@ -146,7 +146,7 @@
+     KIO::Slave *createSlave(const QString &protocol, KIO::SimpleJob *job, const KUrl &url);
+     bool removeSlave (KIO::Slave *slave);
+     QList<KIO::Slave *> allSlaves() const;
+-    ConnectedSlaveQueue m_connectedSlaveQueue;    
++    ConnectedSlaveQueue m_connectedSlaveQueue;
+ 
+ private slots:
+     // start max one (non-connected) job and return
+Index: kio/kio/slavebase.h
+===================================================================
+--- kio/kio/slavebase.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/slavebase.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -292,7 +292,7 @@
+      * data() or finished() signal.
+      */
+     void setMetaData(const QString &key, const QString &value);
+-
++    
+     /**
+      * Queries for the existence of a certain config/meta-data entry
+      * send by the application to the slave.
+@@ -868,6 +868,9 @@
+     MetaData mOutgoingMetaData;
+     MetaData mIncomingMetaData;
+ 
++    enum VirtualFunctionId {
++        AppConnectionMade = 0
++    };
+     virtual void virtual_hook( int id, void* data );
+ 
+ private:
+Index: kio/kio/krun.cpp
+===================================================================
+--- kio/kio/krun.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/krun.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -356,6 +356,40 @@
+     return 2;
+ }
+ 
++static QStringList supportedProtocols(const KService& _service)
++{
++    // Check which protocols the application supports.
++    // This can be a list of actual protocol names, or just KIO for KDE apps.
++    QStringList supportedProtocols = _service.property("X-KDE-Protocols").toStringList();
++    KRunMX1 mx1(_service);
++    QString exec = _service.exec();
++    if (mx1.expandMacrosShellQuote(exec) && !mx1.hasUrls) {
++        Q_ASSERT(supportedProtocols.isEmpty());   // huh? If you support protocols you need %u or %U...
++    }
++    else {
++        if (supportedProtocols.isEmpty()) {
++            // compat mode: assume KIO if not set and it's a KDE app
++            const QStringList categories = _service.property("Categories").toStringList();
++            if (categories.contains("KDE")) {
++                supportedProtocols.append("KIO");
++            }
++            else { // if no KDE app, be a bit over-generic
++                supportedProtocols.append("http");
++                supportedProtocols.append("ftp");
++            }
++        }
++    }
++    kDebug(7010) << "supportedProtocols:" << supportedProtocols;
++    return supportedProtocols;
++}
++
++static bool isProtocolInSupportedList(const KUrl& url, const QStringList& supportedProtocols)
++{
++    if (supportedProtocols.contains("KIO"))
++        return true;
++    return url.isLocalFile() || supportedProtocols.contains(url.protocol().toLower());
++}
++
+ QStringList KRun::processDesktopExec(const KService &_service, const KUrl::List& _urls, bool tempFiles, const QString& suggestedFileName)
+ {
+     QString exec = _service.exec();
+@@ -392,25 +426,39 @@
+     }
+ 
+     // Check if we need kioexec
++    bool useKioexec = false;
+     if (!mx1.hasUrls) {
+         for (KUrl::List::ConstIterator it = _urls.begin(); it != _urls.end(); ++it)
+             if (!(*it).isLocalFile() && !KProtocolInfo::isHelperProtocol(*it)) {
+-                // We need to run the app through kioexec
+-                const QString kioexec = KStandardDirs::findExe("kioexec");
+-                Q_ASSERT(!kioexec.isEmpty());
+-                result << kioexec;
+-                if (tempFiles) {
+-                    result << "--tempfiles";
+-                }
+-                if (!suggestedFileName.isEmpty()) {
+-                    result << "--suggestedfilename";
+-                    result << suggestedFileName;
+-                }
+-                result << exec;
+-                result += _urls.toStringList();
+-                return result;
++                useKioexec = true;
++                kDebug(7010) << "non-local files, application does not support urls, using kioexec";
++                break;
+             }
++    } else { // app claims to support %u/%U, check which protocols
++        QStringList appSupportedProtocols = supportedProtocols(_service);
++        for (KUrl::List::ConstIterator it = _urls.begin(); it != _urls.end(); ++it)
++            if( !isProtocolInSupportedList(*it, appSupportedProtocols)) {
++                useKioexec = true;
++                kDebug(7010) << "application does not support url, using kioexec:" << *it;
++                break;
++            }
+     }
++    if (useKioexec) {
++        // We need to run the app through kioexec
++        const QString kioexec = KStandardDirs::findExe("kioexec");
++        Q_ASSERT(!kioexec.isEmpty());
++        result << kioexec;
++        if (tempFiles) {
++            result << "--tempfiles";
++        }
++        if (!suggestedFileName.isEmpty()) {
++            result << "--suggestedfilename";
++            result << suggestedFileName;
++        }
++        result << exec;
++        result += _urls.toStringList();
++        return result;
++    }
+ 
+     if (appHasTempFileOption) {
+         exec += " --tempfile";
+@@ -678,32 +726,12 @@
+ {
+     // Check which protocols the application supports.
+     // This can be a list of actual protocol names, or just KIO for KDE apps.
+-    QStringList supportedProtocols = _service.property("X-KDE-Protocols").toStringList();
+-    KRunMX1 mx1(_service);
+-    QString exec = _service.exec();
+-    if (mx1.expandMacrosShellQuote(exec) && !mx1.hasUrls) {
+-        Q_ASSERT(supportedProtocols.isEmpty());   // huh? If you support protocols you need %u or %U...
+-    }
+-    else {
+-        if (supportedProtocols.isEmpty()) {
+-            // compat mode: assume KIO if not set and it's a KDE app
+-            const QStringList categories = _service.property("Categories").toStringList();
+-            if (categories.contains("KDE")) {
+-                supportedProtocols.append("KIO");
+-            }
+-            else { // if no KDE app, be a bit over-generic
+-                supportedProtocols.append("http");
+-                supportedProtocols.append("ftp");
+-            }
+-        }
+-    }
+-    kDebug(7010) << "supportedProtocols:" << supportedProtocols;
+-
++    QStringList appSupportedProtocols = supportedProtocols(_service);
+     KUrl::List urls(_urls);
+-    if (!supportedProtocols.contains("KIO")) {
++    if (!appSupportedProtocols.contains("KIO")) {
+         for (KUrl::List::Iterator it = urls.begin(); it != urls.end(); ++it) {
+             const KUrl url = *it;
+-            bool supported = url.isLocalFile() || supportedProtocols.contains(url.protocol().toLower());
++            bool supported = isProtocolInSupportedList(url, appSupportedProtocols);
+             kDebug(7010) << "Looking at url=" << url << " supported=" << supported;
+             if (!supported && KProtocolInfo::protocolClass(url.protocol()) == ":local") {
+                 // Maybe we can resolve to a local URL?
+Index: kio/kio/job.cpp
+===================================================================
+--- kio/kio/job.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/job.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -416,6 +416,11 @@
+ {
+     Q_Q(SimpleJob);
+     m_slave = slave;
++
++    // Slave::setJob can send us SSL metadata if there is a persistent connection
++    q->connect( slave, SIGNAL(metaData(KIO::MetaData)),
++                SLOT(slotMetaData(KIO::MetaData)) );
++
+     slave->setJob(q);
+ 
+     q->connect( slave, SIGNAL(error(int,QString)),
+@@ -444,8 +449,6 @@
+         q->connect( slave, SIGNAL(speed(ulong)),
+                     SLOT(slotSpeed(ulong)) );
+     }
+-    q->connect( slave, SIGNAL(metaData(KIO::MetaData)),
+-                SLOT(slotMetaData(KIO::MetaData)) );
+ 
+     if (ui() && ui()->window())
+     {
+@@ -588,7 +591,6 @@
+ void SimpleJob::slotMetaData( const KIO::MetaData &_metaData )
+ {
+     Q_D(SimpleJob);
+-
+     QMapIterator<QString,QString> it (_metaData);
+     while (it.hasNext()) {
+         it.next();
+@@ -998,9 +1000,10 @@
+     }
+     // shut up the warning, HACK: downside is that it changes the meaning of the variable
+     d->m_isMimetypeEmitted = true;
+-
+-    if(d->m_redirectionURL.isEmpty() || !d->m_redirectionURL.isValid() || error())
+-      emit data( this, _data);
++    
++    if (d->m_redirectionURL.isEmpty() || !d->m_redirectionURL.isValid() || error()) {
++        emit data(this, _data);
++    }
+ }
+ 
+ void KIO::TransferJob::setTotalSize(KIO::filesize_t bytes)
+@@ -1044,7 +1047,7 @@
+ {
+     Q_D(TransferJob);
+ 
+-    //kDebug(7007) << this << "," << m_url;
++    kDebug(7007) << d->m_url;
+     if (!d->m_redirectionURL.isEmpty() && d->m_redirectionURL.isValid()) {
+ 
+         //kDebug(7007) << "Redirection to" << m_redirectionURL;
+Index: kio/kio/slaveinterface.cpp
+===================================================================
+--- kio/kio/slaveinterface.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kio/slaveinterface.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -295,12 +295,17 @@
+         break;
+     }
+     case INF_META_DATA: {
+-        MetaData meta_data;
+-        stream >> meta_data;
+-        d->m_incomingMetaData += meta_data;
+-//         kDebug(7007) << "incoming metadata now" << d->m_incomingMetaData
+-//                  << "\n newly arrived metadata is" << meta_data;
+-        emit metaData(meta_data);
++        MetaData m;
++        stream >> m;
++        if (m.contains(QLatin1String("ssl_in_use"))) {
++            // this could be optimized using QMap::lowerBound().
++            for (MetaData::ConstIterator it = m.constBegin(); it != m.constEnd(); ++it) {
++                if (it.key().startsWith(QLatin1String("ssl_"))) {
++                    d->sslMetaData.insert(it.key(), it.value());
++                }
++            }
++        }
++        emit metaData(m);
+         break;
+     }
+     case MSG_NET_REQUEST: {
+@@ -447,7 +452,7 @@
+         break;
+     case KIO::SlaveBase::SSLMessageBox:
+     {
+-        KIO::MetaData meta = m_incomingMetaData;
++        KIO::MetaData meta = sslMetaData;
+         KSslInfoDialog *kid = new KSslInfoDialog(0);
+         //### this is boilerplate code and appears in khtml_part.cpp almost unchanged!
+         QStringList sl = meta["ssl_peer_chain"].split('\x01', QString::SkipEmptyParts);
+Index: kio/kfile/kiofilemodule.desktop
+===================================================================
+--- kio/kfile/kiofilemodule.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/kfile/kiofilemodule.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -43,6 +43,7 @@
+ Name[pt_BR]=filemodule
+ Name[ro]=filemodule
+ Name[ru]=filemodule
++Name[se]=fiilamodula
+ Name[sk]=filemodule
+ Name[sl]=filemodule
+ Name[sr]=Фајл модул
+@@ -100,6 +101,7 @@
+ Comment[pt_BR]=Módulo de arquivos KIO
+ Comment[ro]=Modul de fișiere KIO
+ Comment[ru]=Модуль работы с файлами KIO
++Comment[se]=KIO-fiilamodula
+ Comment[sk]=Modul KIO File
+ Comment[sl]=Modul KIO za datoteke
+ Comment[sr]=К‑У/И фајл модул
+Index: kio/misc/kpac/proxyscout.notifyrc
+===================================================================
+--- kio/misc/kpac/proxyscout.notifyrc	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/misc/kpac/proxyscout.notifyrc	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -12,7 +12,7 @@
+ Comment[en_GB]=Network Proxy Configuration
+ Comment[es]=Configuración del proxy de la red
+ Comment[et]=Võrgupuhverserveri seadistamine
+-Comment[eu]=Sareko ordezkariaren konfiguraketa
++Comment[eu]=Sareko ordezkariaren konfigurazioa
+ Comment[fi]=Verkon välityspalvelinasetukset
+ Comment[fr]=Configuration du réseau mandataire
+ Comment[fy]=Netwurk proksy ynstelling
+@@ -20,6 +20,7 @@
+ Comment[gl]=Configuración do proxy de rede
+ Comment[hi]=नेटवर्क प्रॉक्सी कॉन्फ़िगरेशन
+ Comment[hr]=Podešavanje mrežnog proxyja
++Comment[hu]=Hálózati proxybeállítások
+ Comment[ia]=Configuration de le Proxy de rete
+ Comment[id]=Konfigurasi Proxy Jaringan
+ Comment[is]=Stillingar milliþjóna (proxy)
+@@ -38,6 +39,7 @@
+ Comment[pt]=Configuração do 'Proxy' de Rede
+ Comment[pt_BR]=Configuração do proxy de rede
+ Comment[ro]=Configurare proxy rețea
++Comment[se]=Fierpmádatgaskabálvvá heivehus
+ Comment[sk]=Nastavenie sieťového proxy
+ Comment[sl]=Nastavitev omrežnega posrednika
+ Comment[sr]=Подешавање проксија за мрежу
+Index: kio/misc/kpac/proxyscout.desktop
+===================================================================
+--- kio/misc/kpac/proxyscout.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/misc/kpac/proxyscout.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -12,7 +12,7 @@
+ Name[en_GB]=Network Proxy Configuration
+ Name[es]=Configuración del proxy de la red
+ Name[et]=Võrgupuhverserveri seadistamine
+-Name[eu]=Sareko ordezkariaren konfiguraketa
++Name[eu]=Sareko ordezkariaren konfigurazioa
+ Name[fi]=Verkon välityspalvelinasetukset
+ Name[fr]=Configuration du réseau mandataire
+ Name[fy]=Netwurk proksy ynstelling
+@@ -20,6 +20,7 @@
+ Name[gl]=Configuración do proxy de rede
+ Name[hi]=नेटवर्क प्रॉक्सी कॉन्फ़िगरेशन
+ Name[hr]=Podešavanje mrežnog proxyja
++Name[hu]=Hálózati proxybeállítások
+ Name[ia]=Configuration de Proxy de rete
+ Name[id]=Konfigurasi Proxy Jaringan
+ Name[is]=Stillingar milliþjóna (proxy)
+@@ -38,6 +39,7 @@
+ Name[pt]=Configuração do 'Proxy' de Rede
+ Name[pt_BR]=Configuração do proxy de rede
+ Name[ro]=Configurare proxy rețea
++Name[se]=Fierpmádatgaskabálvvá heivehus
+ Name[sk]=Nastavenie sieťového proxy
+ Name[sl]=Nastavitev omrežnega posrednika
+ Name[sr]=Подешавање проксија за мрежу
+@@ -75,7 +77,7 @@
+ Comment[eo]=Aŭtomata prokuragordo
+ Comment[es]=Configuración automática del proxy
+ Comment[et]=Automaatne puhverserveri seadistamine
+-Comment[eu]=Ordezkariaren konfiguraketa automatikoa
++Comment[eu]=Ordezkariaren konfigurazioa automatikoa
+ Comment[fa]=پیکربندی خودکار پیشکار
+ Comment[fi]=Automaattiset välityspalvelinasetukset
+ Comment[fr]=Configuration automatique du serveur mandataire
+Index: kio/application.desktop
+===================================================================
+--- kio/application.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kio/application.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -37,7 +37,7 @@
+ Name[hne]=अनुपरयोग
+ Name[hr]=Aplikacija
+ Name[hsb]=aplikacija
+-Name[hu]=alkalmazás
++Name[hu]=Alkalmazás
+ Name[ia]=Application
+ Name[id]=Aplikasi
+ Name[is]=Forrit
+Index: kutils/kemoticons/kemoticonsprovider.cpp
+===================================================================
+--- kutils/kemoticons/kemoticonsprovider.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kutils/kemoticons/kemoticonsprovider.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -142,7 +142,11 @@
+         e.picPath = path;
+         p.load(path);
+ 
+-        e.picHTMLCode = QString("<img align=\"center\" title=\"%1\" alt=\"%1\" src=\"%2\" width=\"%3\" height=\"%4\" />").arg(escaped).arg(KUrl(path).url()).arg(p.width()).arg(p.height());
++	//kdewebkit needs to this line, but it breaks in tooltip which doesn't support it...
++	//e.picHTMLCode = QString("<img align=\"center\" title=\"%1\" alt=\"%1\" src=\"%2\" width=\"%3\" height=\"%4\" />").arg(escaped).arg(KUrl(path).url()).arg(p.width()).arg(p.height());
++
++        e.picHTMLCode = QString("<img align=\"center\" title=\"%1\" alt=\"%1\" src=\"%2\" width=\"%3\" height=\"%4\" />").arg(escaped).arg(path).arg(p.width()).arg(p.height());
++
+         e.matchTextEscaped = escaped;
+         e.matchText = s;
+ 
+Index: kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop
+===================================================================
+--- kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kutils/kemoticons/providers/kde/emoticonstheme_kde.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -19,6 +19,7 @@
+ Name[ga]=Téama Straoiseog KDE
+ Name[gl]=Tema de emoticonas de KDE
+ Name[hi]=केडीई हंसमुख शैली
++Name[hu]=KDE emotikon-téma
+ Name[ia]=Thema de Emoticons de KDE
+ Name[id]=Tema Emoticon KDE
+ Name[is]=KDE broskallaþema
+@@ -38,6 +39,7 @@
+ Name[pt_BR]=Tema de emoticons do KDE
+ Name[ro]=Tematică de emoticoni KDE
+ Name[ru]=Набор смайликов для KDE
++Name[se]=KDE mojánfáddá
+ Name[sk]=Téma emotikonov KDE
+ Name[sl]=Tema ikon čustev za KDE
+ Name[sr]=КДЕ‑ова тема емотикона
+Index: kdecore/kernel/kkernel_win.cpp
+===================================================================
+--- kdecore/kernel/kkernel_win.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/kernel/kkernel_win.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -163,6 +163,10 @@
+ 
+     QString res = QString::fromUtf16 ( ( const ushort* ) lszValue );
+     delete [] lszValue;
++    
++    if (ok)
++        *ok = true;
++    
+     return res;
+ }
+ 
+Index: kdecore/services/kmimemagicrule.cpp
+===================================================================
+--- kdecore/services/kmimemagicrule.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/services/kmimemagicrule.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -42,12 +42,12 @@
+  *
+  */
+ 
+-static bool testMatches(QIODevice* device, QByteArray& availableData, const QList<KMimeMagicMatch>& matches, const QString& mimeType)
++static bool testMatches(QIODevice* device, qint64 deviceSize, QByteArray& availableData, const QList<KMimeMagicMatch>& matches, const QString& mimeType)
+ {
+     for ( QList<KMimeMagicMatch>::const_iterator it = matches.begin(), end = matches.end() ;
+           it != end ; ++it ) {
+         const KMimeMagicMatch& match = *it;
+-        if (match.match(device, availableData, mimeType)) {
++        if (match.match(device, deviceSize, availableData, mimeType)) {
+             // One of the hierarchies matched -> mimetype recognized.
+             return true;
+         }
+@@ -99,16 +99,15 @@
+ }
+ 
+ 
+-bool KMimeMagicRule::match(QIODevice* device, QByteArray& availableData) const
++bool KMimeMagicRule::match(QIODevice* device, const qint64 deviceSize, QByteArray& availableData) const
+ {
+-    return testMatches(device, availableData, m_matches, m_mimetype);
++    return testMatches(device, deviceSize, availableData, m_matches, m_mimetype);
+ }
+ 
+-bool KMimeMagicMatch::match(QIODevice* device, QByteArray& availableData, const QString& mimeType) const
++bool KMimeMagicMatch::match(QIODevice* device, const qint64 deviceSize, QByteArray& availableData, const QString& mimeType) const
+ {
+     // First, check that "this" matches, then we'll dive into subMatches if any.
+ 
+-    const qint64 deviceSize = device->size();
+     const qint64 mDataSize = m_data.size();
+     if (m_rangeStart + mDataSize > deviceSize)
+         return false; // file is too small
+@@ -187,5 +186,5 @@
+         return true;
+ 
+     // Check that one of the submatches matches too
+-    return testMatches(device, availableData, m_subMatches, mimeType);
++    return testMatches(device, deviceSize, availableData, m_subMatches, mimeType);
+ }
+Index: kdecore/services/kmimemagicrule_p.h
+===================================================================
+--- kdecore/services/kmimemagicrule_p.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/services/kmimemagicrule_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -30,7 +30,7 @@
+  */
+ struct KMimeMagicMatch
+ {
+-    bool match(QIODevice* device, QByteArray& availableData, const QString& mimeType) const;
++    bool match(QIODevice* device, qint64 deviceSize, QByteArray& availableData, const QString& mimeType) const;
+ 
+     qint64 m_rangeStart;
+     qint64 m_rangeLength;
+@@ -56,7 +56,7 @@
+     KMimeMagicRule(const QString& mimetype, int priority, const QList<KMimeMagicMatch>& matches)
+         : m_mimetype(mimetype), m_priority(priority), m_matches(matches) {}
+ 
+-    bool match(QIODevice* device, QByteArray& availableData) const;
++    bool match(QIODevice* device, qint64 deviceSize, QByteArray& availableData) const;
+ 
+     QString mimetype() const { return m_mimetype; }
+     int priority() const { return m_priority; }
+Index: kdecore/services/kmimetypefactory.cpp
+===================================================================
+--- kdecore/services/kmimetypefactory.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/services/kmimetypefactory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -335,7 +335,8 @@
+ KMimeType::Ptr KMimeTypeFactory::findFromContent(QIODevice* device, WhichPriority whichPriority, int* accuracy, QByteArray& beginning)
+ {
+     Q_ASSERT(device->isOpen());
+-    if (device->size() == 0) {
++    const qint64 deviceSize = device->size();
++    if (deviceSize == 0) {
+         if (accuracy)
+             *accuracy = 100;
+         return findMimeTypeByName("application/x-zerosize");
+@@ -351,7 +352,7 @@
+         // LowPriorityRules: select rules with priority < 80
+         if ( ( whichPriority == AllRules ) ||
+              ( (rule.priority() >= 80) == (whichPriority == HighPriorityRules) ) ) {
+-            if (rule.match(device, beginning)) {
++            if (rule.match(device, deviceSize, beginning)) {
+                 if (accuracy)
+                     *accuracy = rule.priority();
+                 return findMimeTypeByName(rule.mimetype());
+Index: kdecore/localization/klocale.cpp
+===================================================================
+--- kdecore/localization/klocale.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/localization/klocale.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -781,6 +781,12 @@
+     // in trouble with a language sequende nds,<default>,de. In this case <default> must hide
+     // everything after itself in the language list.
+     foreach(const QString &lang, languageList) {
++        if (lang == KLocale::defaultLanguage()) {
++            // Default language has no catalogs (messages from the code),
++            // so loading catalogs for languages below the default
++            // would later confuse the fallback resolution.
++            break;
++        }
+         foreach(const KCatalogName &name, catalogNames) {
+             // create and add catalog for this name and language if it exists
+             if (! KCatalog::catalogLocaleDir(name.name, lang).isEmpty()) {
+Index: kdecore/network/kssld/kssld.desktop
+===================================================================
+--- kdecore/network/kssld/kssld.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/network/kssld/kssld.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -22,6 +22,7 @@
+ Name[ga]=Polasaí Teastas SSL
+ Name[gl]=Política de certificados SSL
+ Name[hr]=SSL certificirana pravila
++Name[hu]=SSL tanúsítvány-házirend
+ Name[ia]=Politica del certificato SSL
+ Name[id]=Kebijakan Sertifikat SSL
+ Name[is]=SSL skilríkjastefna
+@@ -40,6 +41,8 @@
+ Name[pl]=Polityka certyfikatów SSL
+ Name[pt]=Política de Certificados SSL
+ Name[pt_BR]=Política de certificados SSL
++Name[ro]=Politică de certificate SSL
++Name[se]=SSL-sertifikáhttanjuolggadusat
+ Name[sk]=Politika SSL certifikátov
+ Name[sl]=Pravila za potrdila SSL
+ Name[sr]=Смернице ССЛ сертификата
+@@ -71,6 +74,7 @@
+ Comment[ga]=Soláthraíonn sé polasaí teastas SSL d'fheidhmchláir
+ Comment[gl]=Fornece a política de certificados SSL para o programas
+ Comment[hr]=Pruža SSL certificirana pravila aplikacijama
++Comment[hu]=SSL tanúsítvány-házirend biztosítása alkalmazásokhoz
+ Comment[ia]=Il forni le politica de certification SSL pro le applicationes
+ Comment[id]=Menyediakan kebijakan sertifikat SSL bagi aplikasi
+ Comment[is]=Gefur út stefnu fyrir SSL-skilríki til forrita
+@@ -86,6 +90,7 @@
+ Comment[pl]=Udostępnia politykę certyfikatów SSL programom
+ Comment[pt]=Fornece uma política de certificados SSL às aplicações
+ Comment[pt_BR]=Fornece uma política de certificados SSL aos aplicativos
++Comment[se]=Addá sertifikáhttanjuolggadusaid prográmmaide
+ Comment[sk]=Poskytuje politiku SSL certifikátov pre aplikácie
+ Comment[sl]=Programom ponuja dostop do pravil za potrdila SSL
+ Comment[sr]=Пружа програмима смернице за ССЛ сертификате
+Index: kdecore/tests/kmimetypetest.cpp
+===================================================================
+--- kdecore/tests/kmimetypetest.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/tests/kmimetypetest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -872,10 +872,11 @@
+     QBuffer testBuffer;
+     testBuffer.setData(testData.toLatin1());
+     QVERIFY(testBuffer.open(QIODevice::ReadOnly));
++    const qint64 testBufferSize = testBuffer.size();
+     QString found;
+     QByteArray beginning;
+     Q_FOREACH(const KMimeMagicRule& rule, m_rules) {
+-        if (rule.match(&testBuffer, beginning)) {
++        if (rule.match(&testBuffer, testBufferSize, beginning)) {
+             found = rule.mimetype();
+             break;
+         }
+Index: kdecore/tests/kurltest.cpp
+===================================================================
+--- kdecore/tests/kurltest.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/tests/kurltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -338,6 +338,9 @@
+   tilde.setPath( QString::fromUtf8( "~%1/Matériel" ).arg( userName ) );
+   QString homeDir = currentUser.homeDir();
+   QCOMPARE( tilde.url(), QString("file://%1/Mat%C3%A9riel").arg(homeDir));
++  tilde = KUrl("http://foo.bar/index.html");
++  tilde.setPath( "~slajsjdlsjd/test.html" );
++  QCOMPARE( tilde.url(), QString("http://foo.bar/~slajsjdlsjd/test.html"));
+ #endif
+ }
+ 
+Index: kdecore/all_languages.desktop
+===================================================================
+--- kdecore/all_languages.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/all_languages.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -700,6 +700,7 @@
+ Name[pt_BR]=Asturiano
+ Name[ro]=Asturiană
+ Name[ru]=Астурийский
++Name[se]=Asturialagiella
+ Name[sk]=Astúrčina
+ Name[sl]=asturijsko
+ Name[sr]=астуријски
+@@ -2020,6 +2021,7 @@
+ Name[gl]=Catalán (Valenciano)
+ Name[hi]=केटेलन (वेलेनसी)
+ Name[hr]=Katalonski (valencijski)
++Name[hu]=Katalán (valenciai)
+ Name[ia]=Catalan (Valencian)
+ Name[id]=Catalan (Valencia)
+ Name[is]=Katalónska (Valensía)
+@@ -2037,7 +2039,9 @@
+ Name[pl]=Kataloński (walencki)
+ Name[pt]=Catalão (Valenciano)
+ Name[pt_BR]=Catalão (valenciano)
++Name[ro]=Catalană (Valenciană)
+ Name[ru]=Каталонский (Валенсия)
++Name[se]=Kataluniagiella (Valensalaš)
+ Name[sk]=Katalánčina (Valencia)
+ Name[sl]=katalonsko (valencijsko)
+ Name[sr]=каталонски (валенсијски)
+@@ -13654,6 +13658,7 @@
+ Name[pt]=Sérvio Ijekavian
+ Name[pt_BR]=Sérvio ijekavian
+ Name[ru]=Сербский (иекавский)
++Name[se]=Serbialaš ljekávagiella
+ Name[sk]=Srbčina (ijekavština)
+ Name[sr]=српски ијекавски
+ Name[sr@ijekavian]=српски ијекавски
+@@ -13703,6 +13708,7 @@
+ Name[pt]=Sérvio Latino Ijekavian
+ Name[pt_BR]=Sérvio latino ijekavian
+ Name[ru]=Сербский (иекавский, латиница)
++Name[se]=Serbialaš ljekávagiella (Latiinnalaš čállinvuohki)
+ Name[sk]=Srbčina (ijekavština - latinka)
+ Name[sr]=српски ијекавски (латиница)
+ Name[sr@ijekavian]=српски ијекавски (латиница)
 Index: kdecore/sonnet/backgroundchecker.cpp
 ===================================================================
---- kdecore/sonnet/backgroundchecker.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdecore/sonnet/backgroundchecker.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdecore/sonnet/backgroundchecker.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/sonnet/backgroundchecker.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -23,6 +23,7 @@
  #include "loader_p.h"
  #include "backgroundengine_p.h"
@@ -438,8 +3702,8 @@ Index: kdecore/sonnet/backgroundchecker.cpp
      d->currentText = text;
 Index: kdecore/sonnet/backgroundchecker.h
 ===================================================================
---- kdecore/sonnet/backgroundchecker.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdecore/sonnet/backgroundchecker.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdecore/sonnet/backgroundchecker.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/sonnet/backgroundchecker.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -76,6 +76,9 @@
          bool checkWord(const QString &word);
          QStringList suggest(const QString &word) const;
@@ -450,10 +3714,138 @@ Index: kdecore/sonnet/backgroundchecker.h
      public Q_SLOTS:
          virtual void start();
          virtual void stop();
+Index: kdecore/io/kdebug.cpp
+===================================================================
+--- kdecore/io/kdebug.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/io/kdebug.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -624,6 +624,7 @@
+         case SyslogOutput:
+             s = setupSyslogWriter(type);
+             break;
++        case Unknown: // don't want kdelibs debug output in Qt-only programs with no componentdata (-> no kdebugrc)
+         case NoOutput:
+             s = QDebug(&devnull);
+             return s; //no need to take the time to "print header" if we don't want to output anyway
+Index: kdecore/io/kurl.cpp
+===================================================================
+--- kdecore/io/kurl.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/io/kurl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1726,6 +1726,8 @@
+     if ( scheme().isEmpty() )
+         setScheme( QLatin1String( "file" ) );
+     QString path = KShell::tildeExpand( _path );
++    if (path.isEmpty())
++        path = _path;
+ #ifdef Q_WS_WIN
+     const int len = path.length();
+     if( len == 2 && IS_LETTER(path[0]) && path[1] == QLatin1Char(':') )
+Index: kdecore/io/karchive.cpp
+===================================================================
+--- kdecore/io/karchive.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/io/karchive.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -634,7 +634,10 @@
+ 
+ QByteArray KArchiveFile::data() const
+ {
+-  archive()->device()->seek( d->pos );
++  bool ok = archive()->device()->seek( d->pos );
++  if (!ok) {
++      kWarning() << "Failed to sync to" << d->pos << "to read" << name();
++  }
+ 
+   // Read content
+   QByteArray arr;
+@@ -661,7 +664,7 @@
+   QFile f( dest + '/'  + name() );
+   if ( f.open( QIODevice::ReadWrite | QIODevice::Truncate ) )
+   {
+-      archive()->device()->seek( d->pos );
++      QIODevice* inputDev = createDevice();
+ 
+       // Read and write data in chunks to minimize memory usage
+       const qint64 chunkSize = 1024 * 1024;
+@@ -671,12 +674,14 @@
+ 
+       while ( remainingSize > 0 ) {
+           const qint64 currentChunkSize = qMin( chunkSize, remainingSize );
+-          const qint64 n = archive()->device()->read( array.data(), currentChunkSize );
++          const qint64 n = inputDev->read( array.data(), currentChunkSize );
+           Q_ASSERT( n == currentChunkSize );
+           f.write( array.data(), currentChunkSize );
+           remainingSize -= currentChunkSize;
+       }
+       f.close();
++
++      delete inputDev;
+   }
+ }
+ 
+@@ -766,8 +771,8 @@
+     return true;
+ }
+ 
+-static int sortByPosition( const KArchiveFile* file1, const KArchiveFile* file2 ) {
+-    return file1->position() - file2->position();
++static bool sortByPosition( const KArchiveFile* file1, const KArchiveFile* file2 ) {
++    return file1->position() < file2->position();
+ }
+ 
+ void KArchiveDirectory::copyTo(const QString& dest, bool recursiveCopy ) const
+Index: kdecore/util/kshareddatacache.cpp
+===================================================================
+--- kdecore/util/kshareddatacache.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdecore/util/kshareddatacache.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -598,6 +598,9 @@
+ 
+         if (indexTable()[position].fileNameHash == keyHash) {
+             pageID firstPage = indexTable()[position].firstPage;
++            if (firstPage < 0) {
++                return -1;
++            }
+             const void *resultPage = page(firstPage);
+             const char *utf8FileName = reinterpret_cast<const char *>(resultPage);
+ 
+@@ -782,7 +785,7 @@
+         // Long timeout, but if we fail to meet this timeout it's probably a cache
+         // corruption (and if we take 8 seconds then it should be much much quicker
+         // the next time anyways since we'd be paged back in from disk)
+-        timeout.tv_sec = 10;
++        timeout.tv_sec = 10 + ::time(NULL); // Absolute time, so 10 seconds from now
+         timeout.tv_nsec = 0;
+ 
+         return pthread_mutex_timedlock(&lockMutex, &timeout) >= 0;
+Index: knewstuff/knewstuff3/core/installation.cpp
+===================================================================
+--- knewstuff/knewstuff3/core/installation.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ knewstuff/knewstuff3/core/installation.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -477,7 +477,7 @@
+                 success = QFile::remove(installpath);
+             }
+             if (success) {
+-                success = file.rename(QUrl(installpath).toLocalFile());
++                success = file.rename(KUrl(installpath).toLocalFile());
+                 kDebug() << "move: " << file.fileName() << " to " << installpath;
+             }
+             if (!success) {
+Index: plasma/dataengine.cpp
+===================================================================
+--- plasma/dataengine.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/dataengine.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -279,10 +279,6 @@
+ 
+ void DataEngine::setMinimumPollingInterval(int minimumMs)
+ {
+-    if (minimumMs < 0) {
+-        minimumMs = 0;
+-    }
+-
+     d->minPollingInterval = minimumMs;
+ }
+ 
 Index: plasma/corona.cpp
 ===================================================================
---- plasma/corona.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ plasma/corona.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- plasma/corona.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/corona.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -230,6 +230,14 @@
              containment->setFormFactor(Plasma::Planar);
          }
@@ -487,10 +3879,302 @@ Index: plasma/corona.cpp
              containmentConfig.copyTo(&realConf);
          }
  
+Index: plasma/tooltipmanager.cpp
+===================================================================
+--- plasma/tooltipmanager.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/tooltipmanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -60,7 +60,7 @@
+           currentWidget(0),
+           showTimer(new QTimer(manager)),
+           hideTimer(new QTimer(manager)),
+-          tipWidget(new ToolTip(0)),
++          tipWidget(0),
+           state(ToolTipManager::Activated),
+           isShown(false),
+           delayedHide(false),
+@@ -86,6 +86,8 @@
+     void clearTips();
+     void doDelayedHide();
+     void toolTipHovered(bool);
++    void createTipWidget();
++    void hideTipWidget();
+ 
+     ToolTipManager *q;
+     QGraphicsWidget *currentWidget;
+@@ -125,12 +127,6 @@
+ 
+     d->hideTimer->setSingleShot(true);
+     connect(d->hideTimer, SIGNAL(timeout()), SLOT(resetShownState()));
+-
+-    connect(d->tipWidget, SIGNAL(activateWindowByWId(WId,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)),
+-            this, SIGNAL(windowPreviewActivated(WId,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)));
+-    connect(d->tipWidget, SIGNAL(linkActivated(QString,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)),
+-            this, SIGNAL(linkActivated(QString,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)));
+-    connect(d->tipWidget, SIGNAL(hovered(bool)), this, SLOT(toolTipHovered(bool)));
+ }
+ 
+ ToolTipManager::~ToolTipManager()
+@@ -167,7 +163,7 @@
+ 
+ bool ToolTipManager::isVisible(QGraphicsWidget *widget) const
+ {
+-    return d->currentWidget == widget && d->tipWidget->isVisible();
++    return d->currentWidget == widget && d->tipWidget && d->tipWidget->isVisible();
+ }
+ 
+ void ToolTipManagerPrivate::doDelayedHide()
+@@ -192,7 +188,7 @@
+     d->currentWidget = 0;
+     d->showTimer->stop();  // stop the timer to show the tooltip
+     d->delayedHide = false;
+-    d->tipWidget->hide();
++    d->hideTipWidget();
+ }
+ 
+ void ToolTipManager::registerWidget(QGraphicsWidget *widget)
+@@ -226,7 +222,7 @@
+     registerWidget(widget);
+     d->tooltips.insert(widget, data);
+ 
+-    if (d->currentWidget == widget) {
++    if (d->currentWidget == widget && d->tipWidget && d->tipWidget->isVisible()) {
+         if (data.isEmpty()) {
+             hide(widget);
+         } else {
+@@ -274,6 +270,28 @@
+     return d->state;
+ }
+ 
++void ToolTipManagerPrivate::createTipWidget()
++{
++    if (tipWidget) {
++        return;
++    }
++    tipWidget = new ToolTip(0);
++    QObject::connect(tipWidget, SIGNAL(activateWindowByWId(WId,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)),
++                     q, SIGNAL(windowPreviewActivated(WId,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)));
++    QObject::connect(tipWidget, SIGNAL(linkActivated(QString,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)),
++                     q, SIGNAL(linkActivated(QString,Qt::MouseButtons,Qt::KeyboardModifiers,QPoint)));
++    QObject::connect(tipWidget, SIGNAL(hovered(bool)), q, SLOT(toolTipHovered(bool)));
++}
++
++void ToolTipManagerPrivate::hideTipWidget()
++{
++    if (tipWidget) {
++        tipWidget->hide();
++        delete tipWidget;
++        tipWidget = 0;
++    }
++}
++
+ void ToolTipManagerPrivate::onWidgetDestroyed(QObject *object)
+ {
+     if (!object) {
+@@ -296,8 +314,7 @@
+     if (currentWidget == w && currentWidget) {
+         currentWidget = 0;
+         showTimer->stop();  // stop the timer to show the tooltip
+-        tipWidget->setContent(0, ToolTipContent());
+-        tipWidget->hide();
++        hideTipWidget();
+         delayedHide = false;
+     }
+ 
+@@ -316,12 +333,12 @@
+ void ToolTipManagerPrivate::resetShownState()
+ {
+     if (currentWidget) {
+-        if (!tipWidget->isVisible() || delayedHide) {
++        if (!tipWidget || !tipWidget->isVisible() || delayedHide) {
+             //One might have moused out and back in again
+             delayedHide = false;
+             isShown = false;
+             currentWidget = 0;
+-            tipWidget->hide();
++            hideTipWidget();
+         }
+     }
+ }
+@@ -359,6 +376,8 @@
+         return;
+     }
+ 
++    createTipWidget();
++
+     Containment *c = dynamic_cast<Containment *>(currentWidget->topLevelItem());
+     //kDebug() << "about to show" << (QObject*)c;
+     if (c) {
+Index: plasma/configloader.cpp
+===================================================================
+--- plasma/configloader.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/configloader.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -288,7 +288,7 @@
+     } else if (m_type == "point") {
+         QPoint defaultPoint;
+         QStringList tmpList = m_default.split(',');
+-        while (tmpList.size() >= 2) {
++        if (tmpList.size() >= 2) {
+             defaultPoint.setX(tmpList[0].toInt());
+             defaultPoint.setY(tmpList[1].toInt());
+         }
+@@ -296,7 +296,7 @@
+     } else if (m_type == "rect") {
+         QRect defaultRect;
+         QStringList tmpList = m_default.split(',');
+-        while (tmpList.size() >= 4) {
++        if (tmpList.size() >= 4) {
+             defaultRect.setCoords(tmpList[0].toInt(), tmpList[1].toInt(),
+                                   tmpList[2].toInt(), tmpList[3].toInt());
+         }
+@@ -304,7 +304,7 @@
+     } else if (m_type == "size") {
+         QSize defaultSize;
+         QStringList tmpList = m_default.split(',');
+-        while (tmpList.size() >= 2) {
++        if (tmpList.size() >= 2) {
+             defaultSize.setWidth(tmpList[0].toInt());
+             defaultSize.setHeight(tmpList[1].toInt());
+         }
+Index: plasma/widgets/signalplotter.h
+===================================================================
+--- plasma/widgets/signalplotter.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/widgets/signalplotter.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -76,7 +76,7 @@
+      * the same data is given in (unless you reorder the plots).
+      * @param color the color to use for this plot
+      */
+-    void addPlot(const QColor &color);
++    Q_INVOKABLE void addPlot(const QColor &color);
+ 
+     /**
+      * Add data to the graph, and advance the graph by one time period.
+@@ -84,7 +84,7 @@
+      * added (or consequently reordered).
+      * @param samples a list with the new value for each plot
+      */
+-    void addSample(const QList<double> &samples);
++    Q_INVOKABLE void addSample(const QList<double> &samples);
+ 
+     /**
+      * Reorder the plots into the order given.  For example:
+@@ -99,13 +99,13 @@
+      * \endcode
+      * @param newOrder a list with the new position of each plot
+      */
+-    void reorderPlots(const QList<uint>& newOrder);
++    Q_INVOKABLE void reorderPlots(const QList<uint>& newOrder);
+ 
+     /**
+      * Removes the plot at the specified index.
+      * @param pos the index of the plot to be removed
+      */
+-    void removePlot(uint pos);
++    Q_INVOKABLE void removePlot(uint pos);
+ 
+     /**
+      * Return the list of plot colors, in the order that the plots
+Index: plasma/widgets/pushbutton.h
+===================================================================
+--- plasma/widgets/pushbutton.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/widgets/pushbutton.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -222,6 +222,7 @@
+ private:
+     Q_PRIVATE_SLOT(d, void syncBorders())
+     Q_PRIVATE_SLOT(d, void setPixmap())
++    Q_PRIVATE_SLOT(d, void syncToAction())
+ 
+     friend class PushButtonPrivate;
+     PushButtonPrivate *const d;
+Index: plasma/widgets/tabbar.cpp
+===================================================================
+--- plasma/widgets/tabbar.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/widgets/tabbar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -480,14 +480,17 @@
+ 
+     int oldCurrentIndex = d->tabProxy->native->currentIndex();
+     d->tabProxy->native->removeTab(index);
+-    QGraphicsWidget *page = d->pages.takeAt(index);
+ 
+     int currentIndex = d->tabProxy->native->currentIndex();
+ 
+     if (oldCurrentIndex == index) {
+         d->tabWidgetLayout->removeAt(1);
++        if (d->tabProxy->native->count() > 0) {
++            setCurrentIndex(currentIndex >= oldCurrentIndex ? currentIndex + 1 : currentIndex);
++        }
+     }
+ 
++    QGraphicsWidget *page = d->pages.takeAt(index);
+     QGraphicsLayoutItem *returnItem = 0;
+     QGraphicsLayout *lay = page->layout();
+     if (lay && lay->count() == 1) {
+@@ -499,6 +502,9 @@
+ 
+     if (returnItem) {
+         returnItem->setParentLayoutItem(0);
++        if (QGraphicsItem *item = returnItem->graphicsItem()) {
++            item->setParentItem(0);
++        }
+     }
+ 
+     page->setLayout(0);
+Index: plasma/tooltipcontent.cpp
+===================================================================
+--- plasma/tooltipcontent.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/tooltipcontent.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -43,6 +43,8 @@
+     QVariant data;
+ };
+ 
++const int MAXIMUM_TEXT_LENGTH = 5000;
++
+ class ToolTipContentPrivate
+ {
+ public:
+@@ -119,7 +121,9 @@
+ 
+ QString ToolTipContent::mainText() const
+ {
+-    return d->mainText;
++    QString text = d->mainText;
++    text.truncate(MAXIMUM_TEXT_LENGTH);
++    return text;
+ }
+ 
+ void ToolTipContent::setSubText(const QString &text)
+@@ -129,7 +133,9 @@
+ 
+ QString ToolTipContent::subText() const
+ {
+-    return d->subText;
++    QString text = d->subText;
++    text.truncate(MAXIMUM_TEXT_LENGTH);
++    return text;
+ }
+ 
+ void ToolTipContent::setImage(const QPixmap &image)
 Index: plasma/applet.cpp
 ===================================================================
---- plasma/applet.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- plasma/applet.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1197,7 +1197,7 @@
+                 connect(configAction, SIGNAL(triggered(bool)), this, SLOT(showConfigurationInterface()), Qt::UniqueConnection);
+             }
+ 
+-            if (configAction->isEnabled()) {
++            if (d->hasConfigurationInterface) {
+                 bool canConfig = unlocked || KAuthorized::authorize("plasma/allow_configure_when_locked");
+                 configAction->setVisible(canConfig);
+                 configAction->setEnabled(canConfig);
+@@ -1225,7 +1225,7 @@
+         }
+ 
+         action = d->actions->action("configure");
+-        if (action && action->isEnabled()) {
++        if (action && d->hasConfigurationInterface) {
+             bool canConfig = unlocked || KAuthorized::authorize("plasma/allow_configure_when_locked");
+             action->setVisible(canConfig);
+             action->setEnabled(canConfig);
 @@ -1279,7 +1279,8 @@
          }
      }
@@ -543,10 +4227,180 @@ Index: plasma/applet.cpp
      QAction *closeApplet = actions->action("remove");
      if (closeApplet) {
          closeApplet->setText(i18nc("%1 is the name of the applet", "Remove this %1", q->name()));
+Index: plasma/theme.cpp
+===================================================================
+--- plasma/theme.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/theme.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -125,7 +125,7 @@
+ 
+     QString findInTheme(const QString &image, const QString &theme) const;
+     void compositingChanged();
+-    void discardCache();
++    void discardCache(const QString &oldThemeName = QString(), bool keepSvgElementsCache = false);
+     void scheduledCacheUpdate();
+     void colorsChanged();
+     bool useCache();
+@@ -235,21 +235,32 @@
+ #endif
+ }
+ 
+-void ThemePrivate::discardCache()
++void ThemePrivate::discardCache(const QString &oldThemeName, bool keepSvgElementsCache)
+ {
+-    KSharedDataCache::deleteCache("plasma_theme_" + themeName);
+-    delete pixmapCache;
+-    pixmapCache = 0;
++    if (oldThemeName.isEmpty()) {
++        if (pixmapCache) {
++            pixmapCache->clear();
++        }
++    } else {
++        delete pixmapCache;
++        pixmapCache = 0;
++        KSharedDataCache::deleteCache("plasma_theme_" + oldThemeName);
++    }
+     invalidElements.clear();
+     pixmapsToCache.clear();
+     saveTimer->stop();
+ 
+-    const QString svgElementsFile = KStandardDirs::locateLocal("cache", "plasma-svgelements-" + themeName);
+-    if (!svgElementsFile.isEmpty()) {
+-        QFile f(svgElementsFile);
++    if (keepSvgElementsCache) {
++        return;
++    }
++
++    if (svgElementsCache) {
++        QFile f(svgElementsCache->name());
++        svgElementsCache = 0;
+         f.remove();
+     }
+ 
++    const QString svgElementsFile = KStandardDirs::locateLocal("cache", "plasma-svgelements-" + themeName);
+     svgElementsCache = KSharedConfig::openConfig(svgElementsFile);
+ }
+ 
+@@ -268,7 +279,7 @@
+ 
+ void ThemePrivate::colorsChanged()
+ {
+-    discardCache();
++    discardCache(QString(), true);
+     colorScheme = KColorScheme(QPalette::Active, KColorScheme::Window, colors);
+     buttonColorScheme = KColorScheme(QPalette::Active, KColorScheme::Button, colors);
+     viewColorScheme = KColorScheme(QPalette::Active, KColorScheme::View, colors);
+@@ -488,14 +499,12 @@
+         theme = ThemePrivate::defaultTheme;
+     }
+ 
++    // check again as ThemePrivate::defaultTheme might be empty
+     if (themeName == theme) {
+         return;
+     }
+ 
+-    //discard the old theme cache
+-    if (!themeName.isEmpty() && pixmapCache) {
+-        discardCache();
+-    }
++    const QString oldThemeName = themeName;
+ 
+     themeName = theme;
+ 
+@@ -573,8 +582,8 @@
+     QFile f(metadataPath);
+     QFileInfo info(f);
+ 
+-    if (useCache() && info.lastModified().toTime_t() > pixmapCache->lastModifiedTime()) {
+-        discardCache();
++    if (useCache() && (!oldThemeName.isEmpty() || info.lastModified().toTime_t() > pixmapCache->lastModifiedTime())) {
++        discardCache(oldThemeName);
+     } else {
+         QString svgElementsFile = KStandardDirs::locateLocal("cache", "plasma-svgelements-" + themeName);
+         svgElementsCache = KSharedConfig::openConfig(svgElementsFile);
+Index: plasma/extenders/extender.cpp
+===================================================================
+--- plasma/extenders/extender.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/extenders/extender.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -572,7 +572,7 @@
+     ExtenderItem *topItem = dynamic_cast<ExtenderItem*>(d->layout->itemAt(0));
+     ExtenderItem *bottomItem = dynamic_cast<ExtenderItem*>(d->layout->itemAt(d->layout->count() - 1));
+     if (item->group()) {
+-        return FrameSvg::LeftBorder | FrameSvg::RightBorder;
++        return FrameSvg::NoBorder;
+     } else if (d->appearance == TopDownStacked && bottomItem != item) {
+         return FrameSvg::LeftBorder | FrameSvg::BottomBorder | FrameSvg::RightBorder;
+     } else if (d->appearance == BottomUpStacked && topItem != item) {
+Index: plasma/extenders/extenderitem.cpp
+===================================================================
+--- plasma/extenders/extenderitem.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ plasma/extenders/extenderitem.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -515,9 +515,11 @@
+ 
+     //remove global entry if needed.
+     Corona *corona = qobject_cast<Corona*>(scene());
+-    KConfigGroup extenderItemGroup(corona->config(), "DetachedExtenderItems");
+-    if (extenderItemGroup.hasGroup(QString::number(d->extenderItemId))) {
+-        extenderItemGroup.deleteGroup(QString::number(d->extenderItemId));
++    if (corona) {
++        KConfigGroup extenderItemGroup(corona->config(), "DetachedExtenderItems");
++        if (extenderItemGroup.hasGroup(QString::number(d->extenderItemId))) {
++            extenderItemGroup.deleteGroup(QString::number(d->extenderItemId));
++        }
+     }
+ 
+     d->hostApplet()->config("ExtenderItems").deleteGroup(QString::number(d->extenderItemId));
+Index: khtml/dom/dom_exception.h
+===================================================================
+--- khtml/dom/dom_exception.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/dom/dom_exception.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -87,7 +87,15 @@
+         INVALID_ACCESS_ERR = 15,
+         VALIDATION_ERR = 16,
+         TYPE_MISMATCH_ERR = 17,
+-        SECURITY_ERR = 18
++        SECURITY_ERR = 18,
++        NETWORK_ERR  = 19, ///< @since 4.5.2
++        ABORT_ERR    = 20, ///< @since 4.5.2
++        URL_MISMATCH_ERR   = 21, ///< @since 4.5.2
++        QUOTA_EXCEEDED_ERR = 22, ///< @since 4.5.2
++        TIMEOUT_ERR        = 23, ///< @since 4.5.2
++        NOT_READABLE_ERR   = 24, ///< @since 4.5.2
++        DATA_CLONE_ERR     = 25, ///< @since 4.5.2
++        ENCODING_ERR       = 26  ///< @since 4.5.2
+     };
+     unsigned short code;
+ 
+Index: khtml/dom/dom_node.cpp
+===================================================================
+--- khtml/dom/dom_node.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/dom/dom_node.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -526,6 +526,22 @@
+         return DOMString( "TYPE_MISMATCH_ERR" );
+     case SECURITY_ERR:
+         return DOMString( "SECURITY_ERR" );
++    case NETWORK_ERR:
++        return DOMString( "NETWORK_ERR" );
++    case ABORT_ERR:
++        return DOMString( "ABORT_ERR" );
++    case URL_MISMATCH_ERR:
++        return DOMString( "URL_MISMATCH_ERR" );
++    case QUOTA_EXCEEDED_ERR:
++        return DOMString( "QUOTA_EXCEEDED_ERR" );
++    case TIMEOUT_ERR:
++        return DOMString( "TIMEOUT_ERR" );
++    case NOT_READABLE_ERR:
++        return DOMString( "NOT_READABLE_ERR" );
++    case DATA_CLONE_ERR:
++        return DOMString( "DATA_CLONE_ERR" );
++    case ENCODING_ERR:
++        return DOMString( "ENCODING_ERR" );
+     default:
+         return DOMString( "(unknown exception code)" );
+     }
 Index: khtml/khtmlimage.cpp
 ===================================================================
---- khtml/khtmlimage.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ khtml/khtmlimage.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- khtml/khtmlimage.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/khtmlimage.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -93,6 +93,9 @@
      m_ext = new KHTMLImageBrowserExtension( this );
      m_ext->setObjectName( "be" );
@@ -569,8 +4423,8 @@ Index: khtml/khtmlimage.cpp
      setUrl(url);
 Index: khtml/khtml_filter.cpp
 ===================================================================
---- khtml/khtml_filter.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ khtml/khtml_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- khtml/khtml_filter.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/khtml_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -84,7 +84,7 @@
              filter = filter.mid(first, last - first + 1);
  
@@ -580,10 +4434,74 @@ Index: khtml/khtml_filter.cpp
          {
  //             qDebug() << "W:" << filter;
              // check if we can use RK first (and then check full RE for the rest) for better performance
+Index: khtml/khtml.desktop
+===================================================================
+--- khtml/khtml.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/khtml.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -36,7 +36,7 @@
+ Comment[hne]=भीतर मं बने एचटीएमएल प्रदर्सक अवयव
+ Comment[hr]=Ugrađena komponenta za pregledavanje HTML
+ Comment[hsb]=Integrowana HTML-komponenta
+-Comment[hu]=Beágyazható HTML-néző komponens
++Comment[hu]=Beágyazható HTML-megjelenítő komponens
+ Comment[ia]=Componente insertabile   pro vision HTML
+ Comment[id]=Komponen menampilkan HTML dapat dibenamkan
+ Comment[is]=Ívafin HTML-skoðunar eining
+Index: khtml/khtmlimage.desktop
+===================================================================
+--- khtml/khtmlimage.desktop	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/khtmlimage.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -36,7 +36,7 @@
+ Comment[hne]=भीतर मं बने फोटू प्रदर्सक अवयव
+ Comment[hr]=Ugradiva komponenta za pregledavanje slika
+ Comment[hsb]=Integrujomna komponenta za wobrazy
+-Comment[hu]=Beágyazható képnéző komponens
++Comment[hu]=Beágyazható képmegjelenítő komponens
+ Comment[ia]=Componente Insertabile pro vision de imagine
+ Comment[id]=Komponen Menampilkan Citra Dapat Dibenamkan
+ Comment[is]=Ívefjanleg myndsjáreining
+@@ -128,7 +128,7 @@
+ Name[hne]=भीतर मं बने फोटू प्रदर्सक
+ Name[hr]=Ugradivi preglednik slika
+ Name[hsb]=Integrowany wobhladowar za wobrazy
+-Name[hu]=Beágyazható képnézegető
++Name[hu]=Beágyazható képmegjelenítő
+ Name[ia]=Visor Interne de Imagine 
+ Name[id]=Penampil Citra Dapat Dibenamkan
+ Name[is]=Ívefjanleg myndsjá
+Index: khtml/ecma/kjs_dom.cpp
+===================================================================
+--- khtml/ecma/kjs_dom.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/ecma/kjs_dom.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1879,7 +1879,7 @@
+ // -------------------------------------------------------------------------
+ 
+ /* Source for DOMExceptionProtoTable.
+-@begin DOMExceptionProtoTable 15
++@begin DOMExceptionProtoTable 29
+   INDEX_SIZE_ERR		DOM::DOMException::INDEX_SIZE_ERR		DontDelete|ReadOnly
+   DOMSTRING_SIZE_ERR		DOM::DOMException::DOMSTRING_SIZE_ERR	DontDelete|ReadOnly
+   HIERARCHY_REQUEST_ERR		DOM::DOMException::HIERARCHY_REQUEST_ERR	DontDelete|ReadOnly
+@@ -1897,6 +1897,15 @@
+   INVALID_ACCESS_ERR		DOM::DOMException::INVALID_ACCESS_ERR	DontDelete|ReadOnly
+   VALIDATION_ERR               DOM::DOMException::VALIDATION_ERR      DontDelete|ReadOnly
+   TYPE_MISMATCH_ERR            DOM::DOMException::TYPE_MISMATCH_ERR   DontDelete|ReadOnly
++  SECURITY_ERR                 DOM::DOMException::SECURITY_ERR        DontDelete|ReadOnly            
++  NETWORK_ERR                  DOM::DOMException::NETWORK_ERR         DontDelete|ReadOnly  
++  ABORT_ERR                    DOM::DOMException::ABORT_ERR           DontDelete|ReadOnly
++  URL_MISMATCH_ERR             DOM::DOMException::URL_MISMATCH_ERR    DontDelete|ReadOnly
++  QUOTA_EXCEEDED_ERR           DOM::DOMException::QUOTA_EXCEEDED_ERR  DontDelete|ReadOnly
++  TIMEOUT_ERR                  DOM::DOMException::TIMEOUT_ERR         DontDelete|ReadOnly
++  NOT_READABLE_ERR             DOM::DOMException::NOT_READABLE_ERR    DontDelete|ReadOnly
++  DATA_CLONE_ERR               DOM::DOMException::DATA_CLONE_ERR      DontDelete|ReadOnly
++  ENCODING_ERR                 DOM::DOMException::ENCODING_ERR        DontDelete|ReadOnly
+ @end
+ */
+ 
 Index: khtml/khtmlimage.h
 ===================================================================
---- khtml/khtmlimage.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ khtml/khtmlimage.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- khtml/khtmlimage.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/khtmlimage.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -23,6 +23,7 @@
  #include "khtml_part.h"
  #include <kparts/factory.h>
@@ -600,17 +4518,263 @@ Index: khtml/khtmlimage.h
      QString m_mimeType;
      khtml::CachedImage *m_image;
      int m_xOffset, m_yOffset;
+Index: khtml/css/css_ruleimpl.cpp
+===================================================================
+--- khtml/css/css_ruleimpl.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/css/css_ruleimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -463,7 +463,7 @@
+         assert(!rule || rule->isRule());
+         return static_cast<CSSRuleImpl*>(rule);
+     }
+-    return m_lstCSSRules.at(index);
++    return index < length() ? m_lstCSSRules.at(index) : 0;
+ }
+ 
+ void CSSRuleListImpl::deleteRule ( unsigned long index )
+Index: khtml/css/css_valueimpl.h
+===================================================================
+--- khtml/css/css_valueimpl.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/css/css_valueimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -171,7 +171,7 @@
+     virtual ~CSSValueListImpl();
+ 
+     unsigned long length() const { return m_values.count(); }
+-    CSSValueImpl *item ( unsigned long index ) { return m_values.at(index); }
++    CSSValueImpl *item ( unsigned long index ) { return  index < length() ? m_values.at(index) : 0; }
+ 
+     virtual bool isValueList() const { return true; }
+ 
+Index: khtml/css/css_base.h
+===================================================================
+--- khtml/css/css_base.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ khtml/css/css_base.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -263,7 +263,7 @@
+ 	virtual ~StyleListImpl();
+ 
+ 	unsigned long length() const { return m_lstChildren->count(); }
+-	StyleBaseImpl *item(unsigned long num) const { return m_lstChildren->at(num); }
++	StyleBaseImpl *item(unsigned long num) const { return num < length() ? m_lstChildren->at(num) : 0; }
+ 
+ 	void append(StyleBaseImpl *item) { m_lstChildren->append(item); }
+ 
+Index: kjs/regexp_object.cpp
+===================================================================
+--- kjs/regexp_object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/regexp_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -186,6 +186,13 @@
+   putDirect(exec->propertyNames().lastIndex, jsNumber(0), DontDelete | DontEnum);
+ }
+ 
++JSObject* RegExpImp::valueClone(Interpreter* targetCtx) const
++{
++    RegExpImp* copy = new RegExpImp(static_cast<RegExpPrototype*>(targetCtx->builtinRegExpPrototype()));
++    copy->setRegExp(targetCtx->globalExec(), new RegExp(reg->pattern(), reg->flags()));
++    return copy;
++}
++
+ // ------------------------------ RegExpObjectImp ------------------------------
+ 
+ const ClassInfo RegExpObjectImp::info = {"Function", &InternalFunctionImp::info, &RegExpTable, 0};
+Index: kjs/number_object.h
+===================================================================
+--- kjs/number_object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/number_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -33,6 +33,8 @@
+ 
+     virtual const ClassInfo *classInfo() const { return &info; }
+     static const ClassInfo info;
++
++    virtual JSObject* valueClone(Interpreter* targetCtx) const;
+   };
+ 
+   /**
+Index: kjs/string_object.cpp
+===================================================================
+--- kjs/string_object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/string_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -136,6 +136,11 @@
+     return JSObject::toString(exec);
+ }
+ 
++JSObject* StringInstance::valueClone(Interpreter* targetCtx) const
++{
++    return new StringInstance(targetCtx->builtinStringPrototype(), internalValue());
++}
++
+ // ------------------------------ StringPrototype ---------------------------
+ const ClassInfo StringPrototype::info = {"String", &StringInstance::info, &stringTable, 0};
+ /* Source for string_object.lut.h
+Index: kjs/object.cpp
+===================================================================
+--- kjs/object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -412,6 +412,11 @@
+   return construct(exec, args);
+ }
+ 
++JSObject* JSObject::valueClone(Interpreter* /*targetCtx*/) const
++{
++    return 0;
++}
++
+ bool JSObject::isFunctionType() const
+ {
+   return implementsCall();
+Index: kjs/regexp_object.h
+===================================================================
+--- kjs/regexp_object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/regexp_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -59,6 +59,7 @@
+     virtual const ClassInfo *classInfo() const { return &info; }
+     static const ClassInfo info;
+ 
++    virtual JSObject* valueClone(Interpreter* targetCtx) const;
+   private:
+     RegExp *reg;
+   };
+Index: kjs/bool_object.h
+===================================================================
+--- kjs/bool_object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/bool_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -32,6 +32,8 @@
+   public:
+     BooleanInstance(JSObject *proto);
+ 
++    virtual JSObject* valueClone(Interpreter* targetCtx) const;
++
+     virtual const ClassInfo *classInfo() const { return &info; }
+     static const ClassInfo info;
+   };
+Index: kjs/string_object.h
+===================================================================
+--- kjs/string_object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/string_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -44,6 +44,7 @@
+     virtual void getOwnPropertyNames(ExecState*, PropertyNameArray&);
+ 
+     virtual UString toString(ExecState *exec) const;
++    virtual JSObject* valueClone(Interpreter* targetCtx) const;    
+ 
+     virtual const ClassInfo *classInfo() const { return &info; }
+     static const ClassInfo info;
+Index: kjs/date_object.h
+===================================================================
+--- kjs/date_object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/date_object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -42,6 +42,8 @@
+ 
+         virtual const ClassInfo *classInfo() const { return &info; }
+         static const ClassInfo info;
++
++        virtual JSObject* valueClone(Interpreter* targetCtx) const;
+     };
+ 
+     /**
+Index: kjs/object.h
+===================================================================
+--- kjs/object.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/object.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -366,7 +366,17 @@
+     virtual JSObject* construct(ExecState* exec, const List& args);
+     virtual JSObject* construct(ExecState* exec, const List& args, const Identifier& functionName, const UString& sourceURL, int lineNumber);
+ 
++
+     /**
++     * If this object represents a value, e.g. is a wrapper around a primitive,
++     * a regexp or a date this will return a fresh object with the same value
++     * (without cloning properties). Otherwise, returns 0
++     *
++     * The returned objects will use default prototypes from targetCtx
++     */
++    virtual JSObject* valueClone(Interpreter* targetCtx) const;
++
++    /**
+      * Whether or not this object should be considered a function for the purpose
+      * of the typeof operator. Normally this is the same as implementsCall(),
+      * which is what the default implementation delegates too, 
+Index: kjs/bool_object.cpp
+===================================================================
+--- kjs/bool_object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/bool_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -37,6 +37,13 @@
+ {
+ }
+ 
++JSObject* BooleanInstance::valueClone(Interpreter* targetCtx) const
++{
++    BooleanInstance* copy = new BooleanInstance(targetCtx->builtinBooleanPrototype());
++    copy->setInternalValue(internalValue());
++    return copy;
++}
++
+ // ------------------------------ BooleanPrototype --------------------------
+ 
+ // ECMA 15.6.4
+Index: kjs/date_object.cpp
+===================================================================
+--- kjs/date_object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/date_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -398,6 +398,13 @@
+ {
+ }
+ 
++JSObject* DateInstance::valueClone(Interpreter* targetCtx) const
++{
++    DateInstance* copy = new DateInstance(targetCtx->builtinDatePrototype());
++    copy->setInternalValue(internalValue());
++    return copy;
++}
++
+ bool DateInstance::getTime(tm &t, int &offset) const
+ {
+     double milli = internalValue()->getNumber();
+Index: kjs/number_object.cpp
+===================================================================
+--- kjs/number_object.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kjs/number_object.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -50,6 +50,14 @@
+     : JSWrapperObject(proto)
+ {
+ }
++
++JSObject* NumberInstance::valueClone(Interpreter* targetCtx) const
++{
++    NumberInstance* copy = new NumberInstance(targetCtx->builtinNumberPrototype());
++    copy->setInternalValue(internalValue());
++    return copy;
++}
++
+ // ------------------------------ NumberPrototype ---------------------------
+ 
+ // ECMA 15.7.4
+Index: kdoctools/customization/lt/user.entities
+===================================================================
+--- kdoctools/customization/lt/user.entities	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdoctools/customization/lt/user.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -6,9 +6,10 @@
+  -->
+ 
+ <!ENTITY Alt    "<keycap>Alt</keycap>">
++<!ENTITY Backspace "<keycap>Backspace</keycap>">
+ <!ENTITY Ctrl   "<keycap>Ctrl</keycap>">
+ <!ENTITY Enter  "<keycap>Enter</keycap>">
+ <!ENTITY Esc    "<keycap>Esc</keycap>">
++<!ENTITY FAQ    "<keycap>DUK</keycap>">
+ <!ENTITY Shift  "<keycap>Shift</keycap>">
+-<!ENTITY Tab    "<keycap>Tab</keycap>">
+-<!ENTITY Backspace    "<keycap>Backspace</keycap>">
++<!ENTITY Tab	"<keycap>Tab</keycap>">
 Index: kdoctools/customization/pt/entities/underLGPL.docbook
 ===================================================================
 --- kdoctools/customization/pt/entities/underLGPL.docbook	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
-+++ kdoctools/customization/pt/entities/underLGPL.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
++++ kdoctools/customization/pt/entities/underLGPL.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -0,0 +1,2 @@
 +<para>Este programa está licenciado ao abrigo da <ulink
 +url="common/lgpl-license.html">GNU Lesser General Public License</ulink>.</para>
 Index: kdoctools/customization/pt/lang.entities
 ===================================================================
---- kdoctools/customization/pt/lang.entities	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdoctools/customization/pt/lang.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdoctools/customization/pt/lang.entities	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdoctools/customization/pt/lang.entities	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -12,6 +12,8 @@
  <!-- Licence links -->
  <!ENTITY underGPL           PUBLIC "-//KDE//DOCUMENT GPL Licence Declaration//PT"
@@ -620,10 +4784,55 @@ Index: kdoctools/customization/pt/lang.entities
  <!ENTITY underFDL           PUBLIC "-//KDE//DOCUMENT FDL Licence Declaration//PT"
    "entities/underFDL.docbook"                       ><!-- level: para -->
  <!ENTITY underBSDLicense    PUBLIC "-//KDE//DOCUMENT BSD Licence Declaration//PT"
+Index: kdoctools/kio_help.cpp
+===================================================================
+--- kdoctools/kio_help.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdoctools/kio_help.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -134,10 +134,23 @@
+             redirect = true;
+ 	}
+         else
+-	{
+-	    unicodeError( i18n("There is no documentation available for %1." , Qt::escape(path)) );
+-            return QString();
+-	}
++        {
++            const QString documentationNotFound = "khelpcenter/documentationnotfound/index.html";
++            if (!langLookup(documentationNotFound).isEmpty())
++            {
++                KUrl red;
++                red.setProtocol("help");
++                red.setPath(documentationNotFound);
++                red.setQuery(query);
++                redirection(red);
++                redirect = true;
++            }
++            else
++            {
++                unicodeError( i18n("There is no documentation available for %1." , Qt::escape(path)) );
++                return QString();
++            }
++        }
+     } else
+         kDebug( 7119 ) << "result " << result;
+ 
+Index: kdeui/fonts/kfontchooser.h
+===================================================================
+--- kdeui/fonts/kfontchooser.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/fonts/kfontchooser.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -89,7 +89,7 @@
+    * \code
+    *    QStringList list;
+    *    KFontChooser::getFontList(list, KFontChooser::SmoothScalableFonts);
+-   *    KFontChooser *chooseFont = new KFontChooser(0, false, list);
++   *    KFontChooser *chooseFont = new KFontChooser(0, NoDisplayFlags, list);
+    * \endcode
+    * <p>
+    * The above creates a font chooser dialog with only SmoothScaleble fonts.
 Index: kdeui/actions/kselectaction.cpp
 ===================================================================
---- kdeui/actions/kselectaction.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdeui/actions/kselectaction.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdeui/actions/kselectaction.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/actions/kselectaction.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -242,7 +242,7 @@
    //kDebug (129) << "KSelectAction::addAction(" << action << ")";
  
@@ -710,8 +4919,8 @@ Index: kdeui/actions/kselectaction.cpp
      // "(void *)" or "long" would be smaller than "qlonglong"
 Index: kdeui/actions/kselectaction.h
 ===================================================================
---- kdeui/actions/kselectaction.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdeui/actions/kselectaction.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdeui/actions/kselectaction.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/actions/kselectaction.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -321,7 +321,7 @@
  
  Q_SIGNALS:
@@ -730,10 +4939,58 @@ Index: kdeui/actions/kselectaction.h
      virtual bool eventFilter (QObject *watched, QEvent *event);
  
      /**
+Index: kdeui/colors/kcolorscheme.cpp
+===================================================================
+--- kdeui/colors/kcolorscheme.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/colors/kcolorscheme.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -74,26 +74,27 @@
+         group = "ColorEffects:Disabled";
+     else if(state == QPalette::Inactive)
+         group = "ColorEffects:Inactive";
+-    else {
+-        _effects[0] = 0;
+-        _effects[1] = 0;
+-        _effects[2] = 0;
+-    }
+ 
++    _effects[0] = 0;
++    _effects[1] = 0;
++    _effects[2] = 0;
++
+     // NOTE: keep this in sync with kdebase/workspace/kcontrol/colors/colorscm.cpp
+     if(! group.isEmpty()) {
+         KConfigGroup cfg(config, group);
+-        _effects[Intensity] = cfg.readEntry( "IntensityEffect",
+-                (int)(state == QPalette::Disabled ?  IntensityDarken : IntensityNoEffect));
+-        _effects[Color]     = cfg.readEntry(     "ColorEffect",
+-		(int)(state == QPalette::Disabled ?  ColorNoEffect : ColorFade));
+-        _effects[Contrast]  = cfg.readEntry(  "ContrastEffect",
+-                (int)(state == QPalette::Disabled ?  ContrastFade : ContrastTint));
+-        _amount[Intensity]  = cfg.readEntry( "IntensityAmount", state == QPalette::Disabled ? 0.10 : 0.0 );
+-        _amount[Color]      = cfg.readEntry(     "ColorAmount", state == QPalette::Disabled ?  0.0 : 0.025 );
+-        _amount[Contrast]   = cfg.readEntry(  "ContrastAmount", state == QPalette::Disabled ? 0.65 : 0.10 );
+-        if (_effects[Color] > ColorNoEffect)
+-            _color = cfg.readEntry( "Color", state == QPalette::Disabled ?  QColor(56, 56, 56) : QColor(112, 111, 110));
++        if (cfg.readEntry("Enable", false)) {
++            _effects[Intensity] = cfg.readEntry( "IntensityEffect",
++                                                 (int)(state == QPalette::Disabled ?  IntensityDarken : IntensityNoEffect));
++            _effects[Color]     = cfg.readEntry(     "ColorEffect",
++                                                     (int)(state == QPalette::Disabled ?  ColorNoEffect : ColorFade));
++            _effects[Contrast]  = cfg.readEntry(  "ContrastEffect",
++                                                  (int)(state == QPalette::Disabled ?  ContrastFade : ContrastTint));
++            _amount[Intensity]  = cfg.readEntry( "IntensityAmount", state == QPalette::Disabled ? 0.10 : 0.0 );
++            _amount[Color]      = cfg.readEntry(     "ColorAmount", state == QPalette::Disabled ?  0.0 : 0.025 );
++            _amount[Contrast]   = cfg.readEntry(  "ContrastAmount", state == QPalette::Disabled ? 0.65 : 0.10 );
++            if (_effects[Color] > ColorNoEffect)
++                _color = cfg.readEntry( "Color", state == QPalette::Disabled ?  QColor(56, 56, 56) : QColor(112, 111, 110));
++        }
+     }
+ }
+ 
 Index: kdeui/tests/kselectaction_unittest.h
 ===================================================================
 --- kdeui/tests/kselectaction_unittest.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
-+++ kdeui/tests/kselectaction_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
++++ kdeui/tests/kselectaction_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -0,0 +1,43 @@
 +/* This file is part of the KDE libraries
 +    Copyright (c) 2009 Daniel Calviño Sánchez <danxuliu@gmail.com>
@@ -781,7 +5038,7 @@ Index: kdeui/tests/kselectaction_unittest.h
 Index: kdeui/tests/kselectaction_unittest.cpp
 ===================================================================
 --- kdeui/tests/kselectaction_unittest.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 0)
-+++ kdeui/tests/kselectaction_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
++++ kdeui/tests/kselectaction_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -0,0 +1,175 @@
 +/* This file is part of the KDE libraries
 +    Copyright (c) 2009 Daniel Calviño Sánchez <danxuliu@gmail.com>
@@ -960,8 +5217,8 @@ Index: kdeui/tests/kselectaction_unittest.cpp
 +}
 Index: kdeui/tests/CMakeLists.txt
 ===================================================================
---- kdeui/tests/CMakeLists.txt	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdeui/tests/CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdeui/tests/CMakeLists.txt	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/tests/CMakeLists.txt	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -65,6 +65,7 @@
    ktabwidget_unittest
    ktoolbar_unittest
@@ -970,10 +5227,37 @@ Index: kdeui/tests/CMakeLists.txt
  )
  
  KDEUI_PROXYMODEL_TESTS(
+Index: kdeui/widgets/ktextedit.cpp
+===================================================================
+--- kdeui/widgets/ktextedit.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/widgets/ktextedit.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -538,7 +538,7 @@
+         QString error;
+         if (KToolInvocation::startServiceByDesktopName("kttsd", QStringList(), &error))
+         {
+-            KMessageBox::error(this, i18n( "Starting KTTSD Failed"), error );
++            KMessageBox::error(this, i18n( "Starting Jovie Text-to-Speech Service Failed"), error );
+             return;
+         }
+     }
+Index: kdeui/widgets/klineedit.cpp
+===================================================================
+--- kdeui/widgets/klineedit.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/widgets/klineedit.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -1145,6 +1145,9 @@
+ QMenu* KLineEdit::createStandardContextMenu()
+ {
+     QMenu *popup = QLineEdit::createStandardContextMenu();
++    if ( !popup) { // happens on some embedded platforms
++        return 0;
++    }
+ 
+     if( !isReadOnly() )
+     {
 Index: kdeui/widgets/kcombobox.cpp
 ===================================================================
---- kdeui/widgets/kcombobox.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1170564)
-+++ kdeui/widgets/kcombobox.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1170564)
+--- kdeui/widgets/kcombobox.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/widgets/kcombobox.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
 @@ -175,17 +175,9 @@
          d->klineEdit->rotateText( type );
  }
@@ -993,6 +5277,355 @@ Index: kdeui/widgets/kcombobox.cpp
      return QComboBox::eventFilter( o, ev );
  }
  
+Index: kdeui/icons/kiconloader.cpp
+===================================================================
+--- kdeui/icons/kiconloader.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/icons/kiconloader.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -881,6 +881,13 @@
+             data = tempPixmap;
+             path = tempPath;
+ 
++            // Since we're here we didn't have a QPixmap cache entry, add one now.
++            PixmapWithPath *newPixmapWithPath = new PixmapWithPath;
++            newPixmapWithPath->pixmap = data;
++            newPixmapWithPath->path = path;
++
++            mPixmapCache.insert(key, newPixmapWithPath, data.width() * data.height() + 1);
++
+             return true;
+         }
+     }
+Index: kdeui/itemviews/kmodelindexproxymapper.cpp
+===================================================================
+--- kdeui/itemviews/kmodelindexproxymapper.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/itemviews/kmodelindexproxymapper.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -155,6 +155,11 @@
+ 
+ }
+ 
++KModelIndexProxyMapper::~KModelIndexProxyMapper()
++{
++  delete d_ptr;
++}
++
+ QModelIndex KModelIndexProxyMapper::mapLeftToRight(const QModelIndex& index) const
+ {
+   const QItemSelection selection = mapSelectionLeftToRight(QItemSelection(index, index));
+@@ -173,6 +178,27 @@
+   return selection.indexes().first();
+ }
+ 
++// QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
++// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
++// http://qt.gitorious.org/qt/qt/merge_requests/2474
++#if QT_VERSION < 0x040701
++#define RANGE_FIX_HACK
++#endif
++
++#ifdef RANGE_FIX_HACK
++static QItemSelection removeInvalidRanges(const QItemSelection &selection)
++{
++  QItemSelection result;
++  Q_FOREACH(const QItemSelectionRange &range, selection)
++  {
++    if (!range.isValid())
++      continue;
++    result << range;
++  }
++  return result;
++}
++#endif
++
+ QItemSelection KModelIndexProxyMapper::mapSelectionLeftToRight(const QItemSelection& selection) const
+ {
+   Q_D(const KModelIndexProxyMapper);
+@@ -191,6 +217,10 @@
+     if (!proxy.data())
+       return QItemSelection();
+     seekSelection = proxy.data()->mapSelectionToSource(seekSelection);
++
++#ifdef RANGE_FIX_HACK
++    seekSelection = removeInvalidRanges(seekSelection);
++#endif
+   }
+ 
+   QListIterator<QWeakPointer<const QAbstractProxyModel> > iDown(d->m_proxyChainDown);
+@@ -201,6 +231,10 @@
+     if (!proxy.data())
+       return QItemSelection();
+     seekSelection = proxy.data()->mapSelectionFromSource(seekSelection);
++
++#ifdef RANGE_FIX_HACK
++    seekSelection = removeInvalidRanges(seekSelection);
++#endif
+   }
+ 
+   Q_ASSERT( ( !seekSelection.isEmpty() && seekSelection.first().model() == d->m_rightModel.data() ) || true );
+@@ -226,6 +260,10 @@
+     if (!proxy.data())
+       return QItemSelection();
+     seekSelection = proxy.data()->mapSelectionToSource(seekSelection);
++
++#ifdef RANGE_FIX_HACK
++    seekSelection = removeInvalidRanges(seekSelection);
++#endif
+   }
+ 
+   QListIterator<QWeakPointer<const QAbstractProxyModel> > iUp(d->m_proxyChainUp);
+@@ -237,6 +275,10 @@
+     if (!proxy.data())
+       return QItemSelection();
+     seekSelection = proxy.data()->mapSelectionFromSource(seekSelection);
++
++#ifdef RANGE_FIX_HACK
++    seekSelection = removeInvalidRanges(seekSelection);
++#endif
+   }
+ 
+   Q_ASSERT( ( !seekSelection.isEmpty() && seekSelection.first().model() == d->m_leftModel.data() ) || true );
+Index: kdeui/itemviews/kbreadcrumbselectionmodel.cpp
+===================================================================
+--- kdeui/itemviews/kbreadcrumbselectionmodel.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/itemviews/kbreadcrumbselectionmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -135,12 +135,21 @@
+   for ( ; it != end; ++it)
+   {
+     QModelIndex parent = it->parent();
++
++    if (breadcrumbSelection.contains(parent))
++      continue;
++
+     int sumBreadcrumbs = 0;
+     bool includeAll = m_selectionDepth < 0;
++
+     while (parent.isValid() && (includeAll || sumBreadcrumbs < m_selectionDepth))
+     {
+       breadcrumbSelection.append(QItemSelectionRange(parent));
+       parent = parent.parent();
++
++      if (breadcrumbSelection.contains(parent))
++        break;
++
+       ++sumBreadcrumbs;
+     }
+   }
+Index: kdeui/itemviews/klinkitemselectionmodel.cpp
+===================================================================
+--- kdeui/itemviews/klinkitemselectionmodel.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/itemviews/klinkitemselectionmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -24,6 +24,10 @@
+ 
+ #include "kmodelindexproxymapper.h"
+ 
++#include "kdebug.h"
++
++#include <QItemSelection>
++
+ class KLinkItemSelectionModelPrivate
+ {
+ public:
+@@ -40,11 +44,19 @@
+     Q_DECLARE_PUBLIC(KLinkItemSelectionModel)
+     KLinkItemSelectionModel * const q_ptr;
+ 
++
++    bool assertSelectionValid(const QItemSelection &selection) const {
++      foreach(const QItemSelectionRange &range, selection) {
++        if (!range.isValid()) {
++          kDebug() << range;
++        }
++        Q_ASSERT(range.isValid());
++      }
++      return true;
++    }
++
+     void sourceSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
+ 
+-    QList<const QAbstractProxyModel *> m_proxyChainUp;
+-    QList<const QAbstractProxyModel *> m_proxyChainDown;
+-
+     QAbstractItemModel * const m_model;
+     QItemSelectionModel * const m_linkedItemSelectionModel;
+     bool m_ignoreCurrentChanged;
+@@ -79,20 +91,58 @@
+     }
+ }
+ 
++// QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
++// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
++// http://qt.gitorious.org/qt/qt/merge_requests/2474
++#if QT_VERSION < 0x040701
++#define RANGE_FIX_HACK
++#endif
++
++#ifdef RANGE_FIX_HACK
++static QItemSelection removeInvalidRanges(const QItemSelection &selection)
++{
++  QItemSelection result;
++  Q_FOREACH(const QItemSelectionRange &range, selection)
++  {
++    if (!range.isValid())
++      continue;
++    result << range;
++  }
++  return result;
++}
++#endif
++
+ void KLinkItemSelectionModel::select(const QItemSelection &selection, QItemSelectionModel::SelectionFlags command)
+ {
+     Q_D(KLinkItemSelectionModel);
+     d->m_ignoreCurrentChanged = true;
+-    QItemSelectionModel::select(selection, command);
+-    d->m_linkedItemSelectionModel->select(d->m_indexMapper->mapSelectionLeftToRight(selection), command);
++#ifdef RANGE_FIX_HACK
++    QItemSelection _selection = removeInvalidRanges(selection);
++#else
++    QItemSelection _selection = selection;
++#endif
++    QItemSelectionModel::select(_selection, command);
++    Q_ASSERT(d->assertSelectionValid(_selection));
++    QItemSelection mappedSelection = d->m_indexMapper->mapSelectionLeftToRight(_selection);
++    Q_ASSERT(d->assertSelectionValid(mappedSelection));
++    d->m_linkedItemSelectionModel->select(mappedSelection, command);
+     d->m_ignoreCurrentChanged = false;
+ }
+ 
+ void KLinkItemSelectionModelPrivate::sourceSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)
+ {
+     Q_Q(KLinkItemSelectionModel);
+-    const QItemSelection mappedDeselection = m_indexMapper->mapSelectionRightToLeft(deselected);
+-    const QItemSelection mappedSelection = m_indexMapper->mapSelectionRightToLeft(selected);
++#ifdef RANGE_FIX_HACK
++    QItemSelection _selected = removeInvalidRanges(selected);
++    QItemSelection _deselected = removeInvalidRanges(deselected);
++#else
++    QItemSelection _selected = selected;
++    QItemSelection _deselected = deselected;
++#endif
++    Q_ASSERT(assertSelectionValid(_selected));
++    Q_ASSERT(assertSelectionValid(_deselected));
++    const QItemSelection mappedDeselection = m_indexMapper->mapSelectionRightToLeft(_deselected);
++    const QItemSelection mappedSelection = m_indexMapper->mapSelectionRightToLeft(_selected);
+ 
+     q->QItemSelectionModel::select(mappedDeselection, QItemSelectionModel::Deselect);
+     q->QItemSelectionModel::select(mappedSelection, QItemSelectionModel::Select);
+Index: kdeui/itemviews/kmodelindexproxymapper.h
+===================================================================
+--- kdeui/itemviews/kmodelindexproxymapper.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/itemviews/kmodelindexproxymapper.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -85,6 +85,8 @@
+    */
+   KModelIndexProxyMapper(const QAbstractItemModel *leftModel, const QAbstractItemModel *rightModel, QObject* parent = 0);
+ 
++  ~KModelIndexProxyMapper();
++
+   /**
+    * Maps the @p index from the left model to the right model.
+    */
+Index: kdeui/itemviews/kselectionproxymodel.cpp
+===================================================================
+--- kdeui/itemviews/kselectionproxymodel.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/itemviews/kselectionproxymodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -785,7 +785,7 @@
+     // There is very little we can do here.
+     resetInternalData();
+     m_resetting = false;
+-    q->endResetModel();
++//    q->endResetModel();
+ }
+ 
+ void KSelectionProxyModelPrivate::sourceModelAboutToBeReset()
+@@ -1430,9 +1430,9 @@
+         }
+         if (childrenCount == 0)
+         {
+-            for (int rootIdx = startRootIdx; rootIdx <= endRootIdx; ++rootIdx)
++            for (int rootIdx = startRootIdx; rootIdx <= endRootIdx; --endRootIdx)
+             {
+-                const QModelIndex idx = m_rootIndexList.at(startRootIdx);
++                const QModelIndex idx = m_rootIndexList.at(rootIdx);
+                 q->rootIndexAboutToBeRemoved(idx);
+                 m_rootIndexList.removeOne(idx);
+             }
+@@ -1456,17 +1456,17 @@
+ 
+         for (int rootIdx = startRootIdx; rootIdx <= endRootIdx; ++rootIdx)
+         {
+-            q->rootIndexAboutToBeRemoved(m_rootIndexList.at(startRootIdx));
++            q->rootIndexAboutToBeRemoved(m_rootIndexList.at(rootIdx));
+         }
+ 
+         removeParentMappings(QModelIndex(), proxyStart, proxyEnd);
+         removeFirstChildMappings(proxyStart, proxyEnd);
+         int numRemovedChildren = 0;
+-        for (int rootIdx = startRootIdx; rootIdx <= endRootIdx; ++rootIdx)
++        for (int rootIdx = startRootIdx; rootIdx <= endRootIdx; --endRootIdx)
+         {
+-          const QModelIndex idx = m_rootIndexList.at(startRootIdx);
++          const QModelIndex idx = m_rootIndexList.at(rootIdx);
+           const int childCount = q->sourceModel()->rowCount(idx);
+-          m_rootIndexList.removeAt(startRootIdx);
++          m_rootIndexList.removeAt(rootIdx);
+           numRemovedChildren += childCount;
+         }
+         updateInternalTopIndexes(proxyEnd + 1, -1 * numRemovedChildren);
+Index: kdeui/util/kimagecache.cpp
+===================================================================
+--- kdeui/util/kimagecache.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/util/kimagecache.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -36,8 +36,9 @@
+     Q_OBJECT
+ 
+     public:
+-    Private()
+-        : timestamp(::time(0))
++    Private(QObject *parent = 0)
++        : QObject(parent)
++        ,timestamp(::time(0))
+         , enablePixmapCaching(true)
+     {
+         QObject::connect(QCoreApplication::instance(), SIGNAL(aboutToQuit()),
+@@ -71,6 +72,11 @@
+     d->pixmapCache.setMaxCost(defaultCacheSize);
+ }
+ 
++KImageCache::~KImageCache()
++{
++    delete d;
++}
++
+ bool KImageCache::insertImage(const QString &key, const QImage &image)
+ {
+     QBuffer buffer;
+Index: kdeui/util/kimagecache.h
+===================================================================
+--- kdeui/util/kimagecache.h	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdeui/util/kimagecache.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -76,6 +76,11 @@
+                 unsigned expectedItemSize = 0);
+ 
+     /**
++     * Deconstructor
++     */
++    ~KImageCache();
++
++    /**
+      * Inserts the pixmap given by @p pixmap to the cache, accessible with
+      * @p key. The pixmap must be converted to a QImage in order to be stored
+      * into shared memory. In order to prevent unnecessary conversions from
+Index: kdewebkit/kwebpluginfactory.cpp
+===================================================================
+--- kdewebkit/kwebpluginfactory.cpp	(.../tags/KDE/4.5.1/kdelibs)	(wersja 1179155)
++++ kdewebkit/kwebpluginfactory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1179155)
+@@ -84,6 +84,7 @@
+ 
+ KWebPluginFactory::~KWebPluginFactory()
+ {
++    delete d;
+ }
+ 
+ QObject* KWebPluginFactory::create(const QString& _mimeType, const QUrl& url, const QStringList& argumentNames, const QStringList& argumentValues) const
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________

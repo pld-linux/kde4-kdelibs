@@ -26,7 +26,6 @@ Patch0:		%{name}-branding.patch
 Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
 Patch3:		%{name}-aboutPLD.patch
-Patch4:		%{name}-fix_https_links.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -220,12 +219,11 @@ KDE.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-#%patch100 -p0
+%patch100 -p0
 %patch0 -p0
 %patch1 -p0
 %patch2 -p0
 %patch3 -p1
-%patch4 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp

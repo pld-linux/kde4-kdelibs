@@ -1,7 +1,109 @@
+Index: kate/mode/katemodeconfigpage.cpp
+===================================================================
+--- kate/mode/katemodeconfigpage.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kate/mode/katemodeconfigpage.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -107,6 +107,7 @@
+ ModeConfigPage::~ModeConfigPage ()
+ {
+   qDeleteAll (m_types);
++  delete ui;
+ }
+ 
+ void ModeConfigPage::apply()
+Index: kate/view/kateviewinternal.cpp
+===================================================================
+--- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -928,7 +928,7 @@
+     switch( bias ) {
+     case KateViewInternal::left:  return column() == 0;
+     case KateViewInternal::none:  return atEdge();
+-    case KateViewInternal::right: return column() == doc()->lineLength( line() );
++    case KateViewInternal::right: return column() >= doc()->lineLength( line() );
+     default: Q_ASSERT(false); return false;
+     }
+   }
+@@ -1031,7 +1031,7 @@
+ 
+     if (n >= 0) {
+       for (int i = 0; i < n; i++) {
+-        if (m_column == thisLine->length()) {
++        if (m_column >= thisLine->length()) {
+           // Have come to the end of a line
+           if (line() >= doc()->lines() - 1)
+             // Have come to the end of the document
+@@ -3279,7 +3279,7 @@
+       else
+         scrollNextPage();
+     } else {
+-      scrollViewLines(-((e->delta() / 120) * QApplication::wheelScrollLines()));
++      QApplication::sendEvent(m_lineScroll, e);
+     }
+ 
+   } else if (columnScrollingPossible()) {
+Index: kate/document/katedocument.cpp
+===================================================================
+--- kate/document/katedocument.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kate/document/katedocument.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -3523,12 +3523,10 @@
+       default:
+       break;
+     }
+-    if ( s != old )
+-    {
+-      removeText( KTextEditor::Range(cursor, 1) );
+-      insertText( cursor, s );
+-    }
+ 
++    removeText( KTextEditor::Range(cursor, 1) );
++    insertText( cursor, s );
++
+     editEnd();
+   }
+ 
+Index: kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop
+===================================================================
+--- kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -38,6 +38,7 @@
+ Name[nb]=Spinnvill (ikke ZEN) HTML-koding (lett utgave)
+ Name[nds]="Insane"-HTML-Koderen (nich "ZEN") (Eenfach-Verschoon)
+ Name[nl]=Insane (niet ZEN) HTML-codering (lichte editie)
++Name[pl]=Kodowanie HTML Insane (nie ZEN, wersja lekka)
+ Name[pt]=Codificação de HTML louca (não ZEN) HTML (edição leve)
+ Name[pt_BR]=Codificação de HTML louca (não ZEN) HTML (edição leve)
+ Name[se]=Jallas (ii-ZEN) HTML-koden (geahppes veršuvdna)
+@@ -77,6 +78,7 @@
+ Comment[nb]=Et programtillegg som gjør velgerfullføring som i zen-coding
+ Comment[nds]=En Moduul för ZEN-liek Koderen, a.B. Köörkompletteren
+ Comment[nl]=Een plugin, die zen-codering doet zoals keuze-voltooiing
++Comment[pl]=Wtyczka, która wykonuje uzupełnianie w stylu zen
+ Comment[pt]=Um 'plugin' que efectua uma codificação 'zen, como a completação de selectores
+ Comment[pt_BR]=Um plug-in que efetua uma codificação zen, como a completação de seletores
+ Comment[se]=Lassemoduvla mii bargá zen-lágankodema, nugo válljenollášuhttin
+Index: kfile/kfileplacesview.cpp
+===================================================================
+--- kfile/kfileplacesview.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kfile/kfileplacesview.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -160,7 +160,13 @@
+     painter->drawPixmap(point, pm);
+ 
+     if (option.state & QStyle::State_Selected) {
+-        painter->setPen(option.palette.highlightedText().color());
++        QPalette::ColorGroup cg = QPalette::Active;
++        if (!(option.state & QStyle::State_Enabled)) {
++            cg = QPalette::Disabled;
++        } else if (!(option.state & QStyle::State_Active)) {
++            cg = QPalette::Inactive;
++        }
++        painter->setPen(option.palette.color(cg, QPalette::HighlightedText));
+     }
+ 
+     QRect rectText;
 Index: doc/kded4/man-kded4.8.docbook
 ===================================================================
---- doc/kded4/man-kded4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ doc/kded4/man-kded4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- doc/kded4/man-kded4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ doc/kded4/man-kded4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -62,7 +62,7 @@
  <para>
  It monitors the directories containing .desktop files.
@@ -30,8 +132,8 @@ Index: doc/kded4/man-kded4.8.docbook
  
 Index: doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook
 ===================================================================
---- doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -236,6 +236,12 @@
  installations</para>
  </listitem>
@@ -47,8 +149,8 @@ Index: doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook
  </refsect1>
 Index: doc/sonnet/index.docbook
 ===================================================================
---- doc/sonnet/index.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ doc/sonnet/index.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- doc/sonnet/index.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ doc/sonnet/index.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -17,13 +17,14 @@
  <!-- TRANS:ROLES_OF_TRANSLATORS -->
  </authorgroup>
@@ -71,15 +173,15 @@ Index: doc/sonnet/index.docbook
  <keywordset>
 Index: kioslave/http/kcookiejar/domain_info
 ===================================================================
---- kioslave/http/kcookiejar/domain_info	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/domain_info	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/domain_info	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/domain_info	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -1 +1,2 @@
  twoLevelTLD=name,ai,au,bd,bh,ck,eg,et,fk,il,in,kh,kr,mk,mt,na,np,nz,pg,pk,qa,sa,sb,sg,sv,ua,ug,uk,uy,vn,za,zw
 +gTLDs=com,edu,gov,int,mil,net,org,biz,info,name,pro,aero,coop,museum,asia,cat,jobs,mobi,tel,travel
 Index: kioslave/http/kcookiejar/kcookiejar.cpp
 ===================================================================
---- kioslave/http/kcookiejar/kcookiejar.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/kcookiejar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/kcookiejar.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/kcookiejar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -36,32 +36,6 @@
  
  #include "kcookiejar.h"
@@ -1183,8 +1285,8 @@ Index: kioslave/http/kcookiejar/kcookiejar.cpp
      //  (must make a copy because setDomainAdvice() might delete the domain from m_domainList inside the for loop)
 Index: kioslave/http/kcookiejar/tests/cookie_rfc.test
 ===================================================================
---- kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -80,6 +80,22 @@
  CHECK http://w.y.z/Bar/Foo Cookie: $Version=1; some_value=value2
  COOKIE ASK http://w.y.z/ Set-Cookie2: some_value=value3; Version=1; Max-Age=3600
@@ -1210,8 +1312,8 @@ Index: kioslave/http/kcookiejar/tests/cookie_rfc.test
  CHECK https://secure.y.z/Foo/bar Cookie: $Version=1; some_value2=value2; $Path="/"
 Index: kioslave/http/kcookiejar/tests/cookie.test
 ===================================================================
---- kioslave/http/kcookiejar/tests/cookie.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/tests/cookie.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/tests/cookie.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/tests/cookie.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -157,9 +157,9 @@
  COOKIE ASK http://192.168.0.1 Set-Cookie: name11=value11; domain="test.local"; Path="/"; expires=%NEXTYEAR%
  COOKIE ASK http://192.168.0.1:8080 Set-Cookie: name2=value2; Path="/"; expires=%NEXTYEAR%
@@ -1235,8 +1337,8 @@ Index: kioslave/http/kcookiejar/tests/cookie.test
 +CHECK http://a.b.c/app1 Cookie: name=value
 Index: kioslave/http/kcookiejar/tests/cookie_saving.test
 ===================================================================
---- kioslave/http/kcookiejar/tests/cookie_saving.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/tests/cookie_saving.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/tests/cookie_saving.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/tests/cookie_saving.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -116,6 +116,8 @@
  ## Check domain restrictions #7
  COOKIE ASK http://frop35.com/ Set-Cookie2: set_by=x.y.z.frop.com; Version=1; Domain=".foobar.com"; Max-Age=3600
@@ -1271,8 +1373,8 @@ Index: kioslave/http/kcookiejar/tests/cookie_saving.test
 +CHECK http://ports.foo.bar.com Cookie: $Version=1; name=value1; $Port="80 8080 443"
 Index: kioslave/http/kcookiejar/kcookiewin.cpp
 ===================================================================
---- kioslave/http/kcookiejar/kcookiewin.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/kcookiewin.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/kcookiewin.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/kcookiewin.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -57,9 +57,9 @@
                          int defaultButton, bool showDetails )
             :KDialog( parent )
@@ -1337,8 +1439,8 @@ Index: kioslave/http/kcookiejar/kcookiewin.cpp
  
 Index: kioslave/http/kcookiejar/kcookiejar.h
 ===================================================================
---- kioslave/http/kcookiejar/kcookiejar.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/kcookiejar.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/kcookiejar.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/kcookiejar.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -28,9 +28,8 @@
  #include <QtCore/QString>
  #include <QtCore/QStringList>
@@ -1414,8 +1516,8 @@ Index: kioslave/http/kcookiejar/kcookiejar.h
      bool m_cookiesChanged;
 Index: kioslave/http/kcookiejar/kcookieserver.cpp
 ===================================================================
---- kioslave/http/kcookiejar/kcookieserver.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kioslave/http/kcookiejar/kcookieserver.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kioslave/http/kcookiejar/kcookieserver.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kioslave/http/kcookiejar/kcookieserver.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -28,11 +28,8 @@
  
  #define SAVE_DELAY 3 // Save after 3 minutes
@@ -1546,8 +1648,8 @@ Index: kioslave/http/kcookiejar/kcookieserver.cpp
           advice = mCookieJar->getGlobalAdvice();
 Index: kio/kio/kdirlister_p.h
 ===================================================================
---- kio/kio/kdirlister_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/kio/kdirlister_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kio/kio/kdirlister_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/kio/kdirlister_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -30,6 +30,7 @@
  #include <QtGui/QWidget>
  
@@ -1567,9 +1669,18 @@ Index: kio/kio/kdirlister_p.h
  //const unsigned short KDirListerCache::MAX_JOBS_PER_LISTER = 5;
 Index: kio/kio/krun.cpp
 ===================================================================
---- kio/kio/krun.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/kio/krun.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
-@@ -375,6 +375,7 @@
+--- kio/kio/krun.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/kio/krun.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -368,13 +368,14 @@
+     }
+     else {
+         if (supportedProtocols.isEmpty()) {
+-            // compat mode: assume KIO if not set and it's a KDE app
++            // compat mode: assume KIO if not set and it's a KDE app (or a KDE service)
+             const QStringList categories = _service.property("Categories").toStringList();
+-            if (categories.contains("KDE")) {
++            if (categories.contains("KDE") || !_service.isApplication()) {
+                 supportedProtocols.append("KIO");
              }
              else { // if no KDE app, be a bit over-generic
                  supportedProtocols.append("http");
@@ -1588,9 +1699,35 @@ Index: kio/kio/krun.cpp
                  break;
 Index: kio/kio/kfileitemdelegate.cpp
 ===================================================================
---- kio/kio/kfileitemdelegate.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/kio/kfileitemdelegate.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
-@@ -597,9 +597,16 @@
+--- kio/kio/kfileitemdelegate.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/kio/kfileitemdelegate.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -524,16 +524,23 @@
+ 
+ QBrush KFileItemDelegate::Private::foregroundBrush(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
+ {
++    QPalette::ColorGroup cg = QPalette::Active;
++    if (!(option.state & QStyle::State_Enabled)) {
++        cg = QPalette::Disabled;
++    } else if (!(option.state & QStyle::State_Active)) {
++        cg = QPalette::Inactive;
++    }
++
+     // Always use the highlight color for selected items
+     if (option.state & QStyle::State_Selected)
+-        return option.palette.brush(QPalette::HighlightedText);
++        return option.palette.brush(cg, QPalette::HighlightedText);
+ 
+     // If the model provides its own foreground color/brush for this item
+     const QVariant value = index.data(Qt::ForegroundRole);
+     if (value.isValid())
+         return brush(value, option);
+ 
+-    return option.palette.brush(QPalette::Text);
++    return option.palette.brush(cg, QPalette::Text);
+ }
+ 
+ 
+@@ -597,9 +604,16 @@
      QColor color;
      color.setAlphaF(amount);
  
@@ -1611,8 +1748,8 @@ Index: kio/kio/kfileitemdelegate.cpp
          QPixmap over  = to;
 Index: kio/kio/kdirlister.cpp
 ===================================================================
---- kio/kio/kdirlister.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/kio/kdirlister.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kio/kio/kdirlister.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/kio/kdirlister.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -231,6 +231,7 @@
  
                  emit lister->started(_url);
@@ -1766,8 +1903,8 @@ Index: kio/kio/kdirlister.cpp
  }
 Index: kio/tests/kdirmodeltest.cpp
 ===================================================================
---- kio/tests/kdirmodeltest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/tests/kdirmodeltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kio/tests/kdirmodeltest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/tests/kdirmodeltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -25,6 +25,7 @@
  #include "kdirmodeltest.moc"
  #include <kdirmodel.h>
@@ -1953,8 +2090,8 @@ Index: kio/tests/kdirmodeltest.cpp
      QVERIFY(m_dirIndex.isValid());
 Index: kio/tests/kdirmodeltest.h
 ===================================================================
---- kio/tests/kdirmodeltest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kio/tests/kdirmodeltest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kio/tests/kdirmodeltest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kio/tests/kdirmodeltest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -84,6 +84,7 @@
      void fillModel(bool reload, bool expectAllIndexes = true);
      void collectKnownIndexes();
@@ -1965,8 +2102,8 @@ Index: kio/tests/kdirmodeltest.h
  #ifdef USE_QTESTEVENTLOOP
 Index: kdecore/compression/kfilterdev.cpp
 ===================================================================
---- kdecore/compression/kfilterdev.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/compression/kfilterdev.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/compression/kfilterdev.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/compression/kfilterdev.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -96,6 +96,10 @@
  
  bool KFilterDev::open( QIODevice::OpenMode mode )
@@ -1980,8 +2117,8 @@ Index: kdecore/compression/kfilterdev.cpp
      {
 Index: kdecore/compression/kxzfilter.cpp
 ===================================================================
---- kdecore/compression/kxzfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/compression/kxzfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/compression/kxzfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/compression/kxzfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -38,6 +38,7 @@
  {
  public:
@@ -2035,8 +2172,8 @@ Index: kdecore/compression/kxzfilter.cpp
  
 Index: kdecore/compression/kbzip2filter.cpp
 ===================================================================
---- kdecore/compression/kbzip2filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/compression/kbzip2filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/compression/kbzip2filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/compression/kbzip2filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -50,6 +50,7 @@
  {
  public:
@@ -2096,8 +2233,8 @@ Index: kdecore/compression/kbzip2filter.cpp
  
 Index: kdecore/compression/kgzipfilter.cpp
 ===================================================================
---- kdecore/compression/kgzipfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/compression/kgzipfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/compression/kgzipfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/compression/kgzipfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -39,7 +39,7 @@
  {
  public:
@@ -2141,10 +2278,108 @@ Index: kdecore/compression/kgzipfilter.cpp
  }
  
  
+Index: kdecore/tests/kurltest.cpp
+===================================================================
+--- kdecore/tests/kurltest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/tests/kurltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -1685,7 +1685,7 @@
+   QCOMPARE( leo.path(), QString("text/html,http://www.invalid/" ) );
+ 
+   KUrl ptal( "ptal://mlc:usb@PC_970" ); // User=mlc, password=usb, host=PC_970
+-#if QT_VERSION >= 0x040600
++#if QT_VERSION >= 0x040600 && QT_VERSION <= 0x040602 // Hostnames with underscores were invalid in 4.6.0 to 4.6.2, then allowed again in e301c82693c33c0f96c6a756d15fe35a9d877443
+   QCOMPARE(ptal.url(), QString("ptal://mlc:usb@")); // The host "PC_970" is invalid according to STD3 validation
+   KUrl ptalSimpler("ptal://mlc:usb@pc123");
+   QCOMPARE(ptalSimpler.url(), QString("ptal://mlc:usb@pc123"));
+Index: kdecore/tests/ktcpsockettest.cpp
+===================================================================
+--- kdecore/tests/ktcpsockettest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/tests/ktcpsockettest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -198,6 +198,26 @@
+     cleanupSocket();
+ }
+ 
++static QString stateToString(KTcpSocket::State state)
++{
++    switch(state) {
++    case KTcpSocket::UnconnectedState:
++        return "UnconnectedState";
++    case KTcpSocket::HostLookupState:
++        return "HostLookupState";
++    case KTcpSocket::ConnectingState:
++        return "ConnectingState";
++    case KTcpSocket::ConnectedState:
++        return "ConnectedState";
++    case KTcpSocket::BoundState:
++        return "BoundState";
++    case KTcpSocket::ListeningState:
++        return "ListeningState";
++    case KTcpSocket::ClosingState:
++        return "ClosingState";
++    }
++    return "ERROR";
++}
+ 
+ #define HTTPREQUEST QByteArray("GET / HTTP/1.1\nHost: www.example.com\n\n")
+ 
+@@ -255,24 +275,45 @@
+                              "Host: ");
+     QByteArray requestEpilog("\r\n\r\n");
+     //Test rapid connection and disconnection to different hosts
+-    const char *hosts[] = {"www.google.de", "www.spiegel.de", "www.stern.de", "www.laut.de"};
+-    for (int i = 0; i < 20; i++) {
++    static const char *hosts[] = {"www.google.de", "www.spiegel.de", "www.stern.de", "www.laut.de"};
++    static const int numHosts = 4;
++    for (int i = 0; i < numHosts * 5; i++) {
++        qDebug("\nNow trying %s...", hosts[i % numHosts]);
+         QCOMPARE(s->state(), KTcpSocket::UnconnectedState);
+-        s->connectToHost(hosts[i % 4], 80);
+-        QCOMPARE(s->state(), KTcpSocket::HostLookupState);
++        s->connectToHost(hosts[i % numHosts], 80);
++        bool skip = false;
++        KTcpSocket::State expectedState;
++#if QT_VERSION > 0x040700
++        // Since Qt 4.6.3 the Qt-internal DNS cache returns a result (if cached) immediately
++        // but it was unreliable (when called from QTcpSocket) until 4.7.1
++        if (i < numHosts) {
++            expectedState = KTcpSocket::HostLookupState;
++        } else {
++            expectedState = KTcpSocket::ConnectingState;
++        }
++#elif QT_VERSION < 0x040603
++        // Previously there was no caching
++        expectedState = KTcpSocket::HostLookupState;
++#else   // 4.6.3 to 4.7.0: unreliable results, skip test
++        skip = true;
++#endif
++        if (!skip)
++            QCOMPARE(stateToString(s->state()), stateToString(expectedState));
++
+         //weave the host address into the HTTP request
+         QByteArray request(requestProlog);
+-        request.append(hosts[i % 4]);
++        request.append(hosts[i % numHosts]);
+         request.append(requestEpilog);
+-        qDebug("%s", hosts[i % 4]);
+         s->write(request);
+ 
+-        QCOMPARE(s->state(), KTcpSocket::HostLookupState);
++        if (!skip)
++            QCOMPARE(stateToString(s->state()), stateToString(expectedState));
++
+         s->waitForBytesWritten(-1);
+         QCOMPARE(s->state(), KTcpSocket::ConnectedState);
+         s->waitForReadyRead(-1);
+         QVERIFY(s->bytesAvailable() > 100);
+-        if (i % 5) {
++        if (i % (numHosts + 1)) {
+             s->readAll();
+             QVERIFY(s->bytesAvailable() == 0);
+         } else {
 Index: kdecore/all_languages.desktop
 ===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/all_languages.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/all_languages.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -2846,7 +2846,7 @@
  Name[pt]=Galês
  Name[pt_BR]=Galês
@@ -2156,8 +2391,8 @@ Index: kdecore/all_languages.desktop
  Name[sk]=Waleština
 Index: kdecore/sonnet/tests/test_filter.cpp
 ===================================================================
---- kdecore/sonnet/tests/test_filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/sonnet/tests/test_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/sonnet/tests/test_filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/sonnet/tests/test_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -127,7 +127,7 @@
      hits.append( Hit( QString::fromUtf8("राजभाषा"), 38 ) );
      hits.append( Hit( QString::fromUtf8("असून"), 46 ) );
@@ -2176,10 +2411,59 @@ Index: kdecore/sonnet/tests/test_filter.cpp
      hits.append( Hit( QString::fromUtf8("वर्षापासून"), 112 ) );
      hits.append( Hit( QString::fromUtf8("अस्तित्वात"), 123 ) );
      hits.append( Hit( QString::fromUtf8("आहे"), 134 ) );
+Index: kdecore/io/klimitediodevice.cpp
+===================================================================
+--- kdecore/io/klimitediodevice.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/io/klimitediodevice.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -18,7 +18,7 @@
+ 
+ #include "klimitediodevice_p.h"
+ 
+-KLimitedIODevice::KLimitedIODevice( QIODevice *dev, int start, int length )
++KLimitedIODevice::KLimitedIODevice( QIODevice *dev, qint64 start, qint64 length )
+     : m_dev( dev ), m_start( start ), m_length( length )
+ {
+     //kDebug(7005) << "start=" << start << "length=" << length;
+Index: kdecore/io/klimitediodevice_p.h
+===================================================================
+--- kdecore/io/klimitediodevice_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/io/klimitediodevice_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -38,7 +38,7 @@
+      * @param start where to start reading (position in bytes)
+      * @param length the length of the data to read (in bytes)
+      */
+-    KLimitedIODevice( QIODevice *dev, int start, int length );
++    KLimitedIODevice( QIODevice *dev, qint64 start, qint64 length );
+     virtual ~KLimitedIODevice() {}
+ 
+     virtual bool isSequential() const;
+Index: kdecore/io/kzip.cpp
+===================================================================
+--- kdecore/io/kzip.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/io/kzip.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -390,12 +390,12 @@
+ 	    int compression_mode = (uchar)buffer[2] | (uchar)buffer[3] << 8;
+ 	    time_t mtime = transformFromMsDos( buffer+4 );
+ 
+-	    qint64 compr_size = (uchar)buffer[12] | (uchar)buffer[13] << 8
+-	    			| (uchar)buffer[14] << 16 | (uchar)buffer[15] << 24;
+-	    qint64 uncomp_size = (uchar)buffer[16] | (uchar)buffer[17] << 8
+-	    			| (uchar)buffer[18] << 16 | (uchar)buffer[19] << 24;
+-	    int namelen = (uchar)buffer[20] | (uchar)buffer[21] << 8;
+-	    int extralen = (uchar)buffer[22] | (uchar)buffer[23] << 8;
++            const qint64 compr_size = uint(uchar(buffer[12])) | uint(uchar(buffer[13])) << 8 |
++                                      uint(uchar(buffer[14])) << 16 | uint(uchar(buffer[15])) << 24;
++            const qint64 uncomp_size = uint(uchar(buffer[16])) | uint(uchar(buffer[17])) << 8 |
++                                      uint(uchar(buffer[18])) << 16 | uint(uchar(buffer[19])) << 24;
++            const int namelen = uint(uchar(buffer[20])) | uint(uchar(buffer[21])) << 8;
++            const int extralen = uint(uchar(buffer[22])) | uint(uchar(buffer[23])) << 8;
+ 
+             /*
+ 	    kDebug(7040) << "general purpose bit flag: " << gpf;
 Index: kdecore/date/kcalendarsystem.cpp
 ===================================================================
---- kdecore/date/kcalendarsystem.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdecore/date/kcalendarsystem.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdecore/date/kcalendarsystem.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/date/kcalendarsystem.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -1385,12 +1385,12 @@
                      }
                  } else {
@@ -2198,10 +2482,34 @@ Index: kdecore/date/kcalendarsystem.cpp
                  buffer = eraEntry.section( ':', 3, 3 );
                  if ( buffer.isEmpty() ) {
                      if ( direction == '-' ) {
+Index: kdecore/util/kshareddatacache.cpp
+===================================================================
+--- kdecore/util/kshareddatacache.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdecore/util/kshareddatacache.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -1156,11 +1156,17 @@
+     IndexTableEntry *entriesIndex = indexTable();
+ 
+     // Update page table first
+-    uint firstPage = entriesIndex[index].firstPage;
+-    if ((qint32)index != pageTableEntries[firstPage].index) {
++    pageID firstPage = entriesIndex[index].firstPage;
++    if (firstPage < 0 || firstPage >= pageTableSize()) {
++        kError(264) << "Removing" << index << "which is already marked as empty!";
++        return;
++    }
++
++    if (index != static_cast<uint>(pageTableEntries[firstPage].index)) {
+         kError(264) << "Removing" << index << "will not work as it is assigned"
+                     << "to page" << firstPage << "which is itself assigned to"
+                     << "entry" << pageTableEntries[firstPage].index << "instead!";
++        return;
+     }
+ 
+     uint entriesToRemove = intCeil(entriesIndex[index].totalItemSize, cachePageSize());
 Index: plasma/tooltipmanager.cpp
 ===================================================================
---- plasma/tooltipmanager.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ plasma/tooltipmanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- plasma/tooltipmanager.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ plasma/tooltipmanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -236,10 +236,12 @@
              }
          }
@@ -2219,13 +2527,31 @@ Index: plasma/tooltipmanager.cpp
          }
      }
  }
+Index: plasma/applet.cpp
+===================================================================
+--- plasma/applet.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -2668,7 +2668,10 @@
+         return;
+     }
+ 
+-    size = appletDescription.property("X-Plasma-DefaultSize").toSize();
++    QVariant s = appletDescription.property("X-Plasma-DefaultSize");
++    if (s.isValid()) {
++        size = s.toSize();
++    }
+     //kDebug() << "size" << size;
+     q->resize(size);
+ 
 Index: plasma/data/servicetypes/plasma-containmentactions.desktop
 ===================================================================
---- plasma/data/servicetypes/plasma-containmentactions.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ plasma/data/servicetypes/plasma-containmentactions.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
-@@ -37,7 +37,7 @@
+--- plasma/data/servicetypes/plasma-containmentactions.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ plasma/data/servicetypes/plasma-containmentactions.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -36,8 +36,9 @@
+ Comment[nl]=Plasma Containeracties
  Comment[nn]=Plasma behaldarhandlingar
  Comment[pa]=ਪਲਾਜ਼ਮਾ ਕਨਟੇਨਮੈਂਟਐਕਸ਼ਨ
++Comment[pl]=Kontener Plazmy: akcje
  Comment[pt]=Acções do Contentor do Plasma
 -Comment[pt_BR]=Ações do contentor do Plasma
 +Comment[pt_BR]=Ações do contêiner do Plasma
@@ -2234,8 +2560,8 @@ Index: plasma/data/servicetypes/plasma-containmentactions.desktop
  Comment[se]=Plasma ContainmentActions
 Index: plasma/extenders/extendergroup.cpp
 ===================================================================
---- plasma/extenders/extendergroup.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ plasma/extenders/extendergroup.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- plasma/extenders/extendergroup.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ plasma/extenders/extendergroup.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -66,13 +66,13 @@
      d->scrollWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
  
@@ -2252,7 +2578,24 @@ Index: plasma/extenders/extendergroup.cpp
      collapse->setToolTip(i18n("Hide this group."));
      connect(collapse, SIGNAL(triggered()), this, SLOT(collapseGroup()));
      addAction("collapse", collapse);
-@@ -300,7 +300,7 @@
+@@ -283,6 +283,7 @@
+             QApplication::restoreOverrideCursor();
+             d->layout->removeItem(d->spacerWidget);
+             d->spacerWidget->deleteLater();
++            d->spacerWidget = 0;
+         }
+     }
+ }
+@@ -292,6 +293,8 @@
+     if (event->mimeData()->hasFormat(ExtenderItemMimeData::mimeType())) {
+         if (d->spacerWidget) {
+             d->layout->removeItem(d->spacerWidget);
++            d->spacerWidget->deleteLater();
++            d->spacerWidget = 0;
+         }
+     }
+ }
+@@ -300,7 +303,7 @@
      : q(group),
        spacerWidget(0),
        svg(new Svg(group)),
@@ -2263,8 +2606,8 @@ Index: plasma/extenders/extendergroup.cpp
  {
 Index: khtml/html/html_documentimpl.h
 ===================================================================
---- khtml/html/html_documentimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/html/html_documentimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/html/html_documentimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/html/html_documentimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -64,7 +64,6 @@
      HTMLCollectionImpl* all();
      HTMLCollectionImpl* scripts();
@@ -2285,8 +2628,8 @@ Index: khtml/html/html_documentimpl.h
  
 Index: khtml/html/html_documentimpl.cpp
 ===================================================================
---- khtml/html/html_documentimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/html/html_documentimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/html/html_documentimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/html/html_documentimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -131,26 +131,6 @@
                       URL().url(), fake_header, qlonglong(windowId));
  }
@@ -2332,8 +2675,8 @@ Index: khtml/html/html_documentimpl.cpp
      if ( true || !m_render )
 Index: khtml/ecma/kjs_html.h
 ===================================================================
---- khtml/ecma/kjs_html.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/ecma/kjs_html.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/ecma/kjs_html.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/ecma/kjs_html.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -53,7 +53,7 @@
             Images, Applets, Links, Forms, Layers, Anchors, Scripts, All, Clear, Open, Close,
             Write, WriteLn, GetElementsByName, GetSelection, CaptureEvents, ReleaseEvents,
@@ -2345,8 +2688,8 @@ Index: khtml/ecma/kjs_html.h
      static JSValue *nameGetter(ExecState *exec, JSObject*, const Identifier& name, const PropertySlot& slot);
 Index: khtml/ecma/kjs_html.cpp
 ===================================================================
---- khtml/ecma/kjs_html.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/ecma/kjs_html.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/ecma/kjs_html.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/ecma/kjs_html.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -187,6 +187,8 @@
    frames		HTMLDocument::Frames		DontDelete|ReadOnly
  #NS4 extension
@@ -2367,8 +2710,8 @@ Index: khtml/ecma/kjs_html.cpp
      case FgColor:
 Index: khtml/css/css_valueimpl.cpp
 ===================================================================
---- khtml/css/css_valueimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/css/css_valueimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/css/css_valueimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/css/css_valueimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -1052,11 +1052,7 @@
  
  int CSSPrimitiveValueImpl::computeLength( khtml::RenderStyle *style, int logicalDpiY)
@@ -2384,8 +2727,8 @@ Index: khtml/css/css_valueimpl.cpp
  double CSSPrimitiveValueImpl::computeLengthFloat( khtml::RenderStyle *style, int logicalDpiY)
 Index: khtml/css/cssstyleselector.cpp
 ===================================================================
---- khtml/css/cssstyleselector.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/css/cssstyleselector.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/css/cssstyleselector.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/css/cssstyleselector.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -3073,7 +3073,7 @@
          case CSS_VAL_INVALID:
          {
@@ -2397,8 +2740,8 @@ Index: khtml/css/cssstyleselector.cpp
              if (width == 0 && widthd >= 0.025) width++;
 Index: khtml/css/css_valueimpl.h
 ===================================================================
---- khtml/css/css_valueimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ khtml/css/css_valueimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- khtml/css/css_valueimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ khtml/css/css_valueimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -222,6 +222,16 @@
  
      double computeLengthFloat( khtml::RenderStyle *style, int logicalDpiY);
@@ -2418,8 +2761,8 @@ Index: khtml/css/css_valueimpl.h
      int getDPIResolution() const;
 Index: kpty/kpty.cpp
 ===================================================================
---- kpty/kpty.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kpty/kpty.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kpty/kpty.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kpty/kpty.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -348,7 +348,7 @@
      return false;
    }
@@ -2429,10 +2772,76 @@ Index: kpty/kpty.cpp
    // Solaris
    ioctl(d->slaveFd, I_PUSH, "ptem");
    ioctl(d->slaveFd, I_PUSH, "ldterm");
+Index: kdeui/paged/kpagewidgetmodel.cpp
+===================================================================
+--- kdeui/paged/kpagewidgetmodel.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/paged/kpagewidgetmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -388,9 +388,16 @@
+     connect(item, SIGNAL(changed()), this, SLOT(_k_itemChanged()));
+     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
+ 
++  // The row to be inserted
++  int row = d->rootItem->childCount();
++
++  beginInsertRows(QModelIndex(), row, row);
++
+   PageItem *pageItem = new PageItem( item, d->rootItem );
+   d->rootItem->appendChild( pageItem );
+ 
++  endInsertRows();
++
+   emit layoutChanged();
+ }
+ 
+@@ -417,10 +424,21 @@
+     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
+ 
+   PageItem *parent = beforePageItem->parent();
++  // The row to be inserted
++  int row = beforePageItem->row();
+ 
++  QModelIndex index;
++  if (parent != d_func()->rootItem) {
++      index = createIndex( parent->row(), 0, parent );
++  }
++
++  beginInsertRows(index, row, row);
++
+   PageItem *newPageItem = new PageItem( item, parent );
+-  parent->insertChild( beforePageItem->row(), newPageItem );
++  parent->insertChild( row, newPageItem );
+ 
++  endInsertRows();
++
+   emit layoutChanged();
+ }
+ 
+@@ -446,9 +464,21 @@
+     connect(item, SIGNAL(changed()), this, SLOT(_k_itemChanged()));
+     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
+ 
++  // The row to be inserted
++  int row = parentPageItem->childCount();
++
++  QModelIndex index;
++  if (parentPageItem != d_func()->rootItem) {
++      index = createIndex( parentPageItem->row(), 0, parentPageItem );
++  }
++
++  beginInsertRows(index, row, row);
++
+   PageItem *newPageItem = new PageItem( item, parentPageItem );
+   parentPageItem->appendChild( newPageItem );
+ 
++  endInsertRows();
++
+   emit layoutChanged();
+ }
+ 
 Index: kdeui/tests/kxmlgui_unittest.h
 ===================================================================
---- kdeui/tests/kxmlgui_unittest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/tests/kxmlgui_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/tests/kxmlgui_unittest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/tests/kxmlgui_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -42,6 +42,7 @@
      void testXMLFileReplacement();
      void testTopLevelSeparator();
@@ -2443,8 +2852,8 @@ Index: kdeui/tests/kxmlgui_unittest.h
  #endif
 Index: kdeui/tests/kxmlgui_unittest.cpp
 ===================================================================
---- kdeui/tests/kxmlgui_unittest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/tests/kxmlgui_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/tests/kxmlgui_unittest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/tests/kxmlgui_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -841,3 +841,25 @@
      QVERIFY(reloadedXml.contains("<Action name=\"home\""));
      QVERIFY(reloadedXml.contains("<ActionProperties>"));
@@ -2473,8 +2882,8 @@ Index: kdeui/tests/kxmlgui_unittest.cpp
 +
 Index: kdeui/xmlgui/kxmlguiwindow.cpp
 ===================================================================
---- kdeui/xmlgui/kxmlguiwindow.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/xmlgui/kxmlguiwindow.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/xmlgui/kxmlguiwindow.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/xmlgui/kxmlguiwindow.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -123,6 +123,8 @@
  
  KXmlGuiWindow::~KXmlGuiWindow()
@@ -2486,8 +2895,8 @@ Index: kdeui/xmlgui/kxmlguiwindow.cpp
  bool KXmlGuiWindow::event( QEvent* ev )
 Index: kdeui/xmlgui/kxmlguifactory.cpp
 ===================================================================
---- kdeui/xmlgui/kxmlguifactory.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/xmlgui/kxmlguifactory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/xmlgui/kxmlguifactory.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/xmlgui/kxmlguifactory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -201,6 +201,9 @@
  
  KXMLGUIFactory::~KXMLGUIFactory()
@@ -2500,8 +2909,8 @@ Index: kdeui/xmlgui/kxmlguifactory.cpp
  
 Index: kdeui/xmlgui/kxmlguiclient.cpp
 ===================================================================
---- kdeui/xmlgui/kxmlguiclient.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/xmlgui/kxmlguiclient.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/xmlgui/kxmlguiclient.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/xmlgui/kxmlguiclient.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -92,9 +92,14 @@
  
  KXMLGUIClient::~KXMLGUIClient()
@@ -2520,8 +2929,8 @@ Index: kdeui/xmlgui/kxmlguiclient.cpp
        client->d->m_parent = 0;
 Index: kdeui/widgets/knuminput.cpp
 ===================================================================
---- kdeui/widgets/knuminput.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/widgets/knuminput.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/widgets/knuminput.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/widgets/knuminput.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -178,7 +178,9 @@
          return;
      }
@@ -2535,8 +2944,8 @@ Index: kdeui/widgets/knuminput.cpp
          w1 = qMax(w1, p->d->column1Width);
 Index: kdeui/widgets/klineedit_p.h
 ===================================================================
---- kdeui/widgets/klineedit_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/widgets/klineedit_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/widgets/klineedit_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/widgets/klineedit_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -186,6 +186,7 @@
        m_overlap(0),
        m_sentinel(false)
@@ -2547,8 +2956,8 @@ Index: kdeui/widgets/klineedit_p.h
    QStyle *style() const;
 Index: kdeui/itemviews/kcategorizedview.cpp
 ===================================================================
---- kdeui/itemviews/kcategorizedview.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1185458)
-+++ kdeui/itemviews/kcategorizedview.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1185458)
+--- kdeui/itemviews/kcategorizedview.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/itemviews/kcategorizedview.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
 @@ -364,11 +364,13 @@
  {
      //Find the highest element in the last row
@@ -2574,6 +2983,40 @@ Index: kdeui/itemviews/kcategorizedview.cpp
      }
  
      return res;
+Index: kdeui/itemviews/kmodelindexproxymapper.cpp
+===================================================================
+--- kdeui/itemviews/kmodelindexproxymapper.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/itemviews/kmodelindexproxymapper.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -179,9 +179,10 @@
+ }
+ 
+ // QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
+-// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
++// those out manually in a loop. Hopefully fixed in Qt 4.7.2, so we ifdef it out.
+ // http://qt.gitorious.org/qt/qt/merge_requests/2474
+-#if QT_VERSION < 0x040701
++// http://qt.gitorious.org/qt/qt/merge_requests/831
++#if QT_VERSION < 0x040702
+ #define RANGE_FIX_HACK
+ #endif
+ 
+Index: kdeui/itemviews/klinkitemselectionmodel.cpp
+===================================================================
+--- kdeui/itemviews/klinkitemselectionmodel.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
++++ kdeui/itemviews/klinkitemselectionmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
+@@ -92,9 +92,10 @@
+ }
+ 
+ // QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
+-// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
++// those out manually in a loop. Hopefully fixed in Qt 4.7.2, so we ifdef it out.
+ // http://qt.gitorious.org/qt/qt/merge_requests/2474
+-#if QT_VERSION < 0x040701
++// http://qt.gitorious.org/qt/qt/merge_requests/831
++#if QT_VERSION < 0x040702
+ #define RANGE_FIX_HACK
+ #endif
+ 
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________

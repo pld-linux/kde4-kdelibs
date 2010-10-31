@@ -42,7 +42,7 @@ BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 BuildRequires:	aspell-devel
-BuildRequires:	attica-devel >= 0.1.1
+BuildRequires:	attica-devel >= 0.1.4
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel

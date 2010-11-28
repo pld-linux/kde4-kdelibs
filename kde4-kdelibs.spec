@@ -1,6 +1,5 @@
 #
 # Conditional build:
-%bcond_without	kerberos5	# disable kerberos
 #
 %define		_state		stable
 %define		orgname		kdelibs
@@ -55,7 +54,7 @@ BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	flex
 BuildRequires:	giflib-devel
-%{?with_kerberos5:BuildRequires:	heimdal-devel}
+BuildRequires:	heimdal-devel
 BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600

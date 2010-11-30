@@ -318,7 +318,7 @@ diff -ru kdelibs-4.4.3/kdeui/xmlgui/ui_standards.rc kdelibs-4.4.3-bs/kdeui/xmlgu
 @@ -13,6 +13,7 @@
  set (KDE_VERSION_RELEASE 80)
  set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
- set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.5.3)")
+ set (KDE_VERSION_STRING "${KDE_VERSION} (KDE 4.5.4)")
 +exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
  
  set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )

@@ -3,7 +3,7 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.7.0
+%define		qtver		4.7.1
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -83,7 +83,7 @@ BuildRequires:	polkit-qt-1-gui-devel >= 0.96.1
 BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
-BuildRequires:	rpmbuild(macros) >= 1.293
+BuildRequires:	rpmbuild(macros) >= 1.600
 BuildRequires:	shared-desktop-ontologies-devel >= 0.5
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= 2.4.63
@@ -235,8 +235,6 @@ sed -i -e 's#PLDLINUX_VERSION#PLD/3.0 (Th)#g' kio/kio/kprotocolmanager.cpp
 install -d build
 cd build
 %cmake \
-	-DCMAKE_INSTALL_PREFIX=%{_prefix} \
-	-DLIB_INSTALL_DIR=%{_libdir} \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \
 	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 	-DDATA_INSTALL_DIR=%{_datadir}/apps \
@@ -244,11 +242,7 @@ cd build
 	-DMIME_INSTALL_DIR=/nogo \
 	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
 	-DHTML_INSTALL_DIR=%{_kdedocdir} \
-	-DCMAKE_BUILD_TYPE=%{!?debug:Release}%{?debug:Debug} \
 	-DKDE_DISTRIBUTION_TEXT="PLD-Linux" \
-%if "%{_lib}" == "lib64"
-	-DLIB_SUFFIX=64 \
-%endif
 	-DKDE4_ENABLE_FINAL=OFF \
 	../
 

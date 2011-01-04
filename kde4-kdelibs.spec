@@ -236,7 +236,6 @@ install -d build
 cd build
 %cmake \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \
-	-DSYSCONF_INSTALL_DIR=%{_sysconfdir} \
 	-DDATA_INSTALL_DIR=%{_datadir}/apps \
 	-DKCFG_INSTALL_DIR=%{_datadir}/config.kcfg \
 	-DMIME_INSTALL_DIR=/nogo \

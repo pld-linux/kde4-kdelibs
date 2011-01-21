@@ -13,12 +13,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.5.5
-Release:	3
+Version:	4.6.0
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	a6037c53d34fe28f8a135181fe7c923b
+# Source0-md5:	9ee32f375809a42a4a8d512bd06a612b
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -30,6 +30,7 @@ BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
 BuildRequires:	QtCore-devel >= %{qtver}
 BuildRequires:	QtDBus-devel >= %{qtver}
+BuildRequires:	QtDeclarative-devel >= %{qtver}
 BuildRequires:	QtDesigner-devel >= %{qtver}
 BuildRequires:	QtGui-devel >= %{qtver}
 BuildRequires:	QtOpenGL-devel >= %{qtver}
@@ -41,7 +42,7 @@ BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 BuildRequires:	aspell-devel
-BuildRequires:	attica-devel >= 0.1.4
+BuildRequires:	attica-devel >= 0.2.0
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
@@ -54,6 +55,7 @@ BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	flex
 BuildRequires:	giflib-devel
+BuildRequires:	grantlee-devel >= 0.1.1
 BuildRequires:	heimdal-devel
 BuildRequires:	hspell-devel
 BuildRequires:	issue
@@ -79,14 +81,14 @@ BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= 4.3.80
 BuildRequires:	pkgconfig
-BuildRequires:	polkit-qt-1-gui-devel >= 0.96.1
+BuildRequires:	polkit-qt-1-gui-devel >= 0.99.0
 BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
 BuildRequires:	shared-desktop-ontologies-devel >= 0.5
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.4.63
+BuildRequires:	soprano-devel >= 2.5.63
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -283,8 +285,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %dir %{_docdir}/kde
-# from kde4-kdebase.spec - old common subpackage
-%dir %{_desktopdir}/kde4
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 #%{_sysconfdir}/xdg/menus/applications.menu
 %attr(755,root,root) %{_bindir}/kjs
@@ -367,6 +367,10 @@ rm -rf $RPM_BUILD_ROOT
 
 %{_datadir}/dbus-1/interfaces/*.xml
 
+# from kde4-kdebase.spec - old common subpackage
+%dir %{_desktopdir}/kde4
+%{_desktopdir}/kde4/*.desktop
+
 # kauth
 %{_datadir}/apps/kauth
 /etc/dbus-1/system.d/org.kde.auth.conf
@@ -375,6 +379,7 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_datadir}/apps/plasma/services
 %{_datadir}/apps/plasma/services/dataengineservice.operations
 %{_datadir}/apps/plasma/services/plasmoidservice.operations
+%{_datadir}/apps/plasma/services/storage.operations
 
 %{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
@@ -465,6 +470,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %ghost %{_libdir}/libkutils.so.?
 %attr(755,root,root) %{_libdir}/libnepomuk.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libnepomuk.so.?
+%attr(755,root,root) %{_libdir}/libnepomukutils.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libnepomukutils.so.?
 %attr(755,root,root) %{_libdir}/libnepomukquery.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libnepomukquery.so.?
 %attr(755,root,root) %{_libdir}/libplasma.so.*.*
@@ -489,6 +496,8 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_libdir}/kde4/plugins/kauth/helper
 %attr(755,root,root) %{_libdir}/kde4/plugins/kauth/helper/kauth_helper_plugin.so
 %dir %{_libdir}/kde4/plugins/designer
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdedeprecated.so
+%attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewebkitwidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kdewidgets.so
 %attr(755,root,root) %{_libdir}/kde4/plugins/designer/kde3supportwidgets.so
 %dir %{_libdir}/kde4/plugins/imageformats
@@ -531,6 +540,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkunittest.so
 %attr(755,root,root) %{_libdir}/libkutils.so
 %attr(755,root,root) %{_libdir}/libnepomuk.so
+%attr(755,root,root) %{_libdir}/libnepomukutils.so
 %attr(755,root,root) %{_libdir}/libnepomukquery.so
 %attr(755,root,root) %{_libdir}/libplasma.so
 %attr(755,root,root) %{_libdir}/libsolid.so
@@ -689,6 +699,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCrash
 %{_includedir}/KDE/KCrashBookmarkImporter
 %{_includedir}/KDE/KCrashBookmarkImporterImpl
+%{_includedir}/KDE/KCurrencyCode
 %{_includedir}/KDE/KCursor
 %{_includedir}/KDE/KDBusServiceStarter
 %{_includedir}/KDE/KDEDModule
@@ -717,8 +728,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDiskFreeSpaceInfo
 %{_includedir}/KDE/KDoubleNumInput
 %{_includedir}/KDE/KDoubleValidator
+%{_includedir}/KDE/KDualAction
 %{_includedir}/KDE/KEMailSettings
 %{_includedir}/KDE/KEditListBox
+%{_includedir}/KDE/KEditListWidget
 %{_includedir}/KDE/KEditToolBar
 %{_includedir}/KDE/KEmoticons
 %{_includedir}/KDE/KEmoticonsProvider
@@ -901,6 +914,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KScanDialog
 %{_includedir}/KDE/KSelectAction
 %{_includedir}/KDE/KSelectionOwner
+%{_includedir}/KDE/KSelectionProxyModel
 %{_includedir}/KDE/KSelectionWatcher
 %{_includedir}/KDE/KSelector
 %{_includedir}/KDE/KSeparator
@@ -942,6 +956,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KSvgRenderer
 %{_includedir}/KDE/KSycoca
 %{_includedir}/KDE/KSycocaEntry
+%{_includedir}/KDE/KSystemEventFilter
 %{_includedir}/KDE/KSystemTimeZone
 %{_includedir}/KDE/KSystemTimeZoneSource
 %{_includedir}/KDE/KSystemTimeZones

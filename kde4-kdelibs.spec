@@ -4,6 +4,8 @@
 %define		_state		stable
 %define		orgname		kdelibs
 %define		qtver		4.7.1
+%define		sopranover	2.5.63
+%define		phononver	4.4.4
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -79,7 +81,7 @@ BuildRequires:	mdns-bonjour-devel
 BuildRequires:	openmotif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
-BuildRequires:	phonon-devel >= 4.3.80
+BuildRequires:	phonon-devel >= %{phononver}
 BuildRequires:	pkgconfig
 BuildRequires:	polkit-qt-1-gui-devel >= 0.99.0
 BuildRequires:	qca-devel >= 2.0.0
@@ -88,7 +90,7 @@ BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
 BuildRequires:	shared-desktop-ontologies-devel >= 0.5
 BuildRequires:	shared-mime-info >= 0.18
-BuildRequires:	soprano-devel >= 2.5.63
+BuildRequires:	soprano-devel >= %{sopranover}
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
 BuildRequires:	utempter-devel
@@ -102,7 +104,9 @@ Requires:	QtCore >= %{qtver}
 Requires:	ca-certificates
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5
+Requires:	phonon >= %{phononver}
 Requires:	setup >= 2.4.6-7
+Requires:	soprano >= %{sopranover}
 Requires:	xdg-menus
 Requires:	xorg-app-iceauth
 Suggests:	kde4-icons

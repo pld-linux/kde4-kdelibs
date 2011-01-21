@@ -6,6 +6,7 @@
 %define		qtver		4.7.1
 %define		sopranover	2.5.63
 %define		phononver	4.4.4
+%define		atticaver	0.2.0
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -44,7 +45,7 @@ BuildRequires:	QtWebKit-devel >= %{qtver}
 BuildRequires:	QtXml-devel >= %{qtver}
 BuildRequires:	acl-devel
 BuildRequires:	aspell-devel
-BuildRequires:	attica-devel >= 0.2.0
+BuildRequires:	attica-devel >= %{atticaver}
 BuildRequires:	audiofile-devel
 BuildRequires:	automoc4 >= 0.9.88
 BuildRequires:	avahi-devel
@@ -101,6 +102,7 @@ BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
 BuildConflicts:	polkit-qt-devel
 Requires:	QtCore >= %{qtver}
+Requires:	attica >= %{atticaver}
 Requires:	ca-certificates
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5

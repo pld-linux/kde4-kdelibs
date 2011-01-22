@@ -184,6 +184,7 @@ Requires:	%{name} = %{version}-%{release}
 Requires:	Qt3Support-devel >= %{qtver}
 Requires:	QtCore-devel >= %{qtver}
 Requires:	QtDBus-devel >= %{qtver}
+Requires:	QtDeclarative-devel >= %{qtver}
 Requires:	QtDesigner-devel >= %{qtver}
 Requires:	QtGui-devel >= %{qtver}
 Requires:	QtOpenGL-devel >= %{qtver}

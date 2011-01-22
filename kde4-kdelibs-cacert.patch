@@ -20,3 +20,13 @@
              continue;
          }
 
+--- kdecore/network/ksslcertificatemanager.cpp~	2011-01-19 23:10:03.000000000 +0100
++++ kdecore/network/ksslcertificatemanager.cpp	2011-01-23 00:17:42.071601281 +0100
+@@ -224,6 +224,7 @@
+ 
+     certs.append(QSslCertificate::fromPath(userCertDir + QLatin1String("*"), QSsl::Pem,
+                                            QRegExp::Wildcard));
++    certs.append(QSslCertificate::fromPath("/etc/certs/ca-certificates.crt"));
+     foreach (const QSslCertificate &cert, certs) {
+         const QByteArray digest = cert.digest().toHex();
+         if (!group.hasKey(digest.constData())) {

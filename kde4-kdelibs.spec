@@ -201,6 +201,7 @@ Requires:	libidn-devel
 Requires:	mdns-bonjour-devel
 Requires:	pcre-devel
 Requires:	phonon-devel
+Requires:	soprano-devel >= %{sopranover}
 Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
 Obsoletes:	kde4-kdelibs-experimental-devel

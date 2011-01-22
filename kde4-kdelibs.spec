@@ -54,6 +54,7 @@ BuildRequires:	bzip2-devel
 BuildRequires:	cmake >= 2.8.0
 BuildRequires:	cups-devel
 BuildRequires:	docbook-dtd42-xml
+BuildRequires:	docbook-style-xsl
 BuildRequires:	enchant-devel
 BuildRequires:	fam-devel
 BuildRequires:	flex
@@ -94,6 +95,7 @@ BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= %{sopranover}
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat
+BuildRequires:	udev-devel
 BuildRequires:	utempter-devel
 BuildRequires:	xorg-lib-libXScrnSaver-devel
 BuildRequires:	xz-devel

@@ -1,3022 +1,375 @@
-Index: kate/mode/katemodeconfigpage.cpp
+Index: kfile/kfilewidget.cpp
 ===================================================================
---- kate/mode/katemodeconfigpage.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kate/mode/katemodeconfigpage.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -107,6 +107,7 @@
- ModeConfigPage::~ModeConfigPage ()
- {
-   qDeleteAll (m_types);
-+  delete ui;
- }
- 
- void ModeConfigPage::apply()
-Index: kate/view/kateviewinternal.cpp
-===================================================================
---- kate/view/kateviewinternal.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kate/view/kateviewinternal.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -928,7 +928,7 @@
-     switch( bias ) {
-     case KateViewInternal::left:  return column() == 0;
-     case KateViewInternal::none:  return atEdge();
--    case KateViewInternal::right: return column() == doc()->lineLength( line() );
-+    case KateViewInternal::right: return column() >= doc()->lineLength( line() );
-     default: Q_ASSERT(false); return false;
-     }
-   }
-@@ -1031,7 +1031,7 @@
- 
-     if (n >= 0) {
-       for (int i = 0; i < n; i++) {
--        if (m_column == thisLine->length()) {
-+        if (m_column >= thisLine->length()) {
-           // Have come to the end of a line
-           if (line() >= doc()->lines() - 1)
-             // Have come to the end of the document
-@@ -3279,7 +3279,7 @@
-       else
-         scrollNextPage();
-     } else {
--      scrollViewLines(-((e->delta() / 120) * QApplication::wheelScrollLines()));
-+      QApplication::sendEvent(m_lineScroll, e);
-     }
- 
-   } else if (columnScrollingPossible()) {
-Index: kate/document/katedocument.cpp
-===================================================================
---- kate/document/katedocument.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kate/document/katedocument.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -3523,12 +3523,10 @@
-       default:
-       break;
-     }
--    if ( s != old )
--    {
--      removeText( KTextEditor::Range(cursor, 1) );
--      insertText( cursor, s );
--    }
- 
-+    removeText( KTextEditor::Range(cursor, 1) );
-+    insertText( cursor, s );
-+
-     editEnd();
-   }
- 
-Index: kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop
-===================================================================
---- kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kate/plugins/kte_insanehtml_le/data/ktexteditor_insanehtml_le.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -38,6 +38,7 @@
- Name[nb]=Spinnvill (ikke ZEN) HTML-koding (lett utgave)
- Name[nds]="Insane"-HTML-Koderen (nich "ZEN") (Eenfach-Verschoon)
- Name[nl]=Insane (niet ZEN) HTML-codering (lichte editie)
-+Name[pl]=Kodowanie HTML Insane (nie ZEN, wersja lekka)
- Name[pt]=Codificação de HTML louca (não ZEN) HTML (edição leve)
- Name[pt_BR]=Codificação de HTML louca (não ZEN) HTML (edição leve)
- Name[se]=Jallas (ii-ZEN) HTML-koden (geahppes veršuvdna)
-@@ -77,6 +78,7 @@
- Comment[nb]=Et programtillegg som gjør velgerfullføring som i zen-coding
- Comment[nds]=En Moduul för ZEN-liek Koderen, a.B. Köörkompletteren
- Comment[nl]=Een plugin, die zen-codering doet zoals keuze-voltooiing
-+Comment[pl]=Wtyczka, która wykonuje uzupełnianie w stylu zen
- Comment[pt]=Um 'plugin' que efectua uma codificação 'zen, como a completação de selectores
- Comment[pt_BR]=Um plug-in que efetua uma codificação zen, como a completação de seletores
- Comment[se]=Lassemoduvla mii bargá zen-lágankodema, nugo válljenollášuhttin
-Index: kfile/kfileplacesview.cpp
-===================================================================
---- kfile/kfileplacesview.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kfile/kfileplacesview.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -160,7 +160,13 @@
-     painter->drawPixmap(point, pm);
- 
-     if (option.state & QStyle::State_Selected) {
--        painter->setPen(option.palette.highlightedText().color());
-+        QPalette::ColorGroup cg = QPalette::Active;
-+        if (!(option.state & QStyle::State_Enabled)) {
-+            cg = QPalette::Disabled;
-+        } else if (!(option.state & QStyle::State_Active)) {
-+            cg = QPalette::Inactive;
-+        }
-+        painter->setPen(option.palette.color(cg, QPalette::HighlightedText));
-     }
- 
-     QRect rectText;
-Index: doc/kded4/man-kded4.8.docbook
-===================================================================
---- doc/kded4/man-kded4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ doc/kded4/man-kded4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -62,7 +62,7 @@
- <para>
- It monitors the directories containing .desktop files.
- When a file is added/removed, it waits 5 seconds (in case of series of
--updates), and then launches <command>kbuildsycoca</command>.
-+updates), and then launches <command>kbuildsycoca4</command>.
- </para>
- <!--
- <para>
-@@ -155,14 +155,14 @@
- </para>
- <para>
- If <command>kded4</command> is called with <command>kded4 --check</command>, then
--it updates the &kde; sycoca using <command>kbuildsycoca</command>.
-+it updates the &kde; sycoca using <command>kbuildsycoca4</command>.
- </para>
- </refsect1>
- 
- <refsect1>
- <title>See Also</title>
- <para><replaceable>kdeoptions</replaceable>(7), <replaceable>qtoptions</replaceable>(7),
--<replaceable>kbuildsycoca</replaceable>(8)
-+<replaceable>kbuildsycoca4</replaceable>(8)
- </para>
- </refsect1>
- 
-Index: doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook
-===================================================================
---- doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ doc/kbuildsycoca4/man-kbuildsycoca4.8.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -236,6 +236,12 @@
- installations</para>
- </listitem>
- </varlistentry>
-+<varlistentry>
-+<term>$<envar>KDESYCOCA</envar></term>
-+<listitem>
-+<para>Specifies the path to the sycoca database file</para>
-+</listitem>
-+</varlistentry>
- </variablelist>
- 
- </refsect1>
-Index: doc/sonnet/index.docbook
-===================================================================
---- doc/sonnet/index.docbook	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ doc/sonnet/index.docbook	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -17,13 +17,14 @@
- <!-- TRANS:ROLES_OF_TRANSLATORS -->
- </authorgroup>
- 
--<date>2010-01-19</date>
--<releaseinfo>&kde; 4.4</releaseinfo>
-+<date>2010-09-02</date>
-+<releaseinfo>&kde; 4.5</releaseinfo>
- <abstract>
- <para>&sonnet; is the spelling checker used by &kde; applications such
--as &kate;, &kmail;, and &kword;. It is a &GUI;
--frontend to <application>International ISpell</application> and
--<application>ASpell</application>.</para>
-+as &kate;, &kmail;, and &kword;. It is a &GUI; frontend to various free spell checkers. 
-+More Information about required spell checkers and dictionaries you find in the 
-+documentation of the &systemsettings; module 
-+<ulink url="help:kcontrol/spellchecking">Spell Checker</ulink>.</para>
- 
- </abstract>
- <keywordset>
-Index: kioslave/http/kcookiejar/domain_info
-===================================================================
---- kioslave/http/kcookiejar/domain_info	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/domain_info	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -1 +1,2 @@
- twoLevelTLD=name,ai,au,bd,bh,ck,eg,et,fk,il,in,kh,kr,mk,mt,na,np,nz,pg,pk,qa,sa,sb,sg,sv,ua,ug,uk,uy,vn,za,zw
-+gTLDs=com,edu,gov,int,mil,net,org,biz,info,name,pro,aero,coop,museum,asia,cat,jobs,mobi,tel,travel
-Index: kioslave/http/kcookiejar/kcookiejar.cpp
-===================================================================
---- kioslave/http/kcookiejar/kcookiejar.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/kcookiejar.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -36,32 +36,6 @@
- 
- #include "kcookiejar.h"
- 
--#include <config.h>
--#include <sys/types.h>
--#include <sys/stat.h>
--#ifdef HAVE_SYS_PARAM_H
--#include <sys/param.h>
--#endif
--#include <fcntl.h>
--#include <unistd.h>
--#include <stdio.h>
--#include <string.h>
--
--#ifdef USE_SOLARIS
--#include <strings.h>
--#endif
--
--#include <stdlib.h>
--
--//#include <netinet/in.h>
--//#include <arpa/inet.h>
--
--#include <QtCore/QString>
--#include <QtCore/QFile>
--#include <QtCore/QDir>
--#include <QtCore/QRegExp>
--#include <QtCore/QTextStream>
--
- #include <kurl.h>
- #include <kdatetime.h>
- #include <ksystemtimezone.h>
-@@ -70,7 +44,12 @@
- #include <ksavefile.h>
+--- kfile/kfilewidget.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kfile/kfilewidget.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -54,6 +54,7 @@
+ #include <krecentdirs.h>
  #include <kdebug.h>
+ #include <kio/kfileitemdelegate.h>
++#include <kde_file.h>
  
--#include <algorithm>
-+#include <QtCore/QString>
-+#include <QtCore/QFile>
-+#include <QtCore/QDir>
-+#include <QtCore/QRegExp>
-+#include <QtCore/QTextStream>
-+#include <QtCore/QStringBuilder>
+ #include <QtGui/QCheckBox>
+ #include <QtGui/QDockWidget>
+@@ -2294,15 +2295,26 @@
+ //     kDebug(kfile_area);
  
- // BR87227
- // Waba: Should the number of cookies be limited?
-@@ -84,13 +63,12 @@
- #define READ_BUFFER_SIZE 8192
- #define IP_ADDRESS_EXPRESSION "(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)"
+     if ((operationMode == KFileWidget::Saving) && (ops->mode() & KFile::File) ) {
+-        const QString urlStr = locationEditCurrentText();
++        QString urlStr = locationEditCurrentText();
+         if (urlStr.isEmpty())
+             return;
  
--// Note with respect to QString::fromLatin1( )
--// Cookies are stored as 8 bit data and passed to kio_http as
--// latin1 regardless of their actual encoding.
-+// Note with respect to QLatin1String( )....
-+// Cookies are stored as 8 bit data and passed to kio_http as Latin1
-+// regardless of their actual encoding.
-+#define QL1S(x)   QLatin1String(x)
-+#define QL1C(x)   QLatin1Char(x)
- 
--// L1 is used to indicate latin1 constants
--#define QL1S(x) QLatin1String(x)
--
- QString KCookieJar::adviceToStr(KCookieAdvice _advice)
- {
-     switch( _advice )
-@@ -151,7 +129,7 @@
- //
- // Checks if a cookie has been expired
- //
--bool    KHttpCookie::isExpired(qint64 currentDate) const
-+bool KHttpCookie::isExpired(qint64 currentDate) const
- {
-     if (currentDate == -1) {
-         KDateTime epoch;
-@@ -169,19 +147,27 @@
- {
-     QString result;
- 
--    if (useDOMFormat || (mProtocolVersion == 0))
--    {
--        if ( !mName.isEmpty() )
--           result = mName + '=';
--        result += mValue;
--    }
--    else
--    {
--        result = mName + '=' + mValue;
-+    if (useDOMFormat || (mProtocolVersion == 0)) {
-+        if ( mName.isEmpty() )
-+           result = mValue;
-+        else
-+           result = mName % QL1C('=') % mValue;
-+    } else {
-+        result = mName % QL1C('=') % mValue;
-         if (mExplicitPath)
--            result += QL1S("; $Path=\"") + mPath + QL1S("\"");
-+            result += QL1S("; $Path=\"") % mPath % QL1C('"');
-         if (!mDomain.isEmpty())
--            result += QL1S("; $Domain=\"") + mDomain + QL1S("\"");
-+            result += QL1S("; $Domain=\"") % mDomain % QL1C('"');
-+        if (!mPorts.isEmpty()) {
-+            if (mPorts.length() == 2 && mPorts.at(0) == -1)
-+                result += QL1S("; $Port");
-+            else {
-+                QString portNums;
-+                Q_FOREACH(int port, mPorts)
-+                    portNums += QString::number(port) % QL1C(' ');
-+                result += QL1S("; $Port=\"") % portNums.trimmed() % QL1C('"');
+-        KMimeType::Ptr mime = KMimeType::findByPath(urlStr, 0, true);
+-        if (mime && mime->name() != KMimeType::defaultMimeType()) {
+-            if (filterWidget->currentFilter() != mime->name() &&
+-                filterWidget->filters().indexOf(mime->name()) != -1)
+-                filterWidget->setCurrentFilter(mime->name());
++        if( filterWidget->isMimeFilter()) {
++            KMimeType::Ptr mime = KMimeType::findByPath(urlStr, 0, true);
++            if (mime && mime->name() != KMimeType::defaultMimeType()) {
++                if (filterWidget->currentFilter() != mime->name() &&
++                    filterWidget->filters().indexOf(mime->name()) != -1)
++                    filterWidget->setCurrentFilter(mime->name());
 +            }
-+        }
-     }
-     return result;
- }
-@@ -189,7 +175,7 @@
- //
- // Returns whether this cookie should be send to this location.
- bool KHttpCookie::match(const QString &fqdn, const QStringList &domains,
--                        const QString &path) const
-+                        const QString &path, int port) const
- {
-     // Cookie domain match check
-     if (mDomain.isEmpty())
-@@ -203,11 +189,16 @@
-             return false;
- 
-         // Maybe the domain needs an extra dot.
--        QString domain = '.' + mDomain;
-+        QString domain = QL1C('.') % mDomain;
-         if ( !domains.contains( domain ) )
-           if ( fqdn != mDomain )
-             return false;
-     }
-+    else if (mProtocolVersion != 0 && port != -1 &&
-+             !mPorts.isEmpty() && !mPorts.contains(port))
-+    {
-+        return false;
-+    }
- 
-     // Cookie path match check
-     if (mPath.isEmpty())
-@@ -245,10 +236,8 @@
- 
-     KConfig cfg( "khtml/domain_info", KConfig::NoGlobals, "data" );
-     KConfigGroup group( &cfg, QString() );
--    QStringList countries = group.readEntry( "twoLevelTLD", QStringList() );
--    Q_FOREACH ( const QString& country, countries ) {
--       m_twoLevelTLD.insert( country, 1 );
--    }
-+    m_gTLDs = QSet<QString>::fromList(group.readEntry("gTLDs", QStringList()));
-+    m_twoLevelTLD = QSet<QString>::fromList(group.readEntry("twoLevelTLD", QStringList()));
- }
- 
- //
-@@ -276,13 +265,9 @@
-         if (domain2.isEmpty())
-             domain2 = cookie.host();
- 
--        if (
--            (cookiePtr.name() == cookie.name()) &&
--            (
--              nameMatchOnly ||
--              ( (domain1 == domain2) && (cookiePtr.path() == cookie.path()) )
--            )
--          ) {
-+        if (cookiePtr.name() == cookie.name() &&
-+            (nameMatchOnly || (domain1 == domain2 && cookiePtr.path() == cookie.path())))
-+        {
-             if (updateWindowId) {
-                 Q_FOREACH(long windowId, cookie.windowIds()) {
-                     if (windowId && (!cookiePtr.windowIds().contains(windowId))) {
-@@ -304,28 +289,35 @@
- //
- QString KCookieJar::findCookies(const QString &_url, bool useDOMFormat, long windowId, KHttpCookieList *pendingCookies)
- {
--    QString cookieStr;
-+    QString cookieStr, fqdn, path;
-     QStringList domains;
--    QString fqdn;
--    QString path;
-+    int port = -1;
-     KCookieAdvice advice = m_globalAdvice;
- 
--    if (!parseUrl(_url, fqdn, path))
-+    if (!parseUrl(_url, fqdn, path, &port))
-         return cookieStr;
- 
--    bool secureRequest = _url.startsWith( QL1S("https://"), Qt::CaseInsensitive ) ||
--                         _url.startsWith( QL1S("webdavs://"), Qt::CaseInsensitive );
-+    const bool secureRequest = (_url.startsWith(QL1S("https://"), Qt::CaseInsensitive) ||
-+                                _url.startsWith(QL1S("webdavs://"), Qt::CaseInsensitive));
-+    if (port == -1)
-+    {
-+      if (secureRequest)
-+        port = 443;
-+      else
-+        port = 80;
-+    }
- 
-     extractDomains(fqdn, domains);
- 
-     KHttpCookieList allCookies;
- 
-+    QStringList::ConstIterator itEnd = domains.constEnd();
-     for(QStringList::ConstIterator it = domains.constBegin();
-         true;
-         ++it)
-     {
--       KHttpCookieList *cookieList;
--       if (it == domains.constEnd())
-+       KHttpCookieList *cookieList = 0;
-+       if (it == itEnd)
-        {
-           cookieList = pendingCookies; // Add pending cookies
-           pendingCookies = 0;
-@@ -334,8 +326,11 @@
-        }
-        else
-        {
--          QString key = (*it).isNull() ? QL1S("") : (*it);
--          cookieList = m_cookieDomains.value(key);
-+          if ((*it).isNull())
-+              cookieList = m_cookieDomains.value(QL1S(""));
-+          else
-+              cookieList = m_cookieDomains.value(*it);
-+
-           if (!cookieList)
-              continue; // No cookies for this domain
-        }
-@@ -343,20 +338,19 @@
-        if (cookieList->getAdvice() != KCookieDunno)
-           advice = cookieList->getAdvice();
- 
--        for (KHttpCookieList::iterator cookieIterator = cookieList->begin();
--             cookieIterator != cookieList->end();
--             ++cookieIterator ) {
--            KHttpCookie& cookie = *cookieIterator;
--            // If the we are setup to automatically accept all session cookies and to
--            // treat all cookies as session cookies or the current cookie is a session
--            // cookie, then send the cookie back regardless of domain policy.
--            if (advice == KCookieReject &&
--                !(m_autoAcceptSessionCookies &&
--                  (m_ignoreCookieExpirationDate || cookie.expireDate() == 0))) {
--                continue;
--            }
-+       QMutableListIterator<KHttpCookie> cookieIt (*cookieList);
-+       while (cookieIt.hasNext()) {
-+          KHttpCookie& cookie = cookieIt.next();
-+          // If the we are setup to automatically accept all session cookies and to
-+          // treat all cookies as session cookies or the current cookie is a session
-+          // cookie, then send the cookie back regardless of domain policy.
-+          if (advice == KCookieReject &&
-+              !(m_autoAcceptSessionCookies &&
-+                (m_ignoreCookieExpirationDate || cookie.expireDate() == 0))) {
-+              continue;
-+          }
- 
--          if (!cookie.match(fqdn, domains, path))
-+          if (!cookie.match(fqdn, domains, path, port))
-              continue;
- 
-           if( cookie.isSecure() && !secureRequest ) {
-@@ -383,18 +377,17 @@
-              cookie.windowIds().append(windowId);
-           }
- 
--          if (it == domains.constEnd()) // Only needed when processing pending cookies
-+          if (it == itEnd) // Only needed when processing pending cookies
-              removeDuplicateFromList(&allCookies, cookie);
- 
-           allCookies.append(cookie);
-        }
--       if (it == domains.constEnd())
-+       if (it == itEnd)
-           break; // Finished.
-     }
- 
-     int cookieCount = 0;
--
--    int protVersion=0;
-+    int protVersion = 0;
-     Q_FOREACH(const KHttpCookie& cookie, allCookies) {
-         if (cookie.protocolVersion() > protVersion)
-             protVersion = cookie.protocolVersion();
-@@ -402,20 +395,20 @@
- 
-     Q_FOREACH(const KHttpCookie& cookie, allCookies) {
-         if (useDOMFormat) {
--            if (cookieCount > 0)
-+            if (cookieCount == 0) {
-+                if (protVersion > 0)
-+                    cookieStr += QL1S("$Version=") % QString::number(protVersion) % QL1S("; ");
-+            }
-+            else
-                 cookieStr += QL1S("; ");
-             cookieStr += cookie.cookieStr(true);
-         } else {
-             if (cookieCount == 0) {
-                 cookieStr += QL1S("Cookie: ");
--                if (protVersion > 0) {
--                    QString version;
--                    version.sprintf("$Version=%d; ", protVersion); // Without quotes
--                    cookieStr += version;
--                }
--            } else {
-+                if (protVersion > 0)
-+                    cookieStr += QL1S("$Version=") % QString::number(protVersion) % QL1S("; ");
-+            } else
-                 cookieStr += QL1S("; ");
--            }
-             cookieStr += cookie.cookieStr(false);
-         }
-         cookieCount++;
-@@ -448,15 +441,15 @@
-         {
-             // No '=' sign -> use string as the value, name is empty
-             // (behavior found in Mozilla and IE)
--            Name = "";
--            Value = QString::fromLatin1(header);
-+            Name = QL1S("");
-+            Value = QL1S(header);
-             Value.truncate( s - header );
-             Value = Value.trimmed();
--            return (s);
-+            return s;
-         }
-     }
- 
--    Name = header;
-+    Name = QL1S(header);
-     Name.truncate( s - header );
-     Name = Name.trimmed();
- 
-@@ -470,7 +463,7 @@
-         {
-             // End of Name
-             Value = "";
--            return (s);
-+            return s;
-         }
-     }
- 
-@@ -486,12 +479,12 @@
-             if ((*s=='\0') || (*s=='\n'))
-             {
-                 // End of Name
--                Value = QString::fromLatin1(header);
-+                Value = QL1S(header);
-                 Value.truncate(s - header);
--                return (s);
-+                return s;
-             }
-         }
--        Value = QString::fromLatin1(header);
-+        Value = QL1S(header);
-         // *s == '\"';
-         if (keepQuotes)
-            Value.truncate( ++s - header );
-@@ -512,11 +505,11 @@
-         while ((*s != '\0') && (*s != ';') && (*s != '\n'))
-             s++;
-         // End of Name
--        Value = QString::fromLatin1(header);
-+        Value = QL1S(header);
-         Value.truncate( s - header );
-         Value = Value.trimmed();
-     }
--    return (s);
-+    return s;
- 
- }
- 
-@@ -544,40 +537,28 @@
- 
- bool KCookieJar::parseUrl(const QString &_url,
-                           QString &_fqdn,
--                          QString &_path)
-+                          QString &_path,
-+                          int *port)
- {
-     KUrl kurl(_url);
-     if (!kurl.isValid() || kurl.protocol().isEmpty())
-        return false;
- 
-     _fqdn = kurl.host().toLower();
--    if (kurl.port() > 0)
--    {
--       if (((kurl.protocol() == QL1S("http")) && (kurl.port() != 80)) ||
--           ((kurl.protocol() == QL1S("https")) && (kurl.port() != 443)))
--       {
--          // It's <port>:<host> so that the sorting works as expected
--          _fqdn = QString::fromLatin1("%1:%2").arg(kurl.port()).arg(_fqdn);
--       }
--    }
--
-     // Cookie spoofing protection.  Since there is no way a path separator
-     // or escape encoded character is allowed in the hostname according
-     // to RFC 2396, reject attempts to include such things there!
-     if(_fqdn.contains('/') || _fqdn.contains('%'))
--    {
-         return false;  // deny everything!!
--    }
- 
-+    // Set the port number from the protocol when one is found...
-+    if (port)
-+        *port = kurl.port();
-+
-     _path = kurl.path();
-     if (_path.isEmpty())
-        _path = QL1S("/");
- 
--    QRegExp exp(QL1S("[\\\\/]\\.\\.[\\\\/]"));
--    // Weird path, cookie stealing attempt?
--    if (exp.indexIn(_path) != -1)
--       return false; // Deny everything!!
--
-     return true;
- }
- 
-@@ -586,8 +567,8 @@
-                                 QStringList &_domains) const
- {
-     if (_fqdn.isEmpty()) {
--        _domains.append( QL1S("localhost") );
--        return;
-+       _domains.append( QL1S("localhost") );
-+       return;
-     }
- 
-     // Return numeric IPv6 addresses as is...
-@@ -597,15 +578,17 @@
-        return;
-     }
-     // Return numeric IPv4 addresses as is...
--    if ((_fqdn[0] >= '0') && (_fqdn[0] <= '9'))
-+    if (_fqdn[0] >= '0' && _fqdn[0] <= '9' && _fqdn.indexOf(QRegExp(IP_ADDRESS_EXPRESSION)) > -1)
-     {
--       if (_fqdn.indexOf(QRegExp(IP_ADDRESS_EXPRESSION)) > -1)
--       {
--          _domains.append( _fqdn );
--          return;
--       }
-+       _domains.append( _fqdn );
-+       return;
-     }
- 
-+    // Always add the FQDN at the start of the list for
-+    // hostname == cookie-domainname checks!
-+    _domains.append(_fqdn);
-+    _domains.append(QL1C('.') % _fqdn);
-+
-     QStringList partList = _fqdn.split('.', QString::SkipEmptyParts);
- 
-     if (partList.count())
-@@ -617,7 +600,7 @@
-        if (partList.count() == 1)
-          break; // We only have a TLD left.
- 
--       if ((partList.count() == 2) && (m_twoLevelTLD.value(partList[1].toLower(), 0) == 1))
-+       if ((partList.count() == 2) && m_twoLevelTLD.contains(partList[1].toLower()))
-        {
-           // This domain uses two-level TLDs in the form xxxx.yy
-           break;
-@@ -632,21 +615,15 @@
- 
-           // Catch some TLDs that we miss with the previous check
-           // e.g. com.au, org.uk, mil.co
--          const QString t = partList[0].toLower();
--          if ((t == "com") || (t == "net") || (t == "org") || (t == "gov") || (t == "edu") || (t == "mil") || (t == "int"))
-+          if (m_gTLDs.contains(partList[0].toLower()))
-               break;
-        }
- 
-        QString domain = partList.join(QL1S("."));
-        _domains.append(domain);
--       _domains.append('.' + domain);
-+       _domains.append(QL1C('.') % domain);
-        partList.erase(partList.begin()); // Remove part
-     }
--
--    // Always add the FQDN at the start of the list for
--    // hostname == cookie-domainname checks!
--    _domains.prepend( '.' + _fqdn );
--    _domains.prepend( _fqdn );
- }
- 
- //
-@@ -661,23 +638,20 @@
-                                        const QByteArray &cookie_headers,
-                                        long windowId)
- {
--    KHttpCookieList cookieList;
--    KHttpCookieList cookieList2;
--    KHttpCookieList::iterator lastCookie = cookieList.end();
--    const char *cookieStr = cookie_headers.data();
--    QString Name;
--    QString Value;
--    QString fqdn;
--    QString path;
-+    QString fqdn, path;
-+
-+    if (!parseUrl(_url, fqdn, path))
-+        return KHttpCookieList(); // Error parsing _url
-+
-+    QString Name, Value;
-+    KHttpCookieList cookieList, cookieList2;
-+
-+    bool isRFC2965 = false;
-     bool crossDomain = false;
-+    const char *cookieStr = cookie_headers.constData();    
- 
--    if (!parseUrl(_url, fqdn, path))
--    {
--        // Error parsing _url
--        return KHttpCookieList();
--    }
-     QString defaultPath;
--    int i = path.lastIndexOf('/');
-+    const int i = path.lastIndexOf('/');
-     if (i > 0)
-        defaultPath = path.left(i);
- 
-@@ -685,7 +659,7 @@
-     epoch.setTime_t(0);
- 
-     // Check for cross-domain flag from kio_http
--    if (strncmp(cookieStr, "Cross-Domain\n", 13) == 0)
-+    if (qstrncmp(cookieStr, "Cross-Domain\n", 13) == 0)
-     {
-         cookieStr += 13;
-         crossDomain = true;
-@@ -695,7 +669,7 @@
-     for(;;)
-     {
-         // check for "Set-Cookie"
--        if (strncasecmp(cookieStr, "Set-Cookie:", 11) == 0)
-+        if (qstrnicmp(cookieStr, "Set-Cookie:", 11) == 0)
-         {
-             cookieStr = parseNameValue(cookieStr+11, Name, Value, true);
- 
-@@ -703,6 +677,7 @@
-             // Default domain = ""
-             // Default path according to rfc2109
- 
-+
-             KHttpCookie cookie(fqdn, QL1S(""), defaultPath, Name, Value);
-             if (windowId)
-                cookie.mWindowIds.append(windowId);
-@@ -710,11 +685,11 @@
- 
-             // Insert cookie in chain
-             cookieList.append(cookie);
--            lastCookie = cookieList.end(); --lastCookie;            
-         }
--        else if (strncasecmp(cookieStr, "Set-Cookie2:", 12) == 0)
-+        else if (qstrnicmp(cookieStr, "Set-Cookie2:", 12) == 0)
-         {
-             // Attempt to follow rfc2965
-+            isRFC2965 = true;
-             cookieStr = parseNameValue(cookieStr+12, Name, Value, true, true);
- 
-             // Host = FQDN
-@@ -728,7 +703,6 @@
- 
-             // Insert cookie in chain
-             cookieList2.append(cookie);
--            lastCookie = cookieList2.end(); --lastCookie;
-         }
-         else
-         {
-@@ -751,9 +725,9 @@
- 
-             // Name-Value pair follows
-             cookieStr = parseNameValue(cookieStr, Name, Value);
-+            KHttpCookie& lastCookie = (isRFC2965 ? cookieList2.last() : cookieList.last());
- 
--            QString cName = Name.toLower();
--            if (cName == "domain")
-+            if (Name.compare(QL1S("domain"), Qt::CaseInsensitive) == 0)
-             {
-                 QString dom = Value.toLower();
-                 // RFC2965 3.2.2: If an explicitly specified value does not
-@@ -765,17 +739,17 @@
-                     dom = dom.left(dom.length()-1);
- 
-                 if(dom.count('.') > 1 || dom == ".local")
--                    lastCookie->mDomain = dom;
-+                    lastCookie.mDomain = dom;
-             }
--            else if (cName == "max-age")
-+            else if (Name.compare(QL1S("max-age"), Qt::CaseInsensitive) == 0)
-             {
-                 int max_age = Value.toInt();
-                 if (max_age == 0)
--                    lastCookie->mExpireDate = 1;
-+                    lastCookie.mExpireDate = 1;
-                 else
--                    lastCookie->mExpireDate = epoch.secsTo_long(KDateTime::currentUtcDateTime().addSecs(max_age));
-+                    lastCookie.mExpireDate = epoch.secsTo_long(KDateTime::currentUtcDateTime().addSecs(max_age));
-             }
--            else if (cName == "expires")
-+            else if (Name.compare(QL1S("expires"), Qt::CaseInsensitive) == 0)
-             {
-                 KTimeZones *zones = KSystemTimeZones::timeZones();
-                 // Check for the most common cookie expire date format: Thu, 01-Jan-1970 00:00:00 GMT
-@@ -798,33 +772,61 @@
-                 }
- 
-                 if (dt.isValid()) {
--                    lastCookie->mExpireDate = epoch.secsTo_long(dt);
--                    if (lastCookie->mExpireDate == 0)
--                        lastCookie->mExpireDate = 1;
-+                    lastCookie.mExpireDate = epoch.secsTo_long(dt);
-+                    if (lastCookie.mExpireDate == 0)
-+                        lastCookie.mExpireDate = 1;
-                 }
-             }
--            else if (cName == "path")
-+            else if (Name.compare(QL1S("path"), Qt::CaseInsensitive) == 0)
-             {
-                 if (Value.isEmpty())
--                   lastCookie->mPath.clear(); // Catch "" <> QString()
-+                   lastCookie.mPath.clear(); // Catch "" <> QString()
-                 else
--                   lastCookie->mPath = QUrl::fromPercentEncoding(Value.toLatin1());
--                lastCookie->mExplicitPath = true;
-+                   lastCookie.mPath = QUrl::fromPercentEncoding(Value.toLatin1());
-+                lastCookie.mExplicitPath = true;
-             }
--            else if (cName == "version")
-+            else if (Name.compare(QL1S("version"), Qt::CaseInsensitive) == 0)
-             {
--                lastCookie->mProtocolVersion = Value.toInt();
-+                lastCookie.mProtocolVersion = Value.toInt();
-             }
--            else if ((cName == "secure") ||
--                     (cName.isEmpty() && Value.toLower() == QL1S("secure")))
-+            else if (Name.compare(QL1S("secure"), Qt::CaseInsensitive) == 0 ||
-+                     (Name.isEmpty() && Value.compare(QL1S("secure"), Qt::CaseInsensitive) == 0))
-             {
--                lastCookie->mSecure = true;
-+                lastCookie.mSecure = true;
-             }
--            else if ((cName == "httponly") ||
--                     (cName.isEmpty() && Value.toLower() == QL1S("httponly")))
-+            else if (Name.compare(QL1S("httponly"), Qt::CaseInsensitive) == 0 ||
-+                    (Name.isEmpty() && Value.compare(QL1S("httponly"), Qt::CaseInsensitive) == 0))
-             {
--                lastCookie->mHttpOnly = true;
-+                lastCookie.mHttpOnly = true;
-             }
-+            else if (isRFC2965 && (Name.compare(QL1S("port"), Qt::CaseInsensitive) == 0 ||
-+                     (Name.isEmpty() && Value.compare(QL1S("port"), Qt::CaseInsensitive) == 0)))
-+            {              
-+                // Based on the port selection rule of RFC 2965 section 3.3.4...
-+                if (Name.isEmpty())
-+                {
-+                    // We intentionally append a -1 first in orer to distinguish
-+                    // between only a 'Port' vs a 'Port="80 443"' in the sent cookie.
-+                    lastCookie.mPorts.append(-1);
-+                    const bool secureRequest = (_url.startsWith(QL1S("https://"), Qt::CaseInsensitive) ||
-+                                                _url.startsWith(QL1S("webdavs://"), Qt::CaseInsensitive));
-+                    if (secureRequest)
-+                      lastCookie.mPorts.append(443);
-+                    else
-+                      lastCookie.mPorts.append(80);
-+                }
-+                else
-+                {
-+                    bool ok;
-+                    const QStringList portNums = Value.split(QL1C(' '), QString::SkipEmptyParts);
-+                    Q_FOREACH(const QString& portNum, portNums)
-+                    {
-+                        const int port = portNum.toInt(&ok);
-+                        if (ok)
-+                            lastCookie.mPorts.append(port);
-+                    }
++        } else {
++            QString filename = urlStr.mid( urlStr.lastIndexOf( KDIR_SEPARATOR ) + 1 ); // only filename
++            foreach( const QString& filter, filterWidget->filters()) {
++                QString f = filter.left( filter.indexOf( '|' )); // '*.foo|Foo type' -> '*.foo'
++                if( KMimeType::matchFileName( filename, f )) {
++                    filterWidget->setCurrentFilter( filter );
++                    break;
 +                }
 +            }
          }
- 
-         if (*cookieStr == '\0')
-@@ -836,9 +838,9 @@
- 
-     // RFC2965 cookies come last so that they override netscape cookies.
-     while(!cookieList2.isEmpty()) {
--        lastCookie = cookieList2.begin();
--        removeDuplicateFromList(&cookieList, *lastCookie, true);
--        cookieList.append(*lastCookie);
-+        KHttpCookie& lastCookie = cookieList2.first();
-+        removeDuplicateFromList(&cookieList, lastCookie, true);
-+        cookieList.append(lastCookie);
-         cookieList2.removeFirst();
-     }
- 
-@@ -925,26 +927,32 @@
- void KCookieJar::addCookie(KHttpCookie &cookie)
- {
-     QStringList domains;
--    KHttpCookieList *cookieList = 0L;
--
-     // We always need to do this to make sure that the
-     // that cookies of type hostname == cookie-domainname
-     // are properly removed and/or updated as necessary!
-     extractDomains( cookie.host(), domains );
--    for ( QStringList::ConstIterator it = domains.constBegin();
--          (it != domains.constEnd() && !cookieList);
--          ++it )
-+    QStringListIterator it (domains);
-+    while (it.hasNext())
-     {
--        QString key = (*it).isNull() ? QString::fromLatin1("") : (*it);
--        KHttpCookieList *list= m_cookieDomains.value(key);
--        if ( !list ) continue;
-+        const QString key = it.next();
-+        KHttpCookieList* list;
- 
--        removeDuplicateFromList(list, cookie, false, true);
-+        if (key.isNull())
-+            list = m_cookieDomains.value(QL1S(""));
-+        else
-+            list = m_cookieDomains.value(key);
-+
-+        if (list)
-+            removeDuplicateFromList(list, cookie, false, true);
-     }
- 
--    QString domain = stripDomain( cookie );
--    QString key = domain.isNull() ? QString::fromLatin1("") : domain;
--    cookieList = m_cookieDomains.value(key);
-+    const QString domain = stripDomain( cookie );
-+    KHttpCookieList* cookieList;
-+    if (domain.isNull())
-+        cookieList = m_cookieDomains.value(QL1S(""));
-+    else
-+        cookieList = m_cookieDomains.value(domain);
-+
-     if (!cookieList)
-     {
-         // Make a new cookie list
-@@ -993,8 +1001,7 @@
-     // If the cookie specifies a domain, check whether it is valid. Otherwise,
-     // accept the cookie anyways but removes the domain="" value to prevent
-     // cross-site cookie injection.
--    if (!cookie.domain().isEmpty())
--    {
-+    if (!cookie.domain().isEmpty()) {
-       if (!domains.contains(cookie.domain()) &&
-           !cookie.domain().endsWith('.'+cookie.host()))
-          cookie.fixDomain(QString());
-@@ -1005,21 +1012,15 @@
-        return KCookieAccept;
- 
-     KCookieAdvice advice = KCookieDunno;
--    bool isFQDN = true; // First is FQDN
--    QStringList::Iterator it = domains.begin(); // Start with FQDN which first in the list.
--    while( (advice == KCookieDunno) && (it != domains.end()))
--    {
--       QString domain = *it;
--       // Check if a policy for the FQDN/domain is set.
--       if ( domain.startsWith('.') || isFQDN )
--       {
--          isFQDN = false;
--          KHttpCookieList *cookieList = m_cookieDomains.value(domain);
-+    QStringListIterator it (domains);
-+
-+    while(advice == KCookieDunno && it.hasNext()) {
-+       const QString domain = it.next();
-+       if (domain.startsWith('.') || cookie.host() == domain) {
-+              KHttpCookieList *cookieList = m_cookieDomains.value(domain);
-           if (cookieList)
-              advice = cookieList->getAdvice();
-        }
--       domains.erase(it);
--       it = domains.begin(); // Continue from begin of remaining list
-     }
- 
-     if (advice == KCookieDunno)
-@@ -1038,13 +1039,9 @@
-     KCookieAdvice advice;
- 
-     if (cookieList)
--    {
-         advice = cookieList->getAdvice();
--    }
-     else
--    {
-         advice = KCookieDunno;
--    }
- 
-     return advice;
- }
-@@ -1058,28 +1055,21 @@
-     QString domain(_domain);
-     KHttpCookieList *cookieList = m_cookieDomains.value(domain);
- 
--    if (cookieList)
--    {
--        if (cookieList->getAdvice() != _advice)
--        {
-+    if (cookieList) {
-+        if (cookieList->getAdvice() != _advice) {
-            m_configChanged = true;
-            // domain is already known
-            cookieList->setAdvice( _advice);
-         }
- 
--        if ((cookieList->isEmpty()) &&
--            (_advice == KCookieDunno))
--        {
-+        if ((cookieList->isEmpty()) && (_advice == KCookieDunno)) {
-             // This deletes cookieList!
-             delete m_cookieDomains.take(domain);
-             m_domainList.removeAll(domain);
-         }
--    }
--    else
--    {
-+    } else {
-         // domain is not yet known
--        if (_advice != KCookieDunno)
--        {
-+        if (_advice != KCookieDunno) {
-             // We should create a domain entry
-             m_configChanged = true;
-             // Make a new cookie list
-@@ -1100,7 +1090,6 @@
- {
-     QString domain;
-     stripDomain(cookie.host(), domain); // We file the cookie under this domain.
--
-     setDomainAdvice(domain, _advice);
- }
- 
-@@ -1234,19 +1223,33 @@
      }
  }
- 
-+static QString hostWithPort(const KHttpCookie* cookie)
-+{
-+    const QList<int>& ports = cookie->ports();
-+
-+    if (ports.isEmpty())
-+        return cookie->host();
-+
-+    QStringList portList;
-+    Q_FOREACH(int port, ports)
-+        portList << QString::number(port);
-+
-+    return (cookie->host() % QL1C(':') % portList.join(QL1S(",")));
-+}
-+
- //
- // Saves all cookies to the file '_filename'.
- // On succes 'true' is returned.
- // On failure 'false' is returned.
- bool KCookieJar::saveCookies(const QString &_filename)
- {
--    KSaveFile saveFile(_filename);
-+    KSaveFile cookieFile(_filename);
- 
--    if (!saveFile.open())
-+    if (!cookieFile.open())
-        return false;
--    saveFile.setPermissions(QFile::ReadUser|QFile::WriteUser);
-+    cookieFile.setPermissions(QFile::ReadUser|QFile::WriteUser);
- 
--    QTextStream ts(&saveFile);
-+    QTextStream ts(&cookieFile);
- 
-     ts << "# KDE Cookie File v2\n#\n";
- 
-@@ -1256,10 +1259,10 @@
-               "Name", "Sec", "Value");
-     ts << s.toLatin1().constData();
- 
--    for ( QStringList::const_iterator it=m_domainList.constBegin(); it != m_domainList.constEnd();
--          it++ )
-+    QStringListIterator it(m_domainList);
-+    while (it.hasNext())
-     {
--        const QString &domain = *it;
-+        const QString &domain = it.next();
-         bool domainPrinted = false;
- 
-         KHttpCookieList *cookieList = m_cookieDomains.value(domain);
-@@ -1276,15 +1279,13 @@
-                     ts << '[' << domain.toLocal8Bit().data() << "]\n";
-                 }
-                 // Store persistent cookies
--                QString path = QL1S("\"");
--                path += cookie.path();
--                path += '"';
--                QString domain = QL1S("\"");
--                domain += cookie.domain();
--                domain += '"';
-+                const QString path = QL1S("\"") % cookie.path() % QL1C('"');
-+                const QString domain = QL1S("\"") % cookie.domain() % QL1C('"');
-+                const QString host = hostWithPort(&cookie);
-+
-                 // TODO: replace with direct QTextStream output ?
-                 s.sprintf("%-20s %-20s %-12s %10lld  %3d %-20s %-4i %s\n",
--                        cookie.host().toLatin1().constData(), domain.toLatin1().constData(),
-+                        host.toLatin1().constData(), domain.toLatin1().constData(),
-                         path.toLatin1().constData(), cookie.expireDate(),
-                         cookie.protocolVersion(),
-                         cookie.name().isEmpty() ? cookie.value().toLatin1().constData() : cookie.name().toLatin1().constData(),
-@@ -1296,7 +1297,7 @@
-         }
-     }
- 
--    return saveFile.finalize();
-+    return cookieFile.finalize();
- }
- 
- static const char *parseField(char* &buffer, bool keepQuotes=false)
-@@ -1330,59 +1331,89 @@
- }
- 
- 
-+static QString extractHostAndPorts(const QString& str, QList<int>* ports = 0)
-+{
-+    if (str.isEmpty())
-+        return str;
-+
-+    const int index = str.indexOf(QL1C(':'));
-+    if (index == -1)
-+        return str;
-+
-+    const QString host = str.left(index);
-+    if (ports) {
-+        bool ok;
-+        QStringList portList = str.mid(index+1).split(QL1C(','));
-+        Q_FOREACH(const QString& portStr, portList) {
-+           const int portNum = portStr.toInt(&ok);
-+           if (ok)
-+              ports->append(portNum);
-+        }
-+    }
-+
-+    return host;
-+}
-+
- //
- // Reloads all cookies from the file '_filename'.
- // On succes 'true' is returned.
- // On failure 'false' is returned.
- bool KCookieJar::loadCookies(const QString &_filename)
- {
--    FILE *fStream = fopen( QFile::encodeName(_filename), "r");
--    if (fStream == 0)
--    {
-+    QFile cookieFile (_filename);
-+
-+    if (!cookieFile.open(QIODevice::ReadOnly))
-         return false;
--    }
- 
--    qint64 curTime = time(0);
--
-+    int version = 1;
-+    bool success = false;
-     char *buffer = new char[READ_BUFFER_SIZE];
-+    qint64 len = cookieFile.readLine(buffer, READ_BUFFER_SIZE-1);
- 
--    bool err = false;
--    err = (fgets(buffer, READ_BUFFER_SIZE, fStream) == 0);
--
--    int version = 1;
--    if (!err)
-+    if (len != -1)
-     {
--        if (strcmp(buffer, "# KDE Cookie File\n") == 0)
-+        if (qstrcmp(buffer, "# KDE Cookie File\n") == 0)
-         {
--            // version 1
-+            success = true;
-         }
--        else if (sscanf(buffer, "# KDE Cookie File v%d\n", &version) != 1)
-+        else if(qstrcmp(buffer, "# KDE Cookie File v") > 0)
-         {
--            err = true;
-+            bool ok = false;
-+            const int verNum = QByteArray(buffer+19, len-19).trimmed().toInt(&ok);
-+            if (ok)
-+            {
-+                version = verNum;
-+                success = true;
-+            }
-         }
-     }
- 
--    if (!err)
-+    if (success)
-     {
--        while(fgets(buffer, READ_BUFFER_SIZE, fStream) != 0)
-+        KDateTime epoch;
-+        epoch.setTime_t(0); // epoch
-+        const qint64 currentTime = epoch.secsTo_long(KDateTime::currentUtcDateTime());
-+        QList<int> ports;
-+
-+        while(cookieFile.readLine(buffer, READ_BUFFER_SIZE-1) != -1)
-         {
-             char *line = buffer;
-             // Skip lines which begin with '#' or '['
-             if ((line[0] == '#') || (line[0] == '['))
-                 continue;
- 
--            const QString host = QString::fromLatin1( parseField(line) );
--            const QString domain = QString::fromLatin1( parseField(line) );
-+            const QString host = extractHostAndPorts(QL1S(parseField(line)), &ports);
-+            const QString domain = QL1S( parseField(line) );
-             if (host.isEmpty() && domain.isEmpty())
-                 continue;
--            const QString path = QString::fromLatin1( parseField(line) );
--            const QString expStr = QString::fromLatin1( parseField(line) );
-+            const QString path = QL1S( parseField(line) );
-+            const QString expStr = QL1S( parseField(line) );
-             if (expStr.isEmpty()) continue;
-             const qint64 expDate = expStr.toLongLong();
--            const QString verStr = QString::fromLatin1( parseField(line) );
-+            const QString verStr = QL1S( parseField(line) );
-             if (verStr.isEmpty()) continue;
-             int protVer  = verStr.toInt();
--            QString name = QString::fromLatin1( parseField(line) );
-+            QString name = QL1S( parseField(line) );
-             bool keepQuotes = false;
-             bool secure = false;
-             bool httpOnly = false;
-@@ -1409,31 +1440,24 @@
-                     keepQuotes = true;
-                 }
-                 value = parseField(line, keepQuotes);
--                secure = atoi( parseField(line) );
-+                secure = QByteArray(parseField(line)).toShort();
-             }
- 
--            // Parse error
--            if (!value) continue;
--
-             // Expired or parse error
--            if ((expDate == 0) || (expDate < curTime))
-+            if (!value || expDate == 0 || expDate < currentTime)
-                 continue;
- 
--            KHttpCookie cookie(host,
--                               domain,
--                               path,
--                               name,
--                               value,
--                               expDate, protVer,
--                               secure, httpOnly, explicitPath);
-+            KHttpCookie cookie(host, domain, path, name, value, expDate,
-+                               protVer, secure, httpOnly, explicitPath);
-+            if (ports.count())
-+                cookie.mPorts = ports;            
-             addCookie(cookie);
-         }
-     }
-+
-     delete [] buffer;
-     m_cookiesChanged = false;
--
--    fclose( fStream);
--    return err;
-+    return success;
- }
- 
- //
-@@ -1452,17 +1476,14 @@
-     policyGroup.writeEntry("CookieGlobalAdvice", adviceToStr( m_globalAdvice));
- 
-     QStringList domainSettings;
--    for ( QStringList::const_iterator it=m_domainList.constBegin();
--          it != m_domainList.constEnd();
--          ++it )
-+    QStringListIterator it (m_domainList);    
-+    while (it.hasNext())
-     {
--         const QString &domain = *it;
-+         const QString &domain = it.next();
-          KCookieAdvice advice = getDomainAdvice( domain);
-          if (advice != KCookieDunno)
-          {
--             QString value(domain);
--             value += ':';
--             value += adviceToStr(advice);
-+             const QString value = domain % QL1C(':') % adviceToStr(advice);
-              domainSettings.append(value);
-          }
-     }
-@@ -1491,8 +1512,7 @@
-     m_rejectCrossDomainCookies = policyGroup.readEntry("RejectCrossDomainCookies", true);
-     m_autoAcceptSessionCookies = policyGroup.readEntry("AcceptSessionCookies", true);
-     m_ignoreCookieExpirationDate = policyGroup.readEntry("IgnoreExpirationDate", false);
--    QString value = policyGroup.readEntry("CookieGlobalAdvice", QString::fromLatin1("Accept"));
--    m_globalAdvice = strToAdvice(value);
-+    m_globalAdvice = strToAdvice(policyGroup.readEntry("CookieGlobalAdvice", QString(QL1S("Accept"))));
- 
-     // Reset current domain settings first.
-     //  (must make a copy because setDomainAdvice() might delete the domain from m_domainList inside the for loop)
-Index: kioslave/http/kcookiejar/tests/cookie_rfc.test
+Index: kfile/kfilefiltercombo.h
 ===================================================================
---- kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/tests/cookie_rfc.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -80,6 +80,22 @@
- CHECK http://w.y.z/Bar/Foo Cookie: $Version=1; some_value=value2
- COOKIE ASK http://w.y.z/ Set-Cookie2: some_value=value3; Version=1; Max-Age=3600
- CHECK http://w.y.z/Foo/Bar Cookie: $Version=1; some_value=value1; some_value=value3
-+CLEAR COOKIES
-+## Check port selection handling (rfc 2965 3.3.4)
-+COOKIE ASK http://w.y.z/ Set-Cookie2: some_value=value1; Version=1; Domain=.y.z; Port
-+CHECK http://foo.y.z/ Cookie: $Version=1; some_value=value1; $Domain=".y.z"; $Port
-+CHECK http://foo.y.z:8080
-+COOKIE ASK http://w.y.z/ Set-Cookie2: some_value=value1; Version=1; Domain=.y.z; Port="80 8080 443"
-+CHECK http://foo.y.z/ Cookie: $Version=1; some_value=value1; $Domain=".y.z"; $Port="80 8080 443"
-+CHECK http://foo.y.z:8080 Cookie: $Version=1; some_value=value1; $Domain=".y.z"; $Port="80 8080 443"
-+CHECK http://foo.y.z:443 Cookie: $Version=1; some_value=value1; $Domain=".y.z"; $Port="80 8080 443"
-+CHECK http://w.y.z:3129
-+COOKIE ASK http://w.y.z/ Set-Cookie2: some_value=value1; Version=1; Domain=.y.z
-+CHECK http://w.y.z:80 Cookie: $Version=1; some_value=value1; $Domain=".y.z"
-+CHECK http://w.y.z:443 Cookie: $Version=1; some_value=value1; $Domain=".y.z"
-+CHECK http://w.y.z:3129 Cookie: $Version=1; some_value=value1; $Domain=".y.z"
-+CHECK http://w.y.z:8080 Cookie: $Version=1; some_value=value1; $Domain=".y.z"
-+CLEAR COOKIES
- ## Check secure cookie handling
- COOKIE ASK https://secure.y.z/ Set-Cookie2: some_value2=value2; Version=1; Path="/"; Max-Age=3600; Secure
- CHECK https://secure.y.z/Foo/bar Cookie: $Version=1; some_value2=value2; $Path="/"
-Index: kioslave/http/kcookiejar/tests/cookie.test
-===================================================================
---- kioslave/http/kcookiejar/tests/cookie.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/tests/cookie.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -157,9 +157,9 @@
- COOKIE ASK http://192.168.0.1 Set-Cookie: name11=value11; domain="test.local"; Path="/"; expires=%NEXTYEAR%
- COOKIE ASK http://192.168.0.1:8080 Set-Cookie: name2=value2; Path="/"; expires=%NEXTYEAR%
- COOKIE ASK https://192.168.0.1 Set-Cookie: name3=value3; Path="/"; expires=%NEXTYEAR%; secure
--CHECK http://192.168.0.1 Cookie: name1=value1; name11=value11
--CHECK http://192.168.0.1:8080 Cookie: name2=value2
--CHECK https://192.168.0.1 Cookie: name1=value1; name11=value11; name3=value3
-+CHECK http://192.168.0.1 Cookie: name1=value1; name11=value11; name2=value2
-+CHECK http://192.168.0.1:8080 Cookie: name1=value1; name11=value11; name2=value2
-+CHECK https://192.168.0.1 Cookie: name1=value1; name11=value11; name2=value2; name3=value3
- CHECK http://192.168.0.10
- CHECK http://192.168.0
- CLEAR COOKIES
-@@ -173,3 +173,7 @@
- COOKIE ASK http://foo.bar Set-Cookie: name2=value2; expires=Sat Sep 12 2020 07:00:00 GMT; path="/"
- CHECK http://foo.bar Cookie: name=value; name2=value2
- CLEAR COOKIES
-+## Check path restrictions
-+COOKIE ASK http://a.b.c/app1 Set-Cookie: name=value; Path="/app1"; expires=%NEXTYEAR%
-+COOKIE ASK http://a.b.c/app2 Set-Cookie: name1=value1; Path="/app2"; expires=%NEXTYEAR%
-+CHECK http://a.b.c/app1 Cookie: name=value
-Index: kioslave/http/kcookiejar/tests/cookie_saving.test
-===================================================================
---- kioslave/http/kcookiejar/tests/cookie_saving.test	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/tests/cookie_saving.test	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -116,6 +116,8 @@
- ## Check domain restrictions #7
- COOKIE ASK http://frop35.com/ Set-Cookie2: set_by=x.y.z.frop.com; Version=1; Domain=".foobar.com"; Max-Age=3600
- COOKIE ASK http://frop35.com/ Set-Cookie2: set_by2=x.y.z.frop.com; Version=1; Domain=".com"; Max-Age=3600
-+## Check port restrictions (RFC2965 3.3.4)
-+COOKIE ASK http://ports.foo.bar.com Set-Cookie2: name=value1; Version=1; Port="80 8080 443"; Max-Age=3600
- 
- ## Check results
- CHECK http://w.y.z/
-@@ -219,8 +221,8 @@
- CHECK http://z.foobar.com/
- CHECK http://www.foobar.com/
- CHECK http://foobar.com/
-+CHECK http://ports.foo.bar.com Cookie: $Version=1; name=value1; $Port="80 8080 443"
- 
--
- SAVE
- ## Check result after saving
- CHECK http://w.y.z/
-@@ -324,6 +326,7 @@
- CHECK http://z.foobar.com/
- CHECK http://www.foobar.com/
- CHECK http://foobar.com/
-+CHECK http://ports.foo.bar.com Cookie: $Version=1; name=value1; $Port="80 8080 443"
- 
- SAVE
- ## Check result after saving a second time
-@@ -428,3 +431,4 @@
- CHECK http://z.foobar.com/
- CHECK http://www.foobar.com/
- CHECK http://foobar.com/
-+CHECK http://ports.foo.bar.com Cookie: $Version=1; name=value1; $Port="80 8080 443"
-Index: kioslave/http/kcookiejar/kcookiewin.cpp
-===================================================================
---- kioslave/http/kcookiejar/kcookiewin.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/kcookiewin.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -57,9 +57,9 @@
-                         int defaultButton, bool showDetails )
-            :KDialog( parent )
- {
--	setModal(true);
--	setObjectName("cookiealert");
--	setButtons(Yes|No|Details);
-+    setModal(true);
-+    setObjectName("cookiealert");
-+    setButtons(Yes|No|Details);
- #ifndef Q_WS_QWS //FIXME(E): Implement for Qt Embedded
-     setCaption( i18n("Cookie Alert") );
-     setWindowIcon( KIcon("preferences-web-browser-cookies") );
-@@ -104,10 +104,10 @@
-     int pos = host.indexOf(':');
-     if ( pos > 0 )
-     {
--      QString portNum = host.left(pos);
--      host.remove(0, pos+1);
--      host += ':';
--      host += portNum;
-+        QString portNum = host.left(pos);
-+        host.remove(0, pos+1);
-+        host += ':';
-+        host += portNum;
-     }
- 
-     txt = QString("<b>%1</b>").arg( QUrl::fromAce(host.toLatin1()) );
-@@ -152,13 +152,13 @@
- #endif
-     m_btnGrp->setLayout(vbox);
-     if (defaultButton == KCookieJar::ApplyToShownCookiesOnly )
--	m_onlyCookies->setChecked(true);
-+        m_onlyCookies->setChecked(true);
-     else if (defaultButton == KCookieJar::ApplyToCookiesFromDomain)
--	m_allCookiesDomain->setChecked(true);
-+        m_allCookiesDomain->setChecked(true);
-     else if (defaultButton == KCookieJar::ApplyToAllCookies)
--	m_allCookies->setChecked(true);
-+        m_allCookies->setChecked(true);
-     else
--	m_onlyCookies->setChecked(true);
-+        m_onlyCookies->setChecked(true);
-     setButtonText(KDialog::Yes, i18n("&Accept"));
-     setButtonText(KDialog::No, i18n("&Reject"));
-     //QShortcut( Qt::Key_Escape, btn, SLOT(animateClick()) );
-@@ -182,11 +182,11 @@
- 
-     KCookieJar::KCookieDefaultPolicy preferredPolicy = KCookieJar::ApplyToShownCookiesOnly;
-     if (m_allCookiesDomain->isChecked()) {
--	preferredPolicy = KCookieJar::ApplyToCookiesFromDomain;
--	cookiejar->setDomainAdvice( cookie, advice );
-+        preferredPolicy = KCookieJar::ApplyToCookiesFromDomain;
-+        cookiejar->setDomainAdvice( cookie, advice );
-     } else if (m_allCookies->isChecked()) {
--	preferredPolicy = KCookieJar::ApplyToAllCookies;
--	cookiejar->setGlobalAdvice( advice );
-+        preferredPolicy = KCookieJar::ApplyToAllCookies;
-+        cookiejar->setGlobalAdvice( advice );
-     }
-     cookiejar->setPreferredDefaultPolicy( preferredPolicy );
- 
-Index: kioslave/http/kcookiejar/kcookiejar.h
-===================================================================
---- kioslave/http/kcookiejar/kcookiejar.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/kcookiejar.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -28,9 +28,8 @@
- #include <QtCore/QString>
- #include <QtCore/QStringList>
- #include <QtCore/QHash>
-+#include <QtCore/QSet>
- 
--#include <time.h>
--
- class KConfig;
- class KCookieJar;
- class KHttpCookie;
-@@ -65,6 +64,7 @@
-     bool    mHttpOnly;
-     bool    mExplicitPath;
-     QList<long> mWindowIds;
-+    QList<int> mPorts;
- 
-     QString cookieStr(bool useDOMFormat) const;
- 
-@@ -87,19 +87,20 @@
-     QString value() const { return mValue; }
-     QList<long> &windowIds() { return mWindowIds; }
-     const QList<long> &windowIds() const { return mWindowIds; }
--    void    fixDomain(const QString &domain) { mDomain = domain; }
--    qint64  expireDate() const { return mExpireDate; }
--    int     protocolVersion() const { return mProtocolVersion; }
--    bool    isSecure() const { return mSecure; }
-+    const QList<int> &ports() const { return mPorts; }
-+    void fixDomain(const QString &domain) { mDomain = domain; }
-+    qint64 expireDate() const { return mExpireDate; }
-+    int protocolVersion() const { return mProtocolVersion; }
-+    bool isSecure() const { return mSecure; }
-     /**
-      *  If currentDate is -1, the default, then the current timestamp in UTC
-      *  is used for comparison against this cookie's expiration date.
+--- kfile/kfilefiltercombo.h	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kfile/kfilefiltercombo.h	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -93,6 +93,12 @@
+      * @return all filters (this can be a list of patterns or a list of mimetypes)
       */
--    bool    isExpired(qint64 currentDate = -1) const;
--    bool    isCrossDomain() const { return mCrossDomain; }
--    bool    isHttpOnly() const { return mHttpOnly; }
--    bool    hasExplicitPath() const { return mExplicitPath; }
--    bool    match(const QString &fqdn, const QStringList &domainList, const QString &path) const;
-+    bool isExpired(qint64 currentDate = -1) const;
-+    bool isCrossDomain() const { return mCrossDomain; }
-+    bool isHttpOnly() const { return mHttpOnly; }
-+    bool hasExplicitPath() const { return mExplicitPath; }
-+    bool match(const QString &fqdn, const QStringList &domainList, const QString &path, int port=-1) const;
- };
- 
- QDebug operator<<(QDebug, const KHttpCookie&);
-@@ -322,7 +323,8 @@
-      */
-     static bool parseUrl(const QString &_url,
-                          QString &_fqdn,
--                         QString &_path);
-+                         QString &_path,
-+                         int *port = 0);
- 
-     /**
-      * Returns a list of domains in @p _domainList relevant for this host.
-@@ -362,10 +364,11 @@
-      QString stripDomain(const KHttpCookie& cookie);
+     QStringList filters() const;
++    
++    /**
++     * Returns true if the filter has been set using setMimeFilter().
++     * @since 4.6.1
++     */
++    bool isMimeFilter() const;
  
  protected:
--    QStringList m_domainList;
-+    QStringList m_domainList;    
-     KCookieAdvice m_globalAdvice;
-     QHash<QString, KHttpCookieList*> m_cookieDomains;
--    QHash<QString, int> m_twoLevelTLD;
-+    QSet<QString> m_twoLevelTLD;
-+    QSet<QString> m_gTLDs;
- 
-     bool m_configChanged;
-     bool m_cookiesChanged;
-Index: kioslave/http/kcookiejar/kcookieserver.cpp
+     virtual bool eventFilter( QObject*, QEvent* );
+Index: kfile/kfilefiltercombo.cpp
 ===================================================================
---- kioslave/http/kcookiejar/kcookieserver.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kioslave/http/kcookiejar/kcookieserver.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -28,11 +28,8 @@
- 
- #define SAVE_DELAY 3 // Save after 3 minutes
- 
--#include <unistd.h>
--
- #include <QtCore/QTimer>
- #include <QtCore/QFile>
--
- #include <QtDBus/QtDBus>
- 
- #include <kconfig.h>
-@@ -46,6 +43,10 @@
- #include <kpluginfactory.h>
- #include <kpluginloader.h>
- 
-+
-+#define QL1S(x)  QLatin1String(x)
-+#define QL1C(x)  QLatin1Char(x)
-+
- K_PLUGIN_FACTORY(KdedCookieServerFactory,
-                  registerPlugin<KCookieServer>();
-     )
-@@ -86,16 +87,16 @@
-    mConfig = new KConfig("kcookiejarrc");
-    mCookieJar->loadConfig( mConfig );
- 
--   QString filename = KStandardDirs::locateLocal("data", "kcookiejar/cookies");
-+   const QString filename = KStandardDirs::locateLocal("data", "kcookiejar/cookies");
- 
-    // Stay backwards compatible!
--   QString filenameOld = KStandardDirs::locate("data", "kfm/cookies");
-+   const QString filenameOld = KStandardDirs::locate("data", "kfm/cookies");
-    if (!filenameOld.isEmpty())
-    {
-       mCookieJar->loadCookies( filenameOld );
-       if (mCookieJar->saveCookies( filename))
-       {
--         unlink(QFile::encodeName(filenameOld)); // Remove old kfm cookie file
-+         QFile::remove(filenameOld); // Remove old kfm cookie file
-       }
-    }
-    else
-@@ -207,7 +208,7 @@
-             shownCookies << i;
-         }
-     }
--    kDebug() << shownCookies;
-+    //kDebug() << shownCookies;
- 
-     KCookieWin *kw = new KCookieWin( 0L, currentList,
-                                      mCookieJar->preferredDefaultPolicy(),
-@@ -321,12 +322,9 @@
-                                   const QString &path, const QString &name)
- {
-     const bool hasDomain = !domain.isEmpty();
--    return
--        ((hasDomain && c.domain() == domain) ||
--         fqdn == c.host()) &&
--        (c.path()   == path) &&
--        (c.name()   == name) &&
--        (!c.isExpired(time(0)));
-+    return (((hasDomain && c.domain() == domain) || fqdn == c.host()) &&
-+            (c.path() == path) && (c.name() == name) &&
-+            (!c.isExpired()));
+--- kfile/kfilefiltercombo.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kfile/kfilefiltercombo.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -214,4 +214,9 @@
+     return d->defaultFilter;
  }
  
- 
-@@ -361,15 +359,15 @@
- KCookieServer::findDomains()
- {
-    QStringList result;
--   const QStringList domains = mCookieJar->getDomainList();
--   for ( QStringList::ConstIterator domIt = domains.begin();
--         domIt != domains.end(); ++domIt )
-+   QStringListIterator it (mCookieJar->getDomainList());
-+   while (it.hasNext())
-    {
-        // Ignore domains that have policy set for but contain
-        // no cookies whatsoever...
--       const KHttpCookieList* list =  mCookieJar->getCookieList(*domIt, "");
-+       const QString domain = it.next();
-+       const KHttpCookieList* list =  mCookieJar->getCookieList(domain, "");
-        if ( list && !list->isEmpty() )
--          result << *domIt;
-+          result << domain;
-    }
-    return result;
- }
-@@ -435,12 +433,11 @@
- {
-     KHttpCookieList* cookieList = mCookieJar->getCookieList( domain, fqdn );
-     if (cookieList && !cookieList->isEmpty()) {
--        for (KHttpCookieList::iterator cookieIterator = cookieList->begin();
--             cookieIterator != cookieList->end();
--             ++cookieIterator ) {
--            KHttpCookie& cookie = *cookieIterator;
--            if (cookieMatches(cookie, domain, fqdn, path, name)) {
--                mCookieJar->eatCookie(cookieIterator);
-+        KHttpCookieList::Iterator itEnd = cookieList->end();
-+        for (KHttpCookieList::Iterator it = cookieList->begin(); it != itEnd; ++it)
-+        {
-+            if (cookieMatches(*it, domain, fqdn, path, name)) {
-+                mCookieJar->eatCookie(it);
-                 saveCookieJar();
-                 break;
-             }
-@@ -526,15 +523,15 @@
-       QStringList domains;
-       mCookieJar->extractDomains(fqdn, domains);
- 
--      QStringList::ConstIterator it = domains.constBegin();
--      while ( (advice == KCookieDunno) && (it != domains.constEnd()) )
-+      QStringListIterator it (domains);
-+      while ( (advice == KCookieDunno) && it.hasNext() )
-       {
-          // Always check advice in both ".domain" and "domain". Note
-          // that we only want to check "domain" if it matches the
-          // fqdn of the requested URL.
--         if ( (*it)[0] == '.' || (*it) == fqdn )
--            advice = mCookieJar->getDomainAdvice(*it);
--         ++it;
-+        const QString& domain = it.next();
-+         if ( domain.at(0) == '.' || domain == fqdn )
-+            advice = mCookieJar->getDomainAdvice(domain);
-       }
-       if (advice == KCookieDunno)
-          advice = mCookieJar->getGlobalAdvice();
-Index: kio/kio/kdirlister_p.h
++bool KFileFilterCombo::isMimeFilter() const
++{
++    return d->isMimeFilter;
++}
++
+ #include "kfilefiltercombo.moc"
+Index: kioslave/http/http.cpp
 ===================================================================
---- kio/kio/kdirlister_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/kio/kdirlister_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -30,6 +30,7 @@
- #include <QtGui/QWidget>
- 
- #include <kurl.h>
-+#include <kdebug.h>
- #include <kio/global.h>
- #include <kdirwatch.h>
- 
-@@ -450,7 +451,7 @@
-     // Listers that are currently holding this url
-     QList<KDirLister *> listersCurrentlyHolding;
- 
--    void moveListersWithoutCachedItemsJob();
-+    void moveListersWithoutCachedItemsJob(const KUrl& url);
- };
- 
- //const unsigned short KDirListerCache::MAX_JOBS_PER_LISTER = 5;
-Index: kio/kio/krun.cpp
-===================================================================
---- kio/kio/krun.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/kio/krun.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -368,13 +368,14 @@
-     }
-     else {
-         if (supportedProtocols.isEmpty()) {
--            // compat mode: assume KIO if not set and it's a KDE app
-+            // compat mode: assume KIO if not set and it's a KDE app (or a KDE service)
-             const QStringList categories = _service.property("Categories").toStringList();
--            if (categories.contains("KDE")) {
-+            if (categories.contains("KDE") || !_service.isApplication()) {
-                 supportedProtocols.append("KIO");
-             }
-             else { // if no KDE app, be a bit over-generic
-                 supportedProtocols.append("http");
-+                supportedProtocols.append("https"); // #253294
-                 supportedProtocols.append("ftp");
-             }
+--- kioslave/http/http.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kioslave/http/http.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -334,7 +334,7 @@
+     , m_iSize(NO_SIZE)
+     , m_isBusy(false)
+     , m_maxCacheAge(DEFAULT_MAX_CACHE_AGE)
+-    , m_maxCacheSize(DEFAULT_MAX_CACHE_SIZE/2)
++    , m_maxCacheSize(DEFAULT_MAX_CACHE_SIZE)
+     , m_protocol(protocol)
+     , m_wwwAuth(0)
+     , m_proxyAuth(0)
+@@ -3756,7 +3756,7 @@
+         if (!cacheFileOpenWrite()) {
+             kDebug(7113) << "Error creating cache entry for " << m_request.url.url()<<"!\n";
          }
-@@ -437,7 +438,7 @@
-     } else { // app claims to support %u/%U, check which protocols
-         QStringList appSupportedProtocols = supportedProtocols(_service);
-         for (KUrl::List::ConstIterator it = _urls.begin(); it != _urls.end(); ++it)
--            if( !isProtocolInSupportedList(*it, appSupportedProtocols)) {
-+            if (!isProtocolInSupportedList(*it, appSupportedProtocols) && !KProtocolInfo::isHelperProtocol(*it)) {
-                 useKioexec = true;
-                 kDebug(7010) << "application does not support url, using kioexec:" << *it;
-                 break;
+-        m_maxCacheSize = config()->readEntry("MaxCacheSize", DEFAULT_MAX_CACHE_SIZE) / 2;
++        m_maxCacheSize = config()->readEntry("MaxCacheSize", DEFAULT_MAX_CACHE_SIZE);
+     } else if (m_request.responseCode == 304 && m_request.cacheTag.file) {
+         if (!mayCache) {
+             kDebug(7113) << "This webserver is confused about the cacheability of the data it sends.";
+@@ -4928,13 +4928,24 @@
+     if (!m_request.cacheTag.file) {
+         return;
+     }
++
++    // If the file being downloaded is so big that it exceeds the max cache size,
++    // do not cache it! See BR# 244215. NOTE: this can be improved upon in the
++    // future...
++    if (m_iSize >= (m_maxCacheSize * 1024)) {
++        kDebug(7113) << "Caching diabled because content size is too big.";
++        cacheFileClose();
++        return;
++    }
++
+     Q_ASSERT(m_request.cacheTag.ioMode == WriteToCache);
+     Q_ASSERT(m_request.cacheTag.file->openMode() & QIODevice::WriteOnly);
++
+     if (d.isEmpty()) {
+         cacheFileClose();
+     }
+ 
+-    //### abort if file grows too big! (early abort if we know the size, implement!)
++    //TODO: abort if file grows too big!
+ 
+     // write the variable length text header as soon as we start writing to the file
+     if (!m_request.cacheTag.bytesCached) {
+Index: kio/kio/accessmanagerreply_p.cpp
+===================================================================
+--- kio/kio/accessmanagerreply_p.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kio/kio/accessmanagerreply_p.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -293,11 +293,12 @@
+     const QUrl redirectUrl = attribute(QNetworkRequest::RedirectionTargetAttribute).toUrl();
+     if (redirectUrl.isValid())
+         readHttpResponseHeaders(m_kioJob);
++    else {
++        setAttribute(static_cast<QNetworkRequest::Attribute>(KIO::AccessManager::KioError), errcode);
++        if (errcode)
++            emit error(error());
++    }
+ 
+-    setAttribute(static_cast<QNetworkRequest::Attribute>(KIO::AccessManager::KioError), errcode);
+-    if (errcode)
+-        emit error(error());
+-    
+     emit finished();
+ }
+ 
 Index: kio/kio/kfileitemdelegate.cpp
 ===================================================================
---- kio/kio/kfileitemdelegate.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/kio/kfileitemdelegate.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -524,16 +524,23 @@
+--- kio/kio/kfileitemdelegate.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kio/kio/kfileitemdelegate.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -1666,9 +1666,15 @@
  
- QBrush KFileItemDelegate::Private::foregroundBrush(const QStyleOptionViewItemV4 &option, const QModelIndex &index) const
- {
-+    QPalette::ColorGroup cg = QPalette::Active;
-+    if (!(option.state & QStyle::State_Enabled)) {
-+        cg = QPalette::Disabled;
-+    } else if (!(option.state & QStyle::State_Active)) {
-+        cg = QPalette::Inactive;
-+    }
-+
-     // Always use the highlight color for selected items
-     if (option.state & QStyle::State_Selected)
--        return option.palette.brush(QPalette::HighlightedText);
-+        return option.palette.brush(cg, QPalette::HighlightedText);
- 
-     // If the model provides its own foreground color/brush for this item
-     const QVariant value = index.data(Qt::ForegroundRole);
-     if (value.isValid())
-         return brush(value, option);
- 
--    return option.palette.brush(QPalette::Text);
-+    return option.palette.brush(cg, QPalette::Text);
- }
- 
- 
-@@ -597,9 +604,16 @@
-     QColor color;
-     color.setAlphaF(amount);
- 
-+// FIXME: Somehow this doesn't work on Mac OS..
-+#if defined(Q_OS_MAC)
-+    const bool usePixmap = false;
-+#else
-+    const bool usePixmap = from.paintEngine()->hasFeature(QPaintEngine::PorterDuff) &&
-+                           from.paintEngine()->hasFeature(QPaintEngine::BlendModes);
-+#endif
-+
-     // If the native paint engine supports Porter/Duff compositing and CompositionMode_Plus
--    if (from.paintEngine()->hasFeature(QPaintEngine::PorterDuff) &&
--        from.paintEngine()->hasFeature(QPaintEngine::BlendModes))
-+    if (usePixmap)
+     case QEvent::FocusOut:
      {
-         QPixmap under = from;
-         QPixmap over  = to;
-Index: kio/kio/kdirlister.cpp
-===================================================================
---- kio/kio/kdirlister.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/kio/kdirlister.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -231,6 +231,7 @@
- 
-                 emit lister->started(_url);
-             }
-+            //kDebug(7004) << "Entry now being listed by" << dirData.listersCurrentlyListing;
-         }
-     } else {
- 
-@@ -307,6 +308,7 @@
-     if (_emitCompleted && jobForUrl( urlStr ) == 0) {
- 
-         Q_ASSERT(!dirData.listersCurrentlyHolding.contains(lister));
-+        //kDebug(7004) << "Moving from listing to holding, because emitCompleted is true and no job" << lister << urlStr;
-         dirData.listersCurrentlyHolding.append( lister );
-         dirData.listersCurrentlyListing.removeAll( lister );
- 
-@@ -361,7 +363,7 @@
-             // lister is listing url
-             const QString url = dirit.key();
- 
--            //kDebug(7004) << " found lister in list - for " << url;
-+            //kDebug(7004) << " found lister" << lister << "in list - for" << url;
-             stopLister(lister, url, dirData, silent);
-             stopped = true;
-         }
-@@ -404,6 +406,7 @@
-     KDirListerCacheDirectoryData& dirData = dirit.value();
-     if ( dirData.listersCurrentlyListing.removeAll(lister) ) { // contains + removeAll in one go
- 
-+        //kDebug(7004) << " found lister" << lister << "in list - for" << urlStr;
-         stopLister(lister, urlStr, dirData, silent);
- 
-         if ( lister->d->numJobs() == 0 ) {
-@@ -412,6 +415,7 @@
-             if (!silent) {
-                 emit lister->canceled();
-             }
-+            //kDebug(7004) << "Entry now being listed by" << dirData.listersCurrentlyListing;
-         }
-     }
- }
-@@ -587,6 +591,8 @@
-     QList<KDirLister *> listers = dirData.listersCurrentlyListing;
-     QList<KDirLister *> holders = dirData.listersCurrentlyHolding;
- 
-+    //kDebug(7004) << urlStr << "listers=" << listers << "holders=" << holders;
-+
-     // restart the job for _dir if it is running already
-     bool killed = false;
-     QWidget *window = 0;
-@@ -615,9 +621,7 @@
-             }
-         }
-     }
--    //if (killed) {
--    //    kDebug(7004) << "Killed=" << killed;
--    //}
-+    //kDebug(7004) << "Killed=" << killed;
- 
-     // we don't need to emit canceled signals since we only replaced the job,
-     // the listing is continuing.
-@@ -1178,22 +1182,30 @@
-   kDebug(7004) << "finished listing" << jobUrl;
- 
-   DirectoryDataHash::iterator dit = directoryData.find(jobUrlStr);
--  Q_ASSERT(dit != directoryData.end());
-+  if (dit == directoryData.end()) {
-+    kError() << "Nothing found in directoryData for URL" << jobUrlStr;
-+#ifndef NDEBUG
-+    printDebug();
-+#endif
-+    Q_ASSERT(dit != directoryData.end());
-+    return;
-+  }
-   KDirListerCacheDirectoryData& dirData = *dit;
-   if ( dirData.listersCurrentlyListing.isEmpty() ) {
-+    kError() << "OOOOPS, nothing in directoryData.listersCurrentlyListing for" << jobUrlStr;
-     // We're about to assert; dump the current state...
- #ifndef NDEBUG
-     printDebug();
- #endif
-+    Q_ASSERT( !dirData.listersCurrentlyListing.isEmpty() );
-   }
--  Q_ASSERT( !dirData.listersCurrentlyListing.isEmpty() );
-   QList<KDirLister *> listers = dirData.listersCurrentlyListing;
- 
-   // move all listers to the holding list, do it before emitting
-   // the signals to make sure it exists in KDirListerCache in case someone
-   // calls listDir during the signal emission
-   Q_ASSERT( dirData.listersCurrentlyHolding.isEmpty() );
--  dirData.moveListersWithoutCachedItemsJob();
-+  dirData.moveListersWithoutCachedItemsJob(jobUrl);
- 
-   if ( job->error() )
-   {
-@@ -1575,7 +1587,7 @@
-     KDirListerCacheDirectoryData& dirData = directoryData[jobUrlStr];
-     // Collect the dirlisters which were listing the URL using that ListJob
-     // plus those that were already holding that URL - they all get updated.
--    dirData.moveListersWithoutCachedItemsJob();
-+    dirData.moveListersWithoutCachedItemsJob(jobUrl);
-     QList<KDirLister *> listers = dirData.listersCurrentlyHolding;
-     listers += dirData.listersCurrentlyListing;
- 
-@@ -1605,10 +1617,16 @@
-     }
- 
-     DirItem *dir = itemsInUse.value(jobUrlStr, 0);
--    Q_ASSERT(dir);
--    dir->complete = true;
-+    if (!dir) {
-+        kError(7004) << "Internal error: itemsInUse did not contain" << jobUrlStr;
-+#ifndef NDEBUG
-+        printDebug();
-+#endif
-+        Q_ASSERT(dir);
-+    } else {
-+        dir->complete = true;
-+    }
- 
--
-     // check if anyone wants the mimetypes immediately
-     bool delayedMimeTypes = true;
-     foreach ( KDirLister *kdl, listers )
-@@ -2616,7 +2634,7 @@
-     emit m_parent->redirection( oldUrl, newUrl );
- }
- 
--void KDirListerCacheDirectoryData::moveListersWithoutCachedItemsJob()
-+void KDirListerCacheDirectoryData::moveListersWithoutCachedItemsJob(const KUrl& url)
- {
-     // Move dirlisters from listersCurrentlyListing to listersCurrentlyHolding,
-     // but not those that are still waiting on a CachedItemsJob...
-@@ -2626,7 +2644,7 @@
-     QMutableListIterator<KDirLister *> lister_it(listersCurrentlyListing);
-     while (lister_it.hasNext()) {
-         KDirLister* kdl = lister_it.next();
--        if (!kdl->d->m_cachedItemsJob) {
-+        if (!kdl->d->m_cachedItemsJob || kdl->d->m_cachedItemsJob->url() != url) {
-             // OK, move this lister from "currently listing" to "currently holding".
- 
-             // Huh? The KDirLister was present twice in listersCurrentlyListing, or was in both lists?
-@@ -2635,6 +2653,8 @@
-                 listersCurrentlyHolding.append(kdl);
-             }
-             lister_it.remove();
-+        } else {
-+            //kDebug(7004) << "Not moving" << kdl << "to listersCurrentlyHolding because it still has job" << kdl->d->m_cachedItemsJob;
-         }
-     }
- }
-Index: kio/tests/kdirmodeltest.cpp
-===================================================================
---- kio/tests/kdirmodeltest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/tests/kdirmodeltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -25,6 +25,7 @@
- #include "kdirmodeltest.moc"
- #include <kdirmodel.h>
- #include <kdirlister.h>
-+//TODO #include "../../kdeui/tests/proxymodeltestsuite/modelspy.h"
- 
- #include <qtest_kde.h>
- 
-@@ -76,9 +77,13 @@
- 
- void KDirModelTest::recreateTestData()
- {
--    if (m_tempDir)
-+    if (m_tempDir) {
-         kDebug() << "Deleting old tempdir" << m_tempDir->name();
--    delete m_tempDir;
-+        delete m_tempDir;
-+        qApp->processEvents(); // process inotify events so they don't pollute us later on
-+    }
-+
-+
-     m_tempDir = new KTempDir;
-     kDebug() << "new tmp dir:" << m_tempDir->name();
-     // Create test data:
-@@ -389,7 +394,11 @@
-     const QString file = m_tempDir->name() + "toplevelfile_2";
-     const KUrl url(file);
- 
-+#if 1
-     QSignalSpy spyDataChanged(m_dirModel, SIGNAL(dataChanged(QModelIndex, QModelIndex)));
-+#else
-+    ModelSpy modelSpy(m_dirModel);
-+#endif
-     connect( m_dirModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-              &m_eventLoop, SLOT(exitLoop()) );
- 
-@@ -405,10 +414,15 @@
-     enterLoop();
- 
-     // If we come here, then dataChanged() was emitted - all good.
--    QCOMPARE(spyDataChanged.count(), 1);
--    QModelIndex receivedIndex = spyDataChanged[0][0].value<QModelIndex>();
-+#if 0
-+    QCOMPARE(modelSpy.count(), 1);
-+    const QVariantList dataChanged = modelSpy.first();
-+#else
-+    const QVariantList dataChanged = spyDataChanged[0];
-+#endif
-+    QModelIndex receivedIndex = dataChanged[0].value<QModelIndex>();
-     COMPARE_INDEXES(receivedIndex, m_secondFileIndex);
--    receivedIndex = spyDataChanged[0][1].value<QModelIndex>();
-+    receivedIndex = dataChanged[1].value<QModelIndex>();
-     QCOMPARE(receivedIndex.row(), m_secondFileIndex.row()); // only compare row; column is count-1
- 
-     disconnect( m_dirModel, SIGNAL(dataChanged(QModelIndex,QModelIndex)),
-@@ -651,59 +665,78 @@
-                 &m_eventLoop, SLOT(exitLoop()) );
- }
- 
-+enum {
-+    NoFlag = 0,
-+    NewDir = 1, // whether to re-create a new KTempDir completely, to avoid cached fileitems
-+    ListFinalDir = 2, // whether to list the target dir at the same time, like k3b, for #193364
-+    Recreate = 4
-+    // flags, next item is 8!
-+};
-+
- void KDirModelTest::testExpandToUrl_data()
- {
--    QTest::addColumn<bool>("newdir"); // whether to re-create a new KTempDir completely, to avoid cached fileitems
-+    QTest::addColumn<int>("flags"); // see enum above
-     QTest::addColumn<QString>("expandToPath"); // relative path
-     QTest::addColumn<QStringList>("expectedExpandSignals");
- 
-     QTest::newRow("the root, nothing to do")
--        << false << QString() << QStringList();
-+        << int(NoFlag) << QString() << QStringList();
-     QTest::newRow(".")
--        << false << "." << (QStringList());
-+        << int(NoFlag) << "." << (QStringList());
-     QTest::newRow("subdir")
--        << false << "subdir" << (QStringList()<<"subdir");
-+        << int(NoFlag) << "subdir" << (QStringList()<<"subdir");
-     QTest::newRow("subdir/.")
--        << false << "subdir/." << (QStringList()<<"subdir");
-+        << int(NoFlag) << "subdir/." << (QStringList()<<"subdir");
- 
-     const QString subsubdir = "subdir/subsubdir";
-     // Must list root, emit expand for subdir, list subdir, emit expand for subsubdir.
-     QTest::newRow("subdir/subsubdir")
--        << false << subsubdir << (QStringList()<<"subdir"<<subsubdir);
-+        << int(NoFlag) << subsubdir << (QStringList()<<"subdir"<<subsubdir);
- 
-     // Must list root, emit expand for subdir, list subdir, emit expand for subsubdir, list subsubdir.
-     const QString subsubdirfile = subsubdir + "/testfile";
-     QTest::newRow("subdir/subsubdir/testfile sync")
--        << false << subsubdirfile << (QStringList()<<"subdir"<<subsubdir<<subsubdirfile);
-+        << int(NoFlag) << subsubdirfile << (QStringList()<<"subdir"<<subsubdir<<subsubdirfile);
- 
- #ifndef Q_WS_WIN
-     // Expand a symlink to a directory (#219547)
-     const QString dirlink = m_tempDir->name() + "dirlink";
-     createTestSymlink(dirlink, "/");
-     QTest::newRow("dirlink")
--        << false << "dirlink/tmp" << (QStringList()<<"dirlink"<<"dirlink/tmp");
-+        << int(NoFlag) << "dirlink/tmp" << (QStringList()<<"dirlink"<<"dirlink/tmp");
- #endif
- 
-     // Do a cold-cache test too, but nowadays it doesn't change anything anymore,
-     // apart from testing different code paths inside KDirLister.
-     QTest::newRow("subdir/subsubdir/testfile with reload")
--        << true << subsubdirfile << (QStringList()<<"subdir"<<subsubdir<<subsubdirfile);
-+        << int(NewDir) << subsubdirfile << (QStringList()<<"subdir"<<subsubdir<<subsubdirfile);
-+
-+    QTest::newRow("hold dest dir") // #193364
-+        << int(NewDir|ListFinalDir|Recreate) << subsubdirfile << (QStringList()<<"subdir"<<subsubdir<<subsubdirfile);
-+
-+    // Make sure the last test has the Recreate option set, for the subsequent test methods.
- }
- 
- void KDirModelTest::testExpandToUrl()
- {
--    QFETCH(bool, newdir);
-+    QFETCH(int, flags);
-     QFETCH(QString, expandToPath); // relative
-     QFETCH(QStringList, expectedExpandSignals);
- 
--    if (newdir) {
-+    if (flags & NewDir) {
-         recreateTestData();
-         // WARNING! m_dirIndex, m_fileIndex, m_secondFileIndex etc. are not valid anymore after this point!
- 
-     }
- 
-     const QString path = m_tempDir->name();
--    if (!m_dirModelForExpand || newdir) {
-+    if (flags & ListFinalDir) {
-+        // This way, the last listDir will find items in cache, and will schedule a CachedItemsJob
-+        m_dirModel->dirLister()->openUrl(path + "subdir/subsubdir");
-+        QTest::kWaitForSignal(m_dirModel->dirLister(), SIGNAL(completed()), 2000);
-+    }
-+
-+    if (!m_dirModelForExpand || (flags & NewDir)) {
-         delete m_dirModelForExpand;
-         m_dirModelForExpand = new KDirModel;
-         connect(m_dirModelForExpand, SIGNAL(expand(QModelIndex)),
-@@ -740,9 +773,15 @@
-         QVERIFY(m_dirModelForExpand->indexForUrl(m_urlToExpandTo).isValid());
-     }
- 
--    // recreateTestData was called -> fill again, for the next tests
--    if (newdir)
-+    if (flags & ListFinalDir) {
-+        testUpdateParentAfterExpand();
-+    }
-+
-+    if (flags & Recreate) {
-+        // Clean up, for the next tests
-+        recreateTestData();
-         fillModel(false);
-+    }
- }
- 
- void KDirModelTest::slotExpand(const QModelIndex& index)
-@@ -770,6 +809,18 @@
-     m_rowsInsertedEmitted = true;
- }
- 
-+// This code is called by testExpandToUrl
-+void KDirModelTest::testUpdateParentAfterExpand() // #193364
-+{
-+    const QString path = m_tempDir->name();
-+    const QString file = path + "subdir/aNewFile";
-+    kDebug() << "Creating" << file;
-+    QVERIFY(!QFile::exists(file));
-+    createTestFile(file);
-+    //QSignalSpy spyRowsInserted(m_dirModelForExpand, SIGNAL(rowsInserted(QModelIndex,int,int)));
-+    QTest::kWaitForSignal(m_dirModelForExpand, SIGNAL(rowsInserted(QModelIndex,int,int)));
-+}
-+
- void KDirModelTest::testFilter()
- {
-     QVERIFY(m_dirIndex.isValid());
-Index: kio/tests/kdirmodeltest.h
-===================================================================
---- kio/tests/kdirmodeltest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kio/tests/kdirmodeltest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -84,6 +84,7 @@
-     void fillModel(bool reload, bool expectAllIndexes = true);
-     void collectKnownIndexes();
-     void testMoveDirectory(const QString& srcdir);
-+    void testUpdateParentAfterExpand();
- 
- private:
- #ifdef USE_QTESTEVENTLOOP
-Index: kdecore/compression/kfilterdev.cpp
-===================================================================
---- kdecore/compression/kfilterdev.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/compression/kfilterdev.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -96,6 +96,10 @@
- 
- bool KFilterDev::open( QIODevice::OpenMode mode )
- {
-+    if (isOpen()) {
-+        kWarning(7005) << "already open";
-+        return true; // QFile returns false, but well, the device -is- open...
-+    }
-     //kDebug(7005) << mode;
-     if ( mode == QIODevice::ReadOnly )
-     {
-Index: kdecore/compression/kxzfilter.cpp
-===================================================================
---- kdecore/compression/kxzfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/compression/kxzfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -38,6 +38,7 @@
- {
- public:
-     Private()
-+    : isInitialized(false)
-     {
-         memset(&zStream, 0, sizeof(zStream));
-         mode = 0;
-@@ -45,6 +46,7 @@
- 
-     lzma_stream zStream;
-     int mode;
-+    bool isInitialized;
- };
- 
- KXzFilter::KXzFilter()
-@@ -60,6 +62,10 @@
- 
- void KXzFilter::init( int mode )
- {
-+    if (d->isInitialized) {
-+        terminate();
-+    }
-+  
-     lzma_ret result;
-     d->zStream.next_in = 0;
-     d->zStream.avail_in = 0;
-@@ -76,6 +82,7 @@
-     } else
-         kWarning(7131) << "Unsupported mode " << mode << ". Only QIODevice::ReadOnly and QIODevice::WriteOnly supported";
-     d->mode = mode;
-+    d->isInitialized = true;
- }
- 
- int KXzFilter::mode() const
-@@ -85,11 +92,12 @@
- 
- void KXzFilter::terminate()
- {
--    if ( d->mode == QIODevice::ReadOnly || d->mode == QIODevice::WriteOnly )
--    {
-+    if (d->mode == QIODevice::ReadOnly || d->mode == QIODevice::WriteOnly) {
-         lzma_end(&d->zStream);
--    } else
-+    } else {
-         kWarning(7131) << "Unsupported mode " << d->mode << ". Only QIODevice::ReadOnly and QIODevice::WriteOnly supported";
-+    }
-+    d->isInitialized = false;
- }
- 
- 
-Index: kdecore/compression/kbzip2filter.cpp
-===================================================================
---- kdecore/compression/kbzip2filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/compression/kbzip2filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -50,6 +50,7 @@
- {
- public:
-     Private()
-+    : isInitialized(false)
-     {
-         memset(&zStream, 0, sizeof(zStream));
-         mode = 0;
-@@ -57,6 +58,7 @@
- 
-     bz_stream zStream;
-     int mode;
-+    bool isInitialized;
- };
- 
- KBzip2Filter::KBzip2Filter()
-@@ -72,6 +74,10 @@
- 
- void KBzip2Filter::init( int mode )
- {
-+    if (d->isInitialized) {
-+        terminate();
-+    }
-+
-     d->zStream.next_in = 0;
-     d->zStream.avail_in = 0;
-     if ( mode == QIODevice::ReadOnly )
-@@ -85,6 +91,7 @@
-     } else
-         kWarning(7118) << "Unsupported mode " << mode << ". Only QIODevice::ReadOnly and QIODevice::WriteOnly supported";
-     d->mode = mode;
-+    d->isInitialized = true;
- }
- 
- int KBzip2Filter::mode() const
-@@ -94,16 +101,16 @@
- 
- void KBzip2Filter::terminate()
- {
--    if ( d->mode == QIODevice::ReadOnly )
--    {
-+    if (d->mode == QIODevice::ReadOnly) {
-         int result = bzDecompressEnd(&d->zStream);
-         kDebug(7118) << "bzDecompressEnd returned " << result;
--    } else if ( d->mode == QIODevice::WriteOnly )
--    {
-+    } else if (d->mode == QIODevice::WriteOnly) {
-         int result = bzCompressEnd(&d->zStream);
-         kDebug(7118) << "bzCompressEnd returned " << result;
--    } else
-+    } else {
-         kWarning(7118) << "Unsupported mode " << d->mode << ". Only QIODevice::ReadOnly and QIODevice::WriteOnly supported";
-+    }
-+    d->isInitialized = false;
- }
- 
- 
-Index: kdecore/compression/kgzipfilter.cpp
-===================================================================
---- kdecore/compression/kgzipfilter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/compression/kgzipfilter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -39,7 +39,7 @@
- {
- public:
-     Private()
--    : headerWritten(false), footerWritten(false), compressed(false), mode(0), crc(0)
-+    : headerWritten(false), footerWritten(false), compressed(false), mode(0), crc(0), isInitialized(false)
-     {
-         zStream.zalloc = (alloc_func)0;
-         zStream.zfree = (free_func)0;
-@@ -52,6 +52,7 @@
-     bool compressed;
-     int mode;
-     ulong crc;
-+    bool isInitialized;
- };
- 
- KGzipFilter::KGzipFilter()
-@@ -72,6 +73,9 @@
- 
- void KGzipFilter::init(int mode, Flag flag)
- {
-+    if (d->isInitialized) {
-+        terminate();
-+    }
-     d->zStream.next_in = Z_NULL;
-     d->zStream.avail_in = 0;
-     if ( mode == QIODevice::ReadOnly )
-@@ -97,6 +101,7 @@
-     d->compressed = true;
-     d->headerWritten = false;
-     d->footerWritten = false;
-+    d->isInitialized = true;
- }
- 
- int KGzipFilter::mode() const
-@@ -117,6 +122,7 @@
-         if ( result != Z_OK )
-             kDebug(7005) << "deflateEnd returned " << result;
-     }
-+    d->isInitialized = false;
- }
- 
- 
-Index: kdecore/tests/kurltest.cpp
-===================================================================
---- kdecore/tests/kurltest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/tests/kurltest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -1685,7 +1685,7 @@
-   QCOMPARE( leo.path(), QString("text/html,http://www.invalid/" ) );
- 
-   KUrl ptal( "ptal://mlc:usb@PC_970" ); // User=mlc, password=usb, host=PC_970
--#if QT_VERSION >= 0x040600
-+#if QT_VERSION >= 0x040600 && QT_VERSION <= 0x040602 // Hostnames with underscores were invalid in 4.6.0 to 4.6.2, then allowed again in e301c82693c33c0f96c6a756d15fe35a9d877443
-   QCOMPARE(ptal.url(), QString("ptal://mlc:usb@")); // The host "PC_970" is invalid according to STD3 validation
-   KUrl ptalSimpler("ptal://mlc:usb@pc123");
-   QCOMPARE(ptalSimpler.url(), QString("ptal://mlc:usb@pc123"));
-Index: kdecore/tests/ktcpsockettest.cpp
-===================================================================
---- kdecore/tests/ktcpsockettest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/tests/ktcpsockettest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -198,6 +198,26 @@
-     cleanupSocket();
- }
- 
-+static QString stateToString(KTcpSocket::State state)
-+{
-+    switch(state) {
-+    case KTcpSocket::UnconnectedState:
-+        return "UnconnectedState";
-+    case KTcpSocket::HostLookupState:
-+        return "HostLookupState";
-+    case KTcpSocket::ConnectingState:
-+        return "ConnectingState";
-+    case KTcpSocket::ConnectedState:
-+        return "ConnectedState";
-+    case KTcpSocket::BoundState:
-+        return "BoundState";
-+    case KTcpSocket::ListeningState:
-+        return "ListeningState";
-+    case KTcpSocket::ClosingState:
-+        return "ClosingState";
-+    }
-+    return "ERROR";
-+}
- 
- #define HTTPREQUEST QByteArray("GET / HTTP/1.1\nHost: www.example.com\n\n")
- 
-@@ -255,24 +275,45 @@
-                              "Host: ");
-     QByteArray requestEpilog("\r\n\r\n");
-     //Test rapid connection and disconnection to different hosts
--    const char *hosts[] = {"www.google.de", "www.spiegel.de", "www.stern.de", "www.laut.de"};
--    for (int i = 0; i < 20; i++) {
-+    static const char *hosts[] = {"www.google.de", "www.spiegel.de", "www.stern.de", "www.laut.de"};
-+    static const int numHosts = 4;
-+    for (int i = 0; i < numHosts * 5; i++) {
-+        qDebug("\nNow trying %s...", hosts[i % numHosts]);
-         QCOMPARE(s->state(), KTcpSocket::UnconnectedState);
--        s->connectToHost(hosts[i % 4], 80);
--        QCOMPARE(s->state(), KTcpSocket::HostLookupState);
-+        s->connectToHost(hosts[i % numHosts], 80);
-+        bool skip = false;
-+        KTcpSocket::State expectedState;
-+#if QT_VERSION > 0x040700
-+        // Since Qt 4.6.3 the Qt-internal DNS cache returns a result (if cached) immediately
-+        // but it was unreliable (when called from QTcpSocket) until 4.7.1
-+        if (i < numHosts) {
-+            expectedState = KTcpSocket::HostLookupState;
-+        } else {
-+            expectedState = KTcpSocket::ConnectingState;
+-        emit commitData(editor);
+-        emit closeEditor(editor, NoHint);
+-        return true;
++        const QWidget *w = QApplication::activePopupWidget();
++        if (!w || w->parent() != editor)
++        {
++            emit commitData(editor);
++            emit closeEditor(editor, NoHint);
++            return true;
 +        }
-+#elif QT_VERSION < 0x040603
-+        // Previously there was no caching
-+        expectedState = KTcpSocket::HostLookupState;
-+#else   // 4.6.3 to 4.7.0: unreliable results, skip test
-+        skip = true;
-+#endif
-+        if (!skip)
-+            QCOMPARE(stateToString(s->state()), stateToString(expectedState));
-+
-         //weave the host address into the HTTP request
-         QByteArray request(requestProlog);
--        request.append(hosts[i % 4]);
-+        request.append(hosts[i % numHosts]);
-         request.append(requestEpilog);
--        qDebug("%s", hosts[i % 4]);
-         s->write(request);
- 
--        QCOMPARE(s->state(), KTcpSocket::HostLookupState);
-+        if (!skip)
-+            QCOMPARE(stateToString(s->state()), stateToString(expectedState));
-+
-         s->waitForBytesWritten(-1);
-         QCOMPARE(s->state(), KTcpSocket::ConnectedState);
-         s->waitForReadyRead(-1);
-         QVERIFY(s->bytesAvailable() > 100);
--        if (i % 5) {
-+        if (i % (numHosts + 1)) {
-             s->readAll();
-             QVERIFY(s->bytesAvailable() == 0);
-         } else {
-Index: kdecore/all_languages.desktop
-===================================================================
---- kdecore/all_languages.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/all_languages.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -2846,7 +2846,7 @@
- Name[pt]=Galês
- Name[pt_BR]=Galês
- Name[ro]=Velșă
--Name[ru]=Уэльский
-+Name[ru]=Валлийский
- Name[se]=Walesagiella
- Name[si]=වෙල්ෂ්
- Name[sk]=Waleština
-Index: kdecore/sonnet/tests/test_filter.cpp
-===================================================================
---- kdecore/sonnet/tests/test_filter.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/sonnet/tests/test_filter.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -127,7 +127,7 @@
-     hits.append( Hit( QString::fromUtf8("राजभाषा"), 38 ) );
-     hits.append( Hit( QString::fromUtf8("असून"), 46 ) );
-     hits.append( Hit( QString::fromUtf8("सुमारे"), 51 ) );
--    hits.append( Hit( QString::fromUtf8("९"), 58 ) );
-+    //hits.append( Hit( QString::fromUtf8("९"), 58 ) ); // This is the number 9, so we don't spell-check it
-     hits.append( Hit( QString::fromUtf8("कोटी"), 60 ) );
-     hits.append( Hit( QString::fromUtf8("लोकांची"), 65 ) );
-     hits.append( Hit( QString::fromUtf8("मातृभाषा"), 73 ) );
-@@ -136,7 +136,7 @@
-     hits.append( Hit( QString::fromUtf8("भाषा"), 93 ) );
-     hits.append( Hit( QString::fromUtf8("कमीत"), 98 ) );
-     hits.append( Hit( QString::fromUtf8("कमी"), 103 ) );
--    hits.append( Hit( QString::fromUtf8("१०००"), 107 ) );
-+    //hits.append( Hit( QString::fromUtf8("१०००"), 107 ) ); // just a number
-     hits.append( Hit( QString::fromUtf8("वर्षापासून"), 112 ) );
-     hits.append( Hit( QString::fromUtf8("अस्तित्वात"), 123 ) );
-     hits.append( Hit( QString::fromUtf8("आहे"), 134 ) );
-Index: kdecore/io/klimitediodevice.cpp
-===================================================================
---- kdecore/io/klimitediodevice.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/io/klimitediodevice.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -18,7 +18,7 @@
- 
- #include "klimitediodevice_p.h"
- 
--KLimitedIODevice::KLimitedIODevice( QIODevice *dev, int start, int length )
-+KLimitedIODevice::KLimitedIODevice( QIODevice *dev, qint64 start, qint64 length )
-     : m_dev( dev ), m_start( start ), m_length( length )
- {
-     //kDebug(7005) << "start=" << start << "length=" << length;
-Index: kdecore/io/klimitediodevice_p.h
-===================================================================
---- kdecore/io/klimitediodevice_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/io/klimitediodevice_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -38,7 +38,7 @@
-      * @param start where to start reading (position in bytes)
-      * @param length the length of the data to read (in bytes)
-      */
--    KLimitedIODevice( QIODevice *dev, int start, int length );
-+    KLimitedIODevice( QIODevice *dev, qint64 start, qint64 length );
-     virtual ~KLimitedIODevice() {}
- 
-     virtual bool isSequential() const;
-Index: kdecore/io/kzip.cpp
-===================================================================
---- kdecore/io/kzip.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/io/kzip.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -390,12 +390,12 @@
- 	    int compression_mode = (uchar)buffer[2] | (uchar)buffer[3] << 8;
- 	    time_t mtime = transformFromMsDos( buffer+4 );
- 
--	    qint64 compr_size = (uchar)buffer[12] | (uchar)buffer[13] << 8
--	    			| (uchar)buffer[14] << 16 | (uchar)buffer[15] << 24;
--	    qint64 uncomp_size = (uchar)buffer[16] | (uchar)buffer[17] << 8
--	    			| (uchar)buffer[18] << 16 | (uchar)buffer[19] << 24;
--	    int namelen = (uchar)buffer[20] | (uchar)buffer[21] << 8;
--	    int extralen = (uchar)buffer[22] | (uchar)buffer[23] << 8;
-+            const qint64 compr_size = uint(uchar(buffer[12])) | uint(uchar(buffer[13])) << 8 |
-+                                      uint(uchar(buffer[14])) << 16 | uint(uchar(buffer[15])) << 24;
-+            const qint64 uncomp_size = uint(uchar(buffer[16])) | uint(uchar(buffer[17])) << 8 |
-+                                      uint(uchar(buffer[18])) << 16 | uint(uchar(buffer[19])) << 24;
-+            const int namelen = uint(uchar(buffer[20])) | uint(uchar(buffer[21])) << 8;
-+            const int extralen = uint(uchar(buffer[22])) | uint(uchar(buffer[23])) << 8;
- 
-             /*
- 	    kDebug(7040) << "general purpose bit flag: " << gpf;
-Index: kdecore/date/kcalendarsystem.cpp
-===================================================================
---- kdecore/date/kcalendarsystem.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/date/kcalendarsystem.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -1385,12 +1385,12 @@
-                     }
-                 } else {
-                     startDate = q->readDate( buffer, KLocale::IsoFormat );
--                    if ( q->isValid( startDate ) ) {
--                        startYear = q->year( startDate );
--                    } else {
--                        startYear = eraEntry.section( ':', 1, 1 ).toInt(); //Use offset
--                    }
-                 }
-+                if ( q->isValid( startDate ) ) {
-+                    startYear = q->year( startDate );
-+                } else {
-+                    startYear = eraEntry.section( ':', 1, 1 ).toInt(); //Use offset
-+                }
-                 buffer = eraEntry.section( ':', 3, 3 );
-                 if ( buffer.isEmpty() ) {
-                     if ( direction == '-' ) {
-Index: kdecore/util/kshareddatacache.cpp
-===================================================================
---- kdecore/util/kshareddatacache.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdecore/util/kshareddatacache.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -1156,11 +1156,17 @@
-     IndexTableEntry *entriesIndex = indexTable();
- 
-     // Update page table first
--    uint firstPage = entriesIndex[index].firstPage;
--    if ((qint32)index != pageTableEntries[firstPage].index) {
-+    pageID firstPage = entriesIndex[index].firstPage;
-+    if (firstPage < 0 || firstPage >= pageTableSize()) {
-+        kError(264) << "Removing" << index << "which is already marked as empty!";
-+        return;
-+    }
-+
-+    if (index != static_cast<uint>(pageTableEntries[firstPage].index)) {
-         kError(264) << "Removing" << index << "will not work as it is assigned"
-                     << "to page" << firstPage << "which is itself assigned to"
-                     << "entry" << pageTableEntries[firstPage].index << "instead!";
-+        return;
++        else
++            return false;
      }
  
-     uint entriesToRemove = intCeil(entriesIndex[index].totalItemSize, cachePageSize());
-Index: plasma/tooltipmanager.cpp
+     default:
+Index: kio/kssl/kcm/kcm_ssl.desktop
 ===================================================================
---- plasma/tooltipmanager.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ plasma/tooltipmanager.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -236,10 +236,12 @@
-             }
-         }
- 
--        d->tipWidget->setContent(widget, data);
--        d->tipWidget->prepareShowing();
--        if (m_corona) {
--            d->tipWidget->moveTo(m_corona->popupPosition(widget, d->tipWidget->size(), Qt::AlignCenter));
-+        if (d->tipWidget) {
-+            d->tipWidget->setContent(widget, data);
-+            d->tipWidget->prepareShowing();
-+            if (m_corona) {
-+                d->tipWidget->moveTo(m_corona->popupPosition(widget, d->tipWidget->size(), Qt::AlignCenter));
-+            }
-         }
-     }
- }
-Index: plasma/applet.cpp
+--- kio/kssl/kcm/kcm_ssl.desktop	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kio/kssl/kcm/kcm_ssl.desktop	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -12,7 +12,7 @@
+ Name[bg]=Настройки на SSL
+ Name[ca]=Preferències SSL
+ Name[ca@valencia]=Preferències SSL
+-Name[cs]=Nastavení SSLneí
++Name[cs]=Nastavení SSL
+ Name[da]=SSL-indstillinger
+ Name[de]=SSL-Einstellungen
+ Name[el]=Προτιμήσεις SSL
+Index: kdecore/services/kmimetype.cpp
 ===================================================================
---- plasma/applet.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ plasma/applet.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -2668,7 +2668,10 @@
-         return;
-     }
- 
--    size = appletDescription.property("X-Plasma-DefaultSize").toSize();
-+    QVariant s = appletDescription.property("X-Plasma-DefaultSize");
-+    if (s.isValid()) {
-+        size = s.toSize();
-+    }
-     //kDebug() << "size" << size;
-     q->resize(size);
- 
-Index: plasma/data/servicetypes/plasma-containmentactions.desktop
-===================================================================
---- plasma/data/servicetypes/plasma-containmentactions.desktop	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ plasma/data/servicetypes/plasma-containmentactions.desktop	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -36,8 +36,9 @@
- Comment[nl]=Plasma Containeracties
- Comment[nn]=Plasma behaldarhandlingar
- Comment[pa]=ਪਲਾਜ਼ਮਾ ਕਨਟੇਨਮੈਂਟਐਕਸ਼ਨ
-+Comment[pl]=Kontener Plazmy: akcje
- Comment[pt]=Acções do Contentor do Plasma
--Comment[pt_BR]=Ações do contentor do Plasma
-+Comment[pt_BR]=Ações do contêiner do Plasma
- Comment[ro]=AcțiuniContainer Plasma
- Comment[ru]=Действия для контейнеров Plasma
- Comment[se]=Plasma ContainmentActions
-Index: plasma/extenders/extendergroup.cpp
-===================================================================
---- plasma/extenders/extendergroup.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ plasma/extenders/extendergroup.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -66,13 +66,13 @@
-     d->scrollWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
- 
-     QAction *expand = new QAction(this);
--    expand->setVisible(true);
-+    expand->setVisible(false);
-     expand->setToolTip(i18n("Show this group."));
-     connect(expand, SIGNAL(triggered()), this, SLOT(expandGroup()));
-     addAction("expand", expand);
- 
-     QAction *collapse = new QAction(this);
--    collapse->setVisible(false);
-+    collapse->setVisible(true);
-     collapse->setToolTip(i18n("Hide this group."));
-     connect(collapse, SIGNAL(triggered()), this, SLOT(collapseGroup()));
-     addAction("collapse", collapse);
-@@ -283,6 +283,7 @@
-             QApplication::restoreOverrideCursor();
-             d->layout->removeItem(d->spacerWidget);
-             d->spacerWidget->deleteLater();
-+            d->spacerWidget = 0;
-         }
-     }
- }
-@@ -292,6 +293,8 @@
-     if (event->mimeData()->hasFormat(ExtenderItemMimeData::mimeType())) {
-         if (d->spacerWidget) {
-             d->layout->removeItem(d->spacerWidget);
-+            d->spacerWidget->deleteLater();
-+            d->spacerWidget = 0;
-         }
-     }
- }
-@@ -300,7 +303,7 @@
-     : q(group),
-       spacerWidget(0),
-       svg(new Svg(group)),
--      collapsed(true),
-+      collapsed(false),
-       autoHide(true),
-       autoCollapse(false)
- {
-Index: khtml/html/html_documentimpl.h
-===================================================================
---- khtml/html/html_documentimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/html/html_documentimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -64,7 +64,6 @@
-     HTMLCollectionImpl* all();
-     HTMLCollectionImpl* scripts();
- 
--    HTMLElementImpl *body();
-     void setBody(HTMLElementImpl *_body, int& exceptioncode);
- 
-     virtual khtml::Tokenizer *createTokenizer();
-@@ -72,6 +71,9 @@
-     virtual bool childAllowed( NodeImpl *newChild );
- 
-     virtual ElementImpl *createElement ( const DOMString &tagName, int* pExceptioncode );
-+    
-+    // HTML5
-+    ElementImpl* activeElement() const;
- 
-     HTMLMapElementImpl* getMap(const DOMString& url_);
- 
-Index: khtml/html/html_documentimpl.cpp
-===================================================================
---- khtml/html/html_documentimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/html/html_documentimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -131,26 +131,6 @@
-                      URL().url(), fake_header, qlonglong(windowId));
+--- kdecore/services/kmimetype.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kdecore/services/kmimetype.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -26,6 +26,7 @@
+ #include <kde_file.h> // KDE::stat
+ #include <kdeversion.h> // KDE_MAKE_VERSION
+ #include <klocale.h>
++#include <kmimetyperepository_p.h>
+ #include <kprotocolinfo.h>
+ #include <kprotocolinfofactory.h>
+ #include <kstandarddirs.h>
+@@ -736,6 +737,11 @@
+     return QString();
  }
  
--
--
--HTMLElementImpl *HTMLDocumentImpl::body()
--{
--    NodeImpl *de = documentElement();
--    if (!de)
--        return 0;
--
--    // try to prefer a FRAMESET element over BODY
--    NodeImpl* body = 0;
--    for (NodeImpl* i = de->firstChild(); i; i = i->nextSibling()) {
--        if (i->id() == ID_FRAMESET)
--            return static_cast<HTMLElementImpl*>(i);
--
--        if (i->id() == ID_BODY)
--            body = i;
--    }
--    return static_cast<HTMLElementImpl *>(body);
--}
--
- void HTMLDocumentImpl::setBody(HTMLElementImpl *_body, int& exceptioncode)
- {
-     HTMLElementImpl *b = body();
-@@ -189,6 +169,15 @@
-     return createHTMLElement(name, hMode != XHtml);
- }
- 
-+ElementImpl* HTMLDocumentImpl::activeElement() const
++bool KMimeType::matchFileName( const QString &filename, const QString &pattern )
 +{
-+    NodeImpl* fn = focusNode();
-+    if (!fn || !fn->isElementNode())
-+	return body();
-+    else
-+	return static_cast<ElementImpl*>(fn);
++    return KMimeTypeRepository::matchFileName( filename, pattern );
 +}
 +
- void HTMLDocumentImpl::slotHistoryChanged()
+ int KMimeTypePrivate::serviceOffersOffset() const
  {
-     if ( true || !m_render )
-Index: khtml/ecma/kjs_html.h
+     return KMimeTypeFactory::self()->serviceOffersOffset(name());
+Index: kdecore/services/kmimetyperepository_p.h
 ===================================================================
---- khtml/ecma/kjs_html.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/ecma/kjs_html.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -53,7 +53,7 @@
-            Images, Applets, Links, Forms, Layers, Anchors, Scripts, All, Clear, Open, Close,
-            Write, WriteLn, GetElementsByName, GetSelection, CaptureEvents, ReleaseEvents,
-            BgColor, FgColor, AlinkColor, LinkColor, VlinkColor, LastModified,
--           Height, Width, Dir, Frames, CompatMode, DesignMode };
-+           Height, Width, Dir, Frames, CompatMode, DesignMode, ActiveElement };
-     DOM::HTMLDocumentImpl* impl() const { return static_cast<DOM::HTMLDocumentImpl*>( m_impl.get() ); }
-   private:
-     static JSValue *nameGetter(ExecState *exec, JSObject*, const Identifier& name, const PropertySlot& slot);
-Index: khtml/ecma/kjs_html.cpp
-===================================================================
---- khtml/ecma/kjs_html.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/ecma/kjs_html.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -187,6 +187,8 @@
-   frames		HTMLDocument::Frames		DontDelete|ReadOnly
- #NS4 extension
-   layers		HTMLDocument::Layers		DontDelete|ReadOnly
-+# HTML5
-+  activeElement         HTMLDocument::ActiveElement     DontDelete|ReadOnly
- #potentially obsolete array properties
- # plugins
- # tags
-@@ -392,6 +394,8 @@
-               == DocumentImpl::Compat ? "BackCompat" : "CSS1Compat");
-     case DesignMode:
-         return jsString((doc.designMode() ? "on":"off"));
-+    case ActiveElement:
-+	return getDOMNode(exec, doc.activeElement());
-     case BgColor:
-       return jsString(body ? body->getAttribute(ATTR_BGCOLOR) : DOMString());
-     case FgColor:
-Index: khtml/css/css_valueimpl.cpp
-===================================================================
---- khtml/css/css_valueimpl.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/css/css_valueimpl.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -1052,11 +1052,7 @@
+--- kdecore/services/kmimetyperepository_p.h	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kdecore/services/kmimetyperepository_p.h	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -86,6 +86,11 @@
  
- int CSSPrimitiveValueImpl::computeLength( khtml::RenderStyle *style, int logicalDpiY)
- {
--    double result = computeLengthFloat( style, logicalDpiY );
--    // This conversion is imprecise, often resulting in values of, e.g., 44.99998.  We
--    // need to go ahead and round if we're really close to the next integer value.
--    int intResult = (int)(result + (result < 0 ? -0.01 : +0.01));
--    return intResult;
-+    return snapValue( computeLengthFloat( style, logicalDpiY ) );
- }
+     int sharedMimeInfoVersion();
  
- double CSSPrimitiveValueImpl::computeLengthFloat( khtml::RenderStyle *style, int logicalDpiY)
-Index: khtml/css/cssstyleselector.cpp
-===================================================================
---- khtml/css/cssstyleselector.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/css/cssstyleselector.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -3073,7 +3073,7 @@
-         case CSS_VAL_INVALID:
-         {
-             double widthd = primitiveValue->computeLengthFloat(style, logicalDpiY);
--            width = (int)widthd;
-+            width = CSSPrimitiveValueImpl::snapValue(widthd);
-             // somewhat resemble Mozilla's granularity
-             // this makes border-width: 0.5pt borders visible
-             if (width == 0 && widthd >= 0.025) width++;
-Index: khtml/css/css_valueimpl.h
-===================================================================
---- khtml/css/css_valueimpl.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ khtml/css/css_valueimpl.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -222,6 +222,16 @@
- 
-     double computeLengthFloat( khtml::RenderStyle *style, int logicalDpiY);
- 
-+    /*
-+     * rounds a computer value into integer as appropriate. This takes
-+     * care of the various 4.9999999999 type cases
++    /**
++     * @internal
 +     */
-+    static int snapValue( double result ) {
-+        // Conversions are imprecise, often resulting in values of, e.g., 44.99998.  We
-+        // need to go ahead and round if we're really close to the next integer value.
-+        return (int)(result + (result < 0 ? -0.01 : +0.01));
-+    }
++    static bool matchFileName( const QString &filename, const QString &pattern );
 +
-     // Retrieves an explicit resolution from the CSSValue if it contains one.
-     // This is specific to the CSS3 Media Queries module's resolution feature.
-     int getDPIResolution() const;
-Index: kpty/kpty.cpp
+ private: // only for KMimeType and unittests
+     friend class KMimeType;
+     friend class KMimeFileParserTest;
+@@ -128,11 +133,6 @@
+      */
+     QList<KMimeMagicRule> parseMagicFile(QIODevice* file, const QString& fileName) const;
+ 
+-    /**
+-     * @internal (public for unit tests only)
+-     */
+-    static bool matchFileName( const QString &filename, const QString &pattern );
+-
+     // Read magic files
+     void parseMagic();
+ 
+Index: kdecore/services/kmimetype.h
 ===================================================================
---- kpty/kpty.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kpty/kpty.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -348,7 +348,7 @@
-     return false;
-   }
+--- kdecore/services/kmimetype.h	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kdecore/services/kmimetype.h	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -400,6 +400,12 @@
+     static QString extractKnownExtension( const QString &fileName );
  
--#if (defined(__svr4__) || defined(__sgi__))
-+#if (defined(__svr4__) || defined(__sgi__) || defined(Q_OS_SOLARIS))
-   // Solaris
-   ioctl(d->slaveFd, I_PUSH, "ptem");
-   ioctl(d->slaveFd, I_PUSH, "ldterm");
-Index: kdeui/paged/kpagewidgetmodel.cpp
+     /**
++     * Returns true if the given filename matches the given pattern.
++     * @since 4.6.1
++     */
++    static bool matchFileName( const QString &filename, const QString &pattern );
++
++    /**
+      * Returns the version of the installed update-mime-database program
+      * (from freedesktop.org shared-mime-info). This is used by unit tests
+      * and by the code that writes out icon definitions.
+Index: kdecore/localization/all_languages.desktop
 ===================================================================
---- kdeui/paged/kpagewidgetmodel.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/paged/kpagewidgetmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -388,9 +388,16 @@
-     connect(item, SIGNAL(changed()), this, SLOT(_k_itemChanged()));
-     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
- 
-+  // The row to be inserted
-+  int row = d->rootItem->childCount();
-+
-+  beginInsertRows(QModelIndex(), row, row);
-+
-   PageItem *pageItem = new PageItem( item, d->rootItem );
-   d->rootItem->appendChild( pageItem );
- 
-+  endInsertRows();
-+
-   emit layoutChanged();
- }
- 
-@@ -417,10 +424,21 @@
-     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
- 
-   PageItem *parent = beforePageItem->parent();
-+  // The row to be inserted
-+  int row = beforePageItem->row();
- 
-+  QModelIndex index;
-+  if (parent != d_func()->rootItem) {
-+      index = createIndex( parent->row(), 0, parent );
-+  }
-+
-+  beginInsertRows(index, row, row);
-+
-   PageItem *newPageItem = new PageItem( item, parent );
--  parent->insertChild( beforePageItem->row(), newPageItem );
-+  parent->insertChild( row, newPageItem );
- 
-+  endInsertRows();
-+
-   emit layoutChanged();
- }
- 
-@@ -446,9 +464,21 @@
-     connect(item, SIGNAL(changed()), this, SLOT(_k_itemChanged()));
-     connect(item, SIGNAL(toggled(bool)), this, SLOT(_k_itemToggled(bool)));
- 
-+  // The row to be inserted
-+  int row = parentPageItem->childCount();
-+
-+  QModelIndex index;
-+  if (parentPageItem != d_func()->rootItem) {
-+      index = createIndex( parentPageItem->row(), 0, parentPageItem );
-+  }
-+
-+  beginInsertRows(index, row, row);
-+
-   PageItem *newPageItem = new PageItem( item, parentPageItem );
-   parentPageItem->appendChild( newPageItem );
- 
-+  endInsertRows();
-+
-   emit layoutChanged();
- }
- 
-Index: kdeui/tests/kxmlgui_unittest.h
+--- kdecore/localization/all_languages.desktop	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kdecore/localization/all_languages.desktop	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -3173,7 +3173,7 @@
+ Name[fi]=Dzongkha
+ Name[fr]=Dzongkha
+ Name[fy]=Dzongkha
+-Name[ga]=Dzongkha
++Name[ga]=Seoinicis
+ Name[gl]=Dzongca
+ Name[gu]=ઝોન્ખા
+ Name[he]=ג'ונקה
+Index: plasma/widgets/toolbutton.cpp
 ===================================================================
---- kdeui/tests/kxmlgui_unittest.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/tests/kxmlgui_unittest.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -42,6 +42,7 @@
-     void testXMLFileReplacement();
-     void testTopLevelSeparator();
-     void testMenuNames();
-+    void testClientDestruction();
- };
- 
- #endif
-Index: kdeui/tests/kxmlgui_unittest.cpp
-===================================================================
---- kdeui/tests/kxmlgui_unittest.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/tests/kxmlgui_unittest.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -841,3 +841,25 @@
-     QVERIFY(reloadedXml.contains("<Action name=\"home\""));
-     QVERIFY(reloadedXml.contains("<ActionProperties>"));
- }
-+
-+void KXmlGui_UnitTest::testClientDestruction() { // #170806
-+    const QByteArray xml = 
-+        "<?xml version = '1.0'?>\n"
-+        "<!DOCTYPE gui SYSTEM \"kpartgui.dtd\">\n"
-+        "<gui version=\"1\" name=\"foo\" >\n"
-+        "<MenuBar>\n"
-+        " <Menu name=\"filemenu\"><text>File Menu</text></Menu>\n"
-+        "</MenuBar>\n"
-+        "</gui>";
-+
-+    TestXmlGuiWindow mainWindow(xml);
-+    TestGuiClient* client = new TestGuiClient(xml);
-+    mainWindow.insertChildClient(client);
-+    mainWindow.setAutoSaveSettings(false);
-+    mainWindow.createGUI();
-+
-+    QVERIFY(mainWindow.factory()->clients().contains(client));
-+    delete client;
-+    QVERIFY(!mainWindow.factory()->clients().contains(client));
-+}
-+
-Index: kdeui/xmlgui/kxmlguiwindow.cpp
-===================================================================
---- kdeui/xmlgui/kxmlguiwindow.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/xmlgui/kxmlguiwindow.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -123,6 +123,8 @@
- 
- KXmlGuiWindow::~KXmlGuiWindow()
+--- plasma/widgets/toolbutton.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ plasma/widgets/toolbutton.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -330,7 +330,7 @@
+                        const QStyleOptionGraphicsItem *option,
+                        QWidget *widget)
  {
-+    K_D(KXmlGuiWindow);
-+    delete d->factory;
- }
- 
- bool KXmlGuiWindow::event( QEvent* ev )
-Index: kdeui/xmlgui/kxmlguifactory.cpp
-===================================================================
---- kdeui/xmlgui/kxmlguifactory.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/xmlgui/kxmlguifactory.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -201,6 +201,9 @@
- 
- KXMLGUIFactory::~KXMLGUIFactory()
- {
-+    foreach (KXMLGUIClient *client, d->m_clients) {
-+        client->setFactory ( 0L );
-+    }
-     delete d;
- }
- 
-Index: kdeui/xmlgui/kxmlguiclient.cpp
-===================================================================
---- kdeui/xmlgui/kxmlguiclient.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/xmlgui/kxmlguiclient.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -92,9 +92,14 @@
- 
- KXMLGUIClient::~KXMLGUIClient()
- {
--  if ( d->m_parent )
-+  if ( d->m_parent ) {
-     d->m_parent->removeChildClient( this );
-+  }
- 
-+  if ( d->m_factory ) {
-+    d->m_factory->removeClient ( this );
-+  }
-+ 
-   foreach (KXMLGUIClient* client, d->m_children) {
-       assert( client->d->m_parent == this );
-       client->d->m_parent = 0;
-Index: kdeui/widgets/knuminput.cpp
-===================================================================
---- kdeui/widgets/knuminput.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/widgets/knuminput.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -178,7 +178,9 @@
+-    if (!styleSheet().isNull()) {
++    if (!styleSheet().isNull() || Theme::defaultTheme()->useNativeWidgetStyle()) {
+         QGraphicsProxyWidget::paint(painter, option, widget);
          return;
      }
- 
--    KNumInput* p = this;
-+    w2 = d->column2Width;
-+
-+    KNumInput* p = d->previousNumInput;
-     while (p) {
-         p->doLayout();
-         w1 = qMax(w1, p->d->column1Width);
-Index: kdeui/widgets/klineedit_p.h
+Index: plasma/widgets/scrollwidget.cpp
 ===================================================================
---- kdeui/widgets/klineedit_p.h	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/widgets/klineedit_p.h	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -186,6 +186,7 @@
-       m_overlap(0),
-       m_sentinel(false)
-   {
-+      setParent(parent);
-   }
- 
-   QStyle *style() const;
-Index: kdeui/itemviews/kcategorizedview.cpp
+--- plasma/widgets/scrollwidget.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ plasma/widgets/scrollwidget.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -1422,7 +1422,13 @@
+         d->stopAnimations();
+         d->adjustScrollbarsTimer->start(200);
+         updateGeometry();
+-        ensureItemVisible(d->widget.data());
++        if (d->widget.data()->size().width() < viewportGeometry().width() ||
++            d->widget.data()->size().height() < viewportGeometry().height()) {
++            d->widget.data()->setPos(d->minXExtent(),
++                                     d->minYExtent());
++        } else {
++            ensureItemVisible(d->widget.data());
++        }
+     } else if (watched == d->widget.data() && event->type() == QEvent::GraphicsSceneMove) {
+         d->horizontalScrollBar->blockSignals(true);
+         d->verticalScrollBar->blockSignals(true);
+Index: plasma/private/focusindicator.cpp
 ===================================================================
---- kdeui/itemviews/kcategorizedview.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/itemviews/kcategorizedview.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -364,11 +364,13 @@
+--- plasma/private/focusindicator.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ plasma/private/focusindicator.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -53,6 +53,7 @@
+ 
+ void FocusIndicator::init(QGraphicsWidget *parent)
  {
-     //Find the highest element in the last row
-     const QModelIndex lastIndex = proxyModel->index(block.firstIndex.row() + block.items.count() - 1, q->modelColumn(), q->rootIndex());
--    QModelIndex prevIndex = proxyModel->index(lastIndex.row(), q->modelColumn(), q->rootIndex());
--    QRect prevRect = q->visualRect(prevIndex);
-+    QRect prevRect = q->visualRect(lastIndex);
-     int res = prevRect.height();
-+    QModelIndex prevIndex = proxyModel->index(lastIndex.row() - 1, q->modelColumn(), q->rootIndex());
-+    if (!prevIndex.isValid()) {
-+        return res;
-+    }
-     Q_FOREVER {
--        prevIndex = proxyModel->index(prevIndex.row() - 1, q->modelColumn(), q->rootIndex());
-         const QRect tempRect = q->visualRect(prevIndex);
-         if (tempRect.topLeft().y() < prevRect.topLeft().y()) {
-             break;
-@@ -377,6 +379,7 @@
-         if (prevIndex == block.firstIndex) {
-             break;
-         }
-+        prevIndex = proxyModel->index(prevIndex.row() - 1, q->modelColumn(), q->rootIndex());
++    setVisible(!Theme::defaultTheme()->useNativeWidgetStyle());
+     setFlag(QGraphicsItem::ItemStacksBehindParent);
+     setAcceptsHoverEvents(true);
+ 
+@@ -121,7 +122,8 @@
+ 
+ bool FocusIndicator::eventFilter(QObject *watched, QEvent *event)
+ {
+-    if (static_cast<QGraphicsWidget *>(watched) != m_parent || !m_parent) {
++    if (Theme::defaultTheme()->useNativeWidgetStyle() ||
++        static_cast<QGraphicsWidget *>(watched) != m_parent || !m_parent ) {
+         return false;
      }
  
-     return res;
-Index: kdeui/itemviews/kmodelindexproxymapper.cpp
+@@ -274,6 +276,13 @@
+ 
+ void FocusIndicator::syncGeometry()
+ {
++    if (Theme::defaultTheme()->useNativeWidgetStyle()) {
++        hide();
++        return;
++    } else if (!isVisible()) {
++        show();
++    }
++
+     QRectF geom;
+     if (!m_customGeometry.isEmpty()) {
+         geom = m_customGeometry;
+Index: kdeui/windowmanagement/kwindowsystem_win.cpp
 ===================================================================
---- kdeui/itemviews/kmodelindexproxymapper.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/itemviews/kmodelindexproxymapper.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -179,9 +179,10 @@
+--- kdeui/windowmanagement/kwindowsystem_win.cpp	(.../tags/KDE/4.6.0/kdelibs)	(wersja 1219001)
++++ kdeui/windowmanagement/kwindowsystem_win.cpp	(.../branches/KDE/4.6/kdelibs)	(wersja 1219001)
+@@ -417,7 +417,17 @@
+     }
+ #endif
+     // Puts the window in front and activates it.
+-    SetForegroundWindow( win );
++    //to bring a window to the front while the user is active in a different apllication we
++    //have to atach our self to the current active window
++    HWND hwndActiveWin = GetForegroundWindow();
++    int  idActive      = GetWindowThreadProcessId(hwndActiveWin, NULL);
++    if ( AttachThreadInput(GetCurrentThreadId(), idActive, TRUE) )
++    {
++        SetForegroundWindow( win );
++        SetFocus( win ); 
++        AttachThreadInput(GetCurrentThreadId(), idActive, FALSE);
++    }
++    
  }
  
- // QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
--// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
-+// those out manually in a loop. Hopefully fixed in Qt 4.7.2, so we ifdef it out.
- // http://qt.gitorious.org/qt/qt/merge_requests/2474
--#if QT_VERSION < 0x040701
-+// http://qt.gitorious.org/qt/qt/merge_requests/831
-+#if QT_VERSION < 0x040702
- #define RANGE_FIX_HACK
- #endif
+ void KWindowSystem::demandAttention( WId win, bool set )
+@@ -548,7 +558,16 @@
  
-Index: kdeui/itemviews/klinkitemselectionmodel.cpp
-===================================================================
---- kdeui/itemviews/klinkitemselectionmodel.cpp	(.../tags/KDE/4.5.2/kdelibs)	(wersja 1188162)
-+++ kdeui/itemviews/klinkitemselectionmodel.cpp	(.../branches/KDE/4.5/kdelibs)	(wersja 1188162)
-@@ -92,9 +92,10 @@
+ void KWindowSystem::raiseWindow( WId win )
+ {
+-    SetWindowPos( win, HWND_TOP, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE ); // mhhh?
++
++    //to bring a window to the front while the user is active in a different apllication we
++    //have to atach our self to the current active window
++    HWND hwndActiveWin = GetForegroundWindow();
++    int  idActive      = GetWindowThreadProcessId(hwndActiveWin, NULL);
++    if ( AttachThreadInput(GetCurrentThreadId(), idActive, TRUE) )
++    {
++        SetForegroundWindow( win );
++        AttachThreadInput(GetCurrentThreadId(), idActive, FALSE);
++    }
  }
  
- // QAbstractProxyModel::mapSelectionFromSource creates invalid ranges to we filter
--// those out manually in a loop. Hopefully fixed in Qt 4.7.1, so we ifdef it out.
-+// those out manually in a loop. Hopefully fixed in Qt 4.7.2, so we ifdef it out.
- // http://qt.gitorious.org/qt/qt/merge_requests/2474
--#if QT_VERSION < 0x040701
-+// http://qt.gitorious.org/qt/qt/merge_requests/831
-+#if QT_VERSION < 0x040702
- #define RANGE_FIX_HACK
- #endif
- 
+ void KWindowSystem::lowerWindow( WId win )
 
 Zmiany atrybutów dla: .
 ___________________________________________________________________

@@ -3,7 +3,7 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.7.2
+%define		qtver		4.7.3
 %define		sopranover	2.5.63
 %define		phononver	4.5.0
 %define		atticaver	0.2.0
@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.6.4
+Version:	4.6.5
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	d38a8bf5b2002f9014727cec4395ba2a
+# Source0-md5:	8ca933c00bb5089e0793756e69bd1275
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch

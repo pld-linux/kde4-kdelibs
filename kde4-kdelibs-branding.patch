@@ -1,11 +1,10 @@
---- kio/kio/kprotocolmanager.cpp~	2011-01-19 23:09:45.000000000 +0100
-+++ kio/kio/kprotocolmanager.cpp	2011-01-21 13:37:18.484340455 +0100
-@@ -87,7 +87,7 @@
- QString::number(KDE::versionMajor()) % QL1C('.') % QString::number(KDE::versionMinor()) % \
- X % QL1S(") KHTML/") % \
- QString::number(KDE::versionMajor()) % QL1C('.') % QString::number(KDE::versionMinor()) % \
--QL1C('.') % QString::number(KDE::versionRelease()) % QL1S(" (like Gecko)")
-+QL1C('.') % QString::number(KDE::versionRelease()) % QL1S(" (like Gecko) PLDLINUX_VERSION")
- 
- #define PRIVATE_DATA \
- KProtocolManagerPrivate *d = kProtocolManagerPrivate
+--- kdelibs-4.7.0/kio/kio/kprotocolmanager.cpp~	2011-06-23 16:49:06.000000000 +0200
++++ kdelibs-4.7.0/kio/kio/kprotocolmanager.cpp	2011-07-23 20:34:53.446320740 +0200
+@@ -644,6 +644,7 @@
+     d->useragent += QString::number(KDE::versionMajor());
+     d->useragent += QL1C('.');
+     d->useragent += QString::number(KDE::versionMinor());
++    d->useragent += QL1S(" PLDLINUX_VERSION");
+   }
+   else
+   {

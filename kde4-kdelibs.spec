@@ -16,19 +16,18 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.6.5
+Version:	4.7.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	8ca933c00bb5089e0793756e69bd1275
+# Source0-md5:	1d12b9c32da28b38f64718cf10527e80
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
 Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
 Patch3:		%{name}-aboutPLD.patch
-Patch4:		%{name}-trunk.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -62,6 +61,7 @@ BuildRequires:	flex
 BuildRequires:	giflib-devel
 BuildRequires:	grantlee-devel >= 0.1.1
 BuildRequires:	heimdal-devel
+BuildRequires:	herqq-devel >= 1.0.0-2
 BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
@@ -91,7 +91,7 @@ BuildRequires:	qca-devel >= 2.0.0
 BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
-BuildRequires:	shared-desktop-ontologies-devel >= 0.5
+BuildRequires:	shared-desktop-ontologies-devel >= 0.7.1
 BuildRequires:	shared-mime-info >= 0.18
 BuildRequires:	soprano-devel >= %{sopranover}
 BuildRequires:	strigi-devel >= 0.7.0
@@ -231,11 +231,10 @@ KDE.
 %prep
 %setup -q -n %{orgname}-%{version}
 # %%patch100 -p0
-%patch0 -p0
+%patch0 -p1
 %patch1 -p0
 %patch2 -p0
 %patch3 -p1
-%patch4 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -306,6 +305,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4
 %attr(755,root,root) %{_bindir}/kdeinit4_shutdown
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
+%attr(755,root,root) %{_bindir}/kfilemetadatareader
 %attr(755,root,root) %{_bindir}/kjscmd
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
@@ -344,11 +344,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/khtml/kpartplugins
 %{_datadir}/apps/kjava/kjava.policy
 %{_datadir}/apps/kjava/pluginsinfo
-%{_datadir}/apps/ktexteditor_insertfile
-%{_datadir}/apps/ktexteditor_kdatatool
-%{_datadir}/apps/ktexteditor_exporter
-%{_datadir}/apps/ktexteditor_iconinserter
-%{_datadir}/apps/ktexteditor_insanehtml_le
 %{_datadir}/apps/proxyscout
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
@@ -364,8 +359,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/colors
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
-%{_datadir}/config/katemoderc
-%{_datadir}/config/katepartpluginsrc
 %{_datadir}/mime/packages/*
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services/*.desktop
@@ -392,7 +385,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/plasma/services/plasmoidservice.operations
 %{_datadir}/apps/plasma/services/storage.operations
 
-%{_datadir}/apps/katepart
 %{_datadir}/apps/kcm_componentchooser
 %{_datadir}/apps/kdeui
 %{_datadir}/apps/kdewidgets
@@ -417,8 +409,8 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
-%attr(755,root,root) %ghost %{_libdir}/libkatepartinterfaces.so.?
-%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so.*.*.*
+%attr(755,root,root) %{_libdir}/libkactivities.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkactivities.so.?
 %attr(755,root,root) %ghost %{_libdir}/libkcmutils.so.?
 %attr(755,root,root) %{_libdir}/libkcmutils.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkemoticons.so.?
@@ -429,6 +421,8 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkprintutils.so.*.*.*
 %attr(755,root,root) %{_libdir}/libkde3support.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkde3support.so.?
+%attr(755,root,root) %{_libdir}/libkdeclarative.so.*.*
+%attr(755,root,root) %ghost %{_libdir}/libkdeclarative.so.?
 %attr(755,root,root) %{_libdir}/libkdecore.so.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkdecore.so.?
 %attr(755,root,root) %{_libdir}/libkdefakes.so.*.*
@@ -524,7 +518,9 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
+%attr(755,root,root) %{_libdir}/libkactivities.so
 %attr(755,root,root) %{_libdir}/libkde3support.so
+%attr(755,root,root) %{_libdir}/libkdeclarative.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
 %attr(755,root,root) %{_libdir}/libkdefakes.so
 %attr(755,root,root) %{_libdir}/libkdesu.so
@@ -557,7 +553,6 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libsolid.so
 %attr(755,root,root) %{_libdir}/libthreadweaver.so
 %attr(755,root,root) %{_libdir}/libkdewebkit.so
-%attr(755,root,root) %{_libdir}/libkatepartinterfaces.so
 %attr(755,root,root) %{_libdir}/libkcmutils.so
 %attr(755,root,root) %{_libdir}/libkemoticons.so
 %attr(755,root,root) %{_libdir}/libkidletime.so
@@ -718,9 +713,11 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDataTool
 %{_includedir}/KDE/KDataToolAction
 %{_includedir}/KDE/KDataToolInfo
+%{_includedir}/KDE/KDateComboBox
 %{_includedir}/KDE/KDatePicker
 %{_includedir}/KDE/KDateTable
 %{_includedir}/KDE/KDateTime
+%{_includedir}/KDE/KDateTimeEdit
 %{_includedir}/KDE/KDateTimeWidget
 %{_includedir}/KDE/KDateValidator
 %{_includedir}/KDE/KDateWidget
@@ -757,6 +754,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFileItem
 %{_includedir}/KDE/KFileItemDelegate
 %{_includedir}/KDE/KFileItemList
+%{_includedir}/KDE/KFileMetaDataWidget
 %{_includedir}/KDE/KFileMetaInfo
 %{_includedir}/KDE/KFileMetaInfoGroup
 %{_includedir}/KDE/KFileMetaInfoItem
@@ -780,6 +778,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFontDialog
 %{_includedir}/KDE/KFontRequester
 %{_includedir}/KDE/KFontSizeAction
+%{_includedir}/KDE/KFontUtils
 %{_includedir}/KDE/KGenericFactory
 %{_includedir}/KDE/KGenericFactoryBase
 %{_includedir}/KDE/KGlobal
@@ -841,6 +840,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMessageBox
 %{_includedir}/KDE/KMessageBoxMessageHandler
 %{_includedir}/KDE/KMessageHandler
+%{_includedir}/KDE/KMessageWidget
 %{_includedir}/KDE/KMimeType
 %{_includedir}/KDE/KMimeTypeChooser
 %{_includedir}/KDE/KMimeTypeChooserDialog
@@ -861,6 +861,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KNSBookmarkImporterImpl
 %{_includedir}/KDE/KNTLM
 %{_includedir}/KDE/KNetwork
+%{_includedir}/KDE/KNewFileMenu
 %{_includedir}/KDE/KNotification
 %{_includedir}/KDE/KNotificationRestrictions
 %{_includedir}/KDE/KNotifyConfigWidget
@@ -910,6 +911,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPushButton
 %{_includedir}/KDE/KRandom
 %{_includedir}/KDE/KRandomSequence
+%{_includedir}/KDE/KRatingWidget
 %{_includedir}/KDE/KRecentDocument
 %{_includedir}/KDE/KRecentFilesAction
 %{_includedir}/KDE/KRemoteEncoding
@@ -921,6 +923,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KRuler
 %{_includedir}/KDE/KRun
 %{_includedir}/KDE/KSambaShare
+%{_includedir}/KDE/KSambaShareData
 %{_includedir}/KDE/KSaveFile
 %{_includedir}/KDE/KScanDialog
 %{_includedir}/KDE/KSelectAction
@@ -943,6 +946,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KShell
 %{_includedir}/KDE/KShellCompletion
 %{_includedir}/KDE/KShortcut
+%{_includedir}/KDE/KShortcutWidget
 %{_includedir}/KDE/KShortcutsDialog
 %{_includedir}/KDE/KShortcutsEditor
 %{_includedir}/KDE/KSocks
@@ -980,6 +984,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KTextBrowser
 %{_includedir}/KDE/KTextEdit
 %{_includedir}/KDE/KTextEditor
+%{_includedir}/KDE/KTimeComboBox
 %{_includedir}/KDE/KTimeZone
 %{_includedir}/KDE/KTimeZoneData
 %{_includedir}/KDE/KTimeZoneSource

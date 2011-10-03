@@ -3,7 +3,7 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.7.3
+%define		qtver		4.7.4
 %define		sopranover	2.5.63
 %define		phononver	4.5.0
 %define		atticaver	0.2.0
@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.7.1
-Release:	2
+Version:	4.7.2
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	eaeacc3c94501f343eb7c4ef74c7475b
+# Source0-md5:	abe4c8f848366bcab16c57bbaeb86f1f
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -407,6 +407,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/khtmlrc
 %{_datadir}/config/plasmoids.knsrc
 %{_datadir}/locale/all_languages
+%{_datadir}/locale/en_US/entry.desktop
 %{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave

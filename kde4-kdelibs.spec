@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.7.2
-Release:	2
+Version:	4.7.3
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	abe4c8f848366bcab16c57bbaeb86f1f
+# Source0-md5:	57fdc211995a6846b15dfdbf40a3e2e3
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -231,7 +231,7 @@ KDE.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-%patch100 -p1
+#%patch100 -p1
 %patch0 -p1
 %patch1 -p0
 %patch2 -p0
@@ -675,6 +675,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCharMacroExpander
 %{_includedir}/KDE/KCharSelect
 %{_includedir}/KDE/KCharsets
+%{_includedir}/KDE/KCheckableProxyModel
 %{_includedir}/KDE/KCmdLineArgs
 %{_includedir}/KDE/KCmdLineOptions
 %{_includedir}/KDE/KCodecs
@@ -1030,6 +1031,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUser
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
+%{_includedir}/KDE/KViewStateMaintainer
 %{_includedir}/KDE/KWallet
 %{_includedir}/KDE/KWebPage
 %{_includedir}/KDE/KWebPluginFactory

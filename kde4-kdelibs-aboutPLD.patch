@@ -4,7 +4,7 @@ diff -Nru kdelibs-4.5.5/CMakeLists.txt kdelibs-4.5.5.new//CMakeLists.txt
 @@ -14,6 +14,7 @@
  set (KDE_VERSION_RELEASE 5)
  set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
- set (KDE_VERSION_STRING "${KDE_VERSION} (4.7.2)")
+ set (KDE_VERSION_STRING "${KDE_VERSION} (4.7.3)")
 +exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
  
  set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )

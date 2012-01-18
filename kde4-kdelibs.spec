@@ -3,9 +3,9 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.7.4
-%define		sopranover	2.5.63
-%define		phononver	4.5.0
+%define		qtver		4.8.0
+%define		sopranover	2.7.0
+%define		phononver	4.5.1
 %define		atticaver	0.2.0
 
 Summary:	K Desktop Environment - libraries
@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.7.4
-Release:	3
+Version:	4.8.0
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	46baa210a6f5a0d6af4b7602a4b00994
+# Source0-md5:	c19858c68f9a209ae521d7fb3c34747b
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -412,8 +412,6 @@ rm -rf $RPM_BUILD_ROOT
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 
-%attr(755,root,root) %{_libdir}/libkactivities.so.*.*
-%attr(755,root,root) %ghost %{_libdir}/libkactivities.so.?
 %attr(755,root,root) %ghost %{_libdir}/libkcmutils.so.?
 %attr(755,root,root) %{_libdir}/libkcmutils.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libkemoticons.so.?
@@ -521,7 +519,6 @@ rm -rf $RPM_BUILD_ROOT
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/kconfig_compiler
-%attr(755,root,root) %{_libdir}/libkactivities.so
 %attr(755,root,root) %{_libdir}/libkde3support.so
 %attr(755,root,root) %{_libdir}/libkdeclarative.so
 %attr(755,root,root) %{_libdir}/libkdecore.so
@@ -726,6 +723,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDateValidator
 %{_includedir}/KDE/KDateWidget
 %{_includedir}/KDE/KDebug
+%{_includedir}/KDE/KDescendantsProxyModel
 %{_includedir}/KDE/KDesktopFile
 %{_includedir}/KDE/KDialog
 %{_includedir}/KDE/KDialogButtonBox

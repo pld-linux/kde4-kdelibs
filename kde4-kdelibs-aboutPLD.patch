@@ -1,14 +1,15 @@
 diff -Nru kdelibs-4.5.5/CMakeLists.txt kdelibs-4.5.5.new//CMakeLists.txt
 --- kdelibs-4.5.5/CMakeLists.txt	2011-01-04 14:45:04.000000000 +0100
 +++ kdelibs-4.5.5.new//CMakeLists.txt	2011-01-05 17:43:47.775500003 +0100
-@@ -14,6 +14,7 @@
- set (KDE_VERSION_RELEASE 5)
- set (KDE_VERSION "${KDE_VERSION_MAJOR}.${KDE_VERSION_MINOR}.${KDE_VERSION_RELEASE}" )
- set (KDE_VERSION_STRING "${KDE_VERSION} (4.7.4)")
+@@ -22,6 +22,8 @@
+ endif (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Debug")
+ set (KDE_DEFAULT_HOME ".kde${_KDE_DEFAULT_HOME_POSTFIX}" CACHE STRING "The default KDE home directory" )
+ 
 +exec_program ("/bin/cat" ARGS "/etc/pld-release" OUTPUT_VARIABLE PLD_VERSION_STRING)
- 
- set (KDE_DISTRIBUTION_TEXT "compiled sources" CACHE STRING "Indicate the distribution in bug reports" )
- 
++
+ # this must be before FindKDE4Internal in order to preset the result of the visibility test, so that it will be skipped
+ option(KHTML_BUILD_TESTREGRESSION "Build KHTML's testregression. Note: this disables hidden visibility")
+ # Disable visibility if testregression is built, because the symbols are needed then
 diff -Nru kdelibs-4.5.5/CreateKDELibsDependenciesFile.cmake kdelibs-4.5.5.new//CreateKDELibsDependenciesFile.cmake
 --- kdelibs-4.5.5/CreateKDELibsDependenciesFile.cmake	2010-02-20 12:32:37.000000000 +0100
 +++ kdelibs-4.5.5.new//CreateKDELibsDependenciesFile.cmake	2011-01-05 17:43:47.698500004 +0100
@@ -230,12 +231,13 @@ diff -Nru kdelibs-4.5.5/kdeui/widgets/khelpmenu.cpp kdelibs-4.5.5.new//kdeui/wid
  
      const KAboutData *mAboutData;
  };
-@@ -127,6 +131,7 @@
-     actions->addAction(KStandardAction::SwitchApplicationLanguage, this, SLOT(switchApplicationLanguage()));
-     actions->addAction(KStandardAction::AboutApp, this, SLOT(aboutApplication()));
-     actions->addAction(KStandardAction::AboutKDE, this, SLOT(aboutKDE()));
-+    actions->addAction(KStandardAction::AboutPLD, this, SLOT(aboutPLD()));
-   }
+@@ -140,6 +140,8 @@
+             actions->addAction(d->mAboutAppAction->objectName(), d->mAboutAppAction);
+         if (d->mAboutKDEAction)
+             actions->addAction(d->mAboutKDEAction->objectName(), d->mAboutKDEAction);
++        if (d->mAboutPLDAction)
++            actions->addAction(d->mAboutPLDAction->objectName(), d->mAboutPLDAction);
+     }
  }
  
 @@ -198,6 +203,11 @@

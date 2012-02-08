@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.8.0
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
@@ -104,7 +104,6 @@ BuildRequires:	xz-devel
 BuildRequires:	zlib-devel
 BuildConflicts:	kdelibs
 BuildConflicts:	kdelibs-devel
-BuildConflicts:	polkit-qt-devel
 Requires:	QtCore >= %{qtver}
 Requires:	attica >= %{atticaver}
 Requires:	ca-certificates

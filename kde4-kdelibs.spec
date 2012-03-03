@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.8.0
-Release:	5
+Version:	4.8.1
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.bz2
-# Source0-md5:	c19858c68f9a209ae521d7fb3c34747b
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/xz/%{orgname}-%{version}.tar.xz
+# Source0-md5:	0488ec7d753c3455876d9e3f76406292
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -29,7 +29,6 @@ Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
 Patch3:		%{name}-aboutPLD.patch
 Patch4:		%{name}-devicemanager_remove.patch
-Patch5:		kdelibs-4.8.0-xinelib12x.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -237,7 +236,6 @@ KDE.
 %patch2 -p0
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -637,6 +635,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KArchiveEntry
 %{_includedir}/KDE/KArchiveFile
 %{_includedir}/KDE/KArrowButton
+%{_includedir}/KDE/KAscii
 %{_includedir}/KDE/KAssistantDialog
 %{_includedir}/KDE/KAuth
 %{_includedir}/KDE/KAuthorized

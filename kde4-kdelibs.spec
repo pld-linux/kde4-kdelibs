@@ -109,6 +109,7 @@ Requires:	attica >= %{atticaver}
 Requires:	ca-certificates
 Requires:	hicolor-icon-theme
 Requires:	kde-common-dirs >= 0.5
+Requires:	libxml2-progs
 Requires:	phonon >= %{phononver}
 Requires:	setup >= 2.4.6-7
 Requires:	soprano >= %{sopranover}

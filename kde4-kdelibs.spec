@@ -20,7 +20,7 @@ Version:	4.8.1
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/xz/%{orgname}-%{version}.tar.xz
+Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
 # Source0-md5:	0488ec7d753c3455876d9e3f76406292
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff

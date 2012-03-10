@@ -198,6 +198,7 @@ Requires:	QtUiTools-devel >= %{qtver}
 Requires:	QtWebKit-devel >= %{qtver}
 Requires:	QtXml-devel >= %{qtver}
 Requires:	acl-devel
+Requires:	docbook-dtd42-xml
 Requires:	fam-devel
 Requires:	libart_lgpl-devel
 Requires:	libidn-devel
@@ -209,6 +210,7 @@ Requires:	xorg-lib-libXmu-devel
 Requires:	xorg-lib-libXt-devel
 Obsoletes:	kde4-kdelibs-experimental-devel
 Conflicts:	kdelibs-devel
+
 
 %description devel
 This package contains header files and development documentation for

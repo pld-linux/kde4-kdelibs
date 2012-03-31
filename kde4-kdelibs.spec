@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.8.1
-Release:	2
+Version:	4.8.2
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	0488ec7d753c3455876d9e3f76406292
+# Source0-md5:	e9dc9a76a785045642fb3098692618d2
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -251,6 +251,7 @@ sed -i -e 's#PLDLINUX_VERSION#PLD/3.0 (Th)#g' kio/kio/kprotocolmanager.cpp
 install -d build
 cd build
 %cmake \
+	-DASPELL_EXECUTABLE="%{_bindir}/aspell" \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \
 	-DDATA_INSTALL_DIR=%{_datadir}/apps \
 	-DKCFG_INSTALL_DIR=%{_datadir}/config.kcfg \

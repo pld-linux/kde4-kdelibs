@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.8.2
-Release:	2
+Version:	4.8.3
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	e9dc9a76a785045642fb3098692618d2
+# Source0-md5:	c4987c838164bd9ee2787e77243fe4a9
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -29,7 +29,6 @@ Patch1:		%{name}-cacert.patch
 Patch2:		%{name}-findlzmafix.patch
 Patch3:		%{name}-aboutPLD.patch
 Patch4:		%{name}-devicemanager_remove.patch
-Patch5:		kde4-kdelibs-bug-281360.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -240,7 +239,6 @@ KDE.
 %patch2 -p0
 %patch3 -p1
 %patch4 -p1
-%patch5 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -331,6 +329,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/kjscmd.1*
 %{_mandir}/man1/kross.1*
 %{_mandir}/man1/makekdewidgets.1*
+%{_mandir}/man1/preparetips.1*
 %{_mandir}/man7/kdeoptions.7*
 %{_mandir}/man7/qtoptions.7*
 %{_mandir}/man8/kbuildsycoca4.8*
@@ -564,6 +563,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_libdir}/libkprintutils.so
 
 %{_datadir}/apps/cmake
+%{_libdir}/cmake/KDeclarative
 %{_includedir}/KDE/ConversionCheck
 %{_includedir}/KDE/DNSSD
 %{_includedir}/KDE/DOM
@@ -922,6 +922,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KRatingWidget
 %{_includedir}/KDE/KRecentDocument
 %{_includedir}/KDE/KRecentFilesAction
+%{_includedir}/KDE/KRecursiveFilterProxyModel
 %{_includedir}/KDE/KRemoteEncoding
 %{_includedir}/KDE/KReplace
 %{_includedir}/KDE/KReplaceDialog
@@ -1117,3 +1118,5 @@ rm -rf $RPM_BUILD_ROOT
 %dir %{_includedir}/kunittest
 %{_includedir}/kunittest/*
 %{_includedir}/*.h
+
+%{_mandir}/man1/kconfig_compiler.1*

@@ -280,6 +280,7 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/apps/desktoptheme/default \
 	$RPM_BUILD_ROOT%{_datadir}/config/magic \
 	$RPM_BUILD_ROOT%{_datadir}/config.kcfg \
+	$RPM_BUILD_ROOT%{_datadir}/ontology/kde \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
@@ -301,6 +302,7 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(644,root,root,755)
 %dir %{_docdir}/kde
+%dir %{_datadir}/ontology/kde
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
 #%{_sysconfdir}/xdg/menus/applications.menu
 %attr(755,root,root) %{_bindir}/kjs

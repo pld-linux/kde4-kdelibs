@@ -282,6 +282,7 @@ install -d \
 	$RPM_BUILD_ROOT%{_datadir}/config.kcfg \
 	$RPM_BUILD_ROOT%{_datadir}/ontology/kde \
 	$RPM_BUILD_ROOT%{_datadir}/services/kconfiguredialog \
+	$RPM_BUILD_ROOT%{_datadir}/apps/plasma/packages \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 
@@ -389,6 +390,7 @@ rm -rf $RPM_BUILD_ROOT
 /etc/dbus-1/system.d/org.kde.auth.conf
 
 %dir %{_datadir}/apps/plasma
+%dir %{_datadir}/apps/plasma/packages
 %dir %{_datadir}/apps/plasma/services
 %{_datadir}/apps/plasma/services/dataengineservice.operations
 %{_datadir}/apps/plasma/services/plasmoidservice.operations

@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.9.1
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
@@ -686,6 +686,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCheckableProxyModel
 %{_includedir}/KDE/KCmdLineArgs
 %{_includedir}/KDE/KCmdLineOptions
+%{_includedir}/KDE/KCodecAction
 %{_includedir}/KDE/KCodecs
 %{_includedir}/KDE/KColor
 %{_includedir}/KDE/KColorButton

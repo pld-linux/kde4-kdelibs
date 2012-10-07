@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.9.1
-Release:	2
+Version:	4.9.2
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	d20b95b594a0df518f270dda0331f88c
+# Source0-md5:	421a0cb4e51db7d8eb6bb8aff508aeab
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -925,6 +925,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KPushButton
 %{_includedir}/KDE/KRandom
 %{_includedir}/KDE/KRandomSequence
+%{_includedir}/KDE/KRatingPainter
 %{_includedir}/KDE/KRatingWidget
 %{_includedir}/KDE/KRecentDocument
 %{_includedir}/KDE/KRecentFilesAction

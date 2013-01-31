@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.9.5
+Version:	4.10.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	2155d7ae075a1c7e9c6398b381c67177
+# Source0-md5:	189ccde8522a9d79fa0c7af1d8970215
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -316,8 +316,10 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kdeinit4_wrapper
 %attr(755,root,root) %{_bindir}/kfilemetadatareader
 %attr(755,root,root) %{_bindir}/kjscmd
+%attr(755,root,root) %{_bindir}/kmailservice
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
+%attr(755,root,root) %{_bindir}/ktelnetservice
 %attr(755,root,root) %{_bindir}/kwrapper4
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/meinproc4_simple
@@ -593,8 +595,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/K3DockWidgetAbstractHeaderDrag
 %{_includedir}/KDE/K3DockWidgetHeader
 %{_includedir}/KDE/K3DockWidgetHeaderDrag
-%{_includedir}/KDE/KFileItemActions
-%{_includedir}/KDE/KFileItemListProperties
 %{_includedir}/KDE/K3FileTreeView
 %{_includedir}/KDE/K3FileTreeViewItem
 %{_includedir}/KDE/K3Icon
@@ -611,9 +611,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/K3MultipleDrag
 %{_includedir}/KDE/K3NamedCommand
 %{_includedir}/KDE/K3PopupMenu
-%{_includedir}/KDE/K3ProcIO
 %{_includedir}/KDE/K3Process
 %{_includedir}/KDE/K3ProcessController
+%{_includedir}/KDE/K3ProcIO
 %{_includedir}/KDE/K3RFCDate
 %{_includedir}/KDE/K3ShellProcess
 %{_includedir}/KDE/K3Spell
@@ -627,12 +627,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/K3TextEdit
 %{_includedir}/KDE/K3URLDrag
 %{_includedir}/KDE/K3Wizard
-%{_includedir}/KDE/KACL
 %{_includedir}/KDE/KAboutApplicationDialog
 %{_includedir}/KDE/KAboutData
 %{_includedir}/KDE/KAboutPerson
-%{_includedir}/KDE/KAccelGen
 %{_includedir}/KDE/KAcceleratorManager
+%{_includedir}/KDE/KAccelGen
+%{_includedir}/KDE/KACL
 %{_includedir}/KDE/KAction
 %{_includedir}/KDE/KActionCategory
 %{_includedir}/KDE/KActionCollection
@@ -651,8 +651,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KAuth
 %{_includedir}/KDE/KAuthorized
 %{_includedir}/KDE/KAutoMount
-%{_includedir}/KDE/KAutoUnmount
+%{_includedir}/KDE/KAutoSaveFile
 %{_includedir}/KDE/KAutostart
+%{_includedir}/KDE/KAutoUnmount
 %{_includedir}/KDE/KBookmark
 %{_includedir}/KDE/KBookmarkAction
 %{_includedir}/KDE/KBookmarkActionInterface
@@ -666,17 +667,13 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KBookmarkManager
 %{_includedir}/KDE/KBookmarkMenu
 %{_includedir}/KDE/KBookmarkOwner
+%{_includedir}/KDE/KBreadcrumbSelectionModel
 %{_includedir}/KDE/KBugReport
 %{_includedir}/KDE/KBuildSycocaProgressDialog
 %{_includedir}/KDE/KButtonGroup
-%{_includedir}/KDE/KCModule
-%{_includedir}/KDE/KCModuleContainer
-%{_includedir}/KDE/KCModuleInfo
-%{_includedir}/KDE/KCModuleLoader
-%{_includedir}/KDE/KCModuleProxy
-%{_includedir}/KDE/KCMultiDialog
 %{_includedir}/KDE/KCalendarSystem
 %{_includedir}/KDE/KCalendarSystemFactory
+%{_includedir}/KDE/KCapacityBar
 %{_includedir}/KDE/KCategorizedSortFilterProxyModel
 %{_includedir}/KDE/KCategorizedView
 %{_includedir}/KDE/KCategoryDrawer
@@ -686,6 +683,12 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCheckableProxyModel
 %{_includedir}/KDE/KCmdLineArgs
 %{_includedir}/KDE/KCmdLineOptions
+%{_includedir}/KDE/KCModule
+%{_includedir}/KDE/KCModuleContainer
+%{_includedir}/KDE/KCModuleInfo
+%{_includedir}/KDE/KCModuleLoader
+%{_includedir}/KDE/KCModuleProxy
+%{_includedir}/KDE/KCMultiDialog
 %{_includedir}/KDE/KCodecAction
 %{_includedir}/KDE/KCodecs
 %{_includedir}/KDE/KColor
@@ -720,9 +723,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KCrashBookmarkImporterImpl
 %{_includedir}/KDE/KCurrencyCode
 %{_includedir}/KDE/KCursor
-%{_includedir}/KDE/KDBusServiceStarter
-%{_includedir}/KDE/KDEDModule
-%{_includedir}/KDE/KDEsuClient
 %{_includedir}/KDE/KDataTool
 %{_includedir}/KDE/KDataToolAction
 %{_includedir}/KDE/KDataToolInfo
@@ -734,11 +734,18 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDateTimeWidget
 %{_includedir}/KDE/KDateValidator
 %{_includedir}/KDE/KDateWidget
+%{_includedir}/KDE/kdbgstream
+%{_includedir}/KDE/KDBusServiceStarter
 %{_includedir}/KDE/KDebug
+%{_includedir}/KDE/KDEDModule
+%{_includedir}/KDE/KDEPrintDialog
 %{_includedir}/KDE/KDescendantsProxyModel
 %{_includedir}/KDE/KDesktopFile
+%{_includedir}/KDE/KDEsuClient
+%{_includedir}/KDE/KDeviceListModel
 %{_includedir}/KDE/KDialog
 %{_includedir}/KDE/KDialogButtonBox
+%{_includedir}/KDE/KDialogJobUiDelegate
 %{_includedir}/KDE/KDirLister
 %{_includedir}/KDE/KDirModel
 %{_includedir}/KDE/KDirNotify
@@ -751,10 +758,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KDoubleNumInput
 %{_includedir}/KDE/KDoubleValidator
 %{_includedir}/KDE/KDualAction
-%{_includedir}/KDE/KEMailSettings
 %{_includedir}/KDE/KEditListBox
 %{_includedir}/KDE/KEditListWidget
 %{_includedir}/KDE/KEditToolBar
+%{_includedir}/KDE/KEMailSettings
 %{_includedir}/KDE/KEmoticons
 %{_includedir}/KDE/KEmoticonsProvider
 %{_includedir}/KDE/KEmoticonsTheme
@@ -766,8 +773,10 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFileDialog
 %{_includedir}/KDE/KFileFilterCombo
 %{_includedir}/KDE/KFileItem
+%{_includedir}/KDE/KFileItemActions
 %{_includedir}/KDE/KFileItemDelegate
 %{_includedir}/KDE/KFileItemList
+%{_includedir}/KDE/KFileItemListProperties
 %{_includedir}/KDE/KFileMetaDataWidget
 %{_includedir}/KDE/KFileMetaInfo
 %{_includedir}/KDE/KFileMetaInfoGroup
@@ -780,6 +789,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KFileTreeBranch
 %{_includedir}/KDE/KFileTreeView
 %{_includedir}/KDE/KFileWidget
+%{_includedir}/KDE/KFileWritePlugin
 %{_includedir}/KDE/KFilterBase
 %{_includedir}/KDE/KFilterDev
 %{_includedir}/KDE/KFilterProxySearchLine
@@ -798,22 +808,19 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KGlobal
 %{_includedir}/KDE/KGlobalAccel
 %{_includedir}/KDE/KGlobalSettings
+%{_includedir}/KDE/KGlobalShortcutInfo
 %{_includedir}/KDE/KGradientSelector
 %{_includedir}/KDE/KGraphicsWebView
 %{_includedir}/KDE/KGuiItem
 %{_includedir}/KDE/KHBox
 %{_includedir}/KDE/KHE
+%{_includedir}/KDE/KHelpMenu
+%{_includedir}/KDE/KHistoryComboBox
+%{_includedir}/KDE/khtml
 %{_includedir}/KDE/KHTMLPart
 %{_includedir}/KDE/KHTMLSettings
 %{_includedir}/KDE/KHTMLView
-%{_includedir}/KDE/KHelpMenu
-%{_includedir}/KDE/KHistoryComboBox
 %{_includedir}/KDE/KHueSaturationSelector
-%{_includedir}/KDE/KIEBookmarkExporterImpl
-%{_includedir}/KDE/KIEBookmarkImporter
-%{_includedir}/KDE/KIEBookmarkImporterImpl
-%{_includedir}/KDE/KIMProxy
-%{_includedir}/KDE/KIO
 %{_includedir}/KDE/KIcon
 %{_includedir}/KDE/KIconButton
 %{_includedir}/KDE/KIconCanvas
@@ -821,15 +828,22 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KIconEffect
 %{_includedir}/KDE/KIconLoader
 %{_includedir}/KDE/KIconTheme
+%{_includedir}/KDE/KIdentityProxyModel
 %{_includedir}/KDE/KIdleTime
+%{_includedir}/KDE/KIEBookmarkExporterImpl
+%{_includedir}/KDE/KIEBookmarkImporter
+%{_includedir}/KDE/KIEBookmarkImporterImpl
 %{_includedir}/KDE/KImageCache
 %{_includedir}/KDE/KImageFilePreview
 %{_includedir}/KDE/KImageIO
+%{_includedir}/KDE/KIMProxy
 %{_includedir}/KDE/KInputDialog
 %{_includedir}/KDE/KIntNumInput
 %{_includedir}/KDE/KIntSpinBox
 %{_includedir}/KDE/KIntValidator
+%{_includedir}/KDE/KIO
 %{_includedir}/KDE/KJob
+%{_includedir}/KDE/KJobTrackerInterface
 %{_includedir}/KDE/KJobUiDelegate
 %{_includedir}/KDE/KKeySequenceWidget
 %{_includedir}/KDE/KLanguageButton
@@ -838,15 +852,17 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KLibLoader
 %{_includedir}/KDE/KLibrary
 %{_includedir}/KDE/KLineEdit
+%{_includedir}/KDE/KLinkItemSelectionModel
 %{_includedir}/KDE/KListWidget
 %{_includedir}/KDE/KListWidgetSearchLine
 %{_includedir}/KDE/KLocale
+%{_includedir}/KDE/KLocalizedDate
 %{_includedir}/KDE/KLocalizedString
 %{_includedir}/KDE/KLockFile
-%{_includedir}/KDE/KMD5
 %{_includedir}/KDE/KMacroExpanderBase
 %{_includedir}/KDE/KMainWindow
 %{_includedir}/KDE/KMakeTypeList
+%{_includedir}/KDE/KMD5
 %{_includedir}/KDE/KMediaPlayer
 %{_includedir}/KDE/KMenu
 %{_includedir}/KDE/KMenuBar
@@ -861,26 +877,33 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KMimeTypeResolver
 %{_includedir}/KDE/KMimeTypeTrader
 %{_includedir}/KDE/KMimeTypeValidator
+%{_includedir}/KDE/KModelIndexProxyMapper
 %{_includedir}/KDE/KModifierKeyInfo
+%{_includedir}/KDE/KMountPoint
 %{_includedir}/KDE/KMozillaBookmarkImporterImpl
 %{_includedir}/KDE/KMultiTabBar
 %{_includedir}/KDE/KMultiTabBarButton
 %{_includedir}/KDE/KMultiTabBarTab
+%{_includedir}/KDE/KNameAndUrlInputDialog
+%{_includedir}/KDE/kndbgstream
+%{_includedir}/KDE/KNetwork
+%{_includedir}/KDE/KNewFileMenu
+%{_includedir}/KDE/KNewPasswordDialog
 %{_includedir}/KDE/KNFSShare
-%{_includedir}/KDE/KNS3
+%{_includedir}/KDE/KNotification
+%{_includedir}/KDE/KNotificationRestrictions
+%{_includedir}/KDE/KNotifyConfigWidget
 %{_includedir}/KDE/KNS
+%{_includedir}/KDE/KNS3
 %{_includedir}/KDE/KNSBookmarkExporter
 %{_includedir}/KDE/KNSBookmarkExporterImpl
 %{_includedir}/KDE/KNSBookmarkImporter
 %{_includedir}/KDE/KNSBookmarkImporterImpl
 %{_includedir}/KDE/KNTLM
-%{_includedir}/KDE/KNetwork
-%{_includedir}/KDE/KNewFileMenu
-%{_includedir}/KDE/KNotification
-%{_includedir}/KDE/KNotificationRestrictions
-%{_includedir}/KDE/KNotifyConfigWidget
 %{_includedir}/KDE/KNumInput
 %{_includedir}/KDE/KOCRDialog
+%{_includedir}/KDE/KonqBookmarkMenu
+%{_includedir}/KDE/KonqBookmarkOwner
 %{_includedir}/KDE/KOpenWithDialog
 %{_includedir}/KDE/KOperaBookmarkExporterImpl
 %{_includedir}/KDE/KOperaBookmarkImporter
@@ -930,12 +953,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KRecentDocument
 %{_includedir}/KDE/KRecentFilesAction
 %{_includedir}/KDE/KRecursiveFilterProxyModel
+%{_includedir}/KDE/KRegExpEditorInterface
 %{_includedir}/KDE/KRemoteEncoding
 %{_includedir}/KDE/KReplace
 %{_includedir}/KDE/KReplaceDialog
 %{_includedir}/KDE/KRestrictedLine
 %{_includedir}/KDE/KRichTextEdit
 %{_includedir}/KDE/KRichTextWidget
+%{_includedir}/KDE/Kross
 %{_includedir}/KDE/KRuler
 %{_includedir}/KDE/KRun
 %{_includedir}/KDE/KSambaShare
@@ -949,6 +974,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KSelector
 %{_includedir}/KDE/KSeparator
 %{_includedir}/KDE/KService
+%{_includedir}/KDE/KServiceAction
 %{_includedir}/KDE/KServiceGroup
 %{_includedir}/KDE/KServiceType
 %{_includedir}/KDE/KServiceTypeProfile
@@ -962,9 +988,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KShell
 %{_includedir}/KDE/KShellCompletion
 %{_includedir}/KDE/KShortcut
-%{_includedir}/KDE/KShortcutWidget
 %{_includedir}/KDE/KShortcutsDialog
 %{_includedir}/KDE/KShortcutsEditor
+%{_includedir}/KDE/KShortcutWidget
 %{_includedir}/KDE/KSocks
 %{_includedir}/KDE/KSortableItem
 %{_includedir}/KDE/KSortableList
@@ -979,6 +1005,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KStartupInfoData
 %{_includedir}/KDE/KStartupInfoId
 %{_includedir}/KDE/KStatusBar
+%{_includedir}/KDE/KStatusBarJobTracker
+%{_includedir}/KDE/KStatusBarOfflineIndicator
 %{_includedir}/KDE/KStatusNotifierItem
 %{_includedir}/KDE/KStringHandler
 %{_includedir}/KDE/KStringListValidator
@@ -989,8 +1017,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KSycocaEntry
 %{_includedir}/KDE/KSystemEventFilter
 %{_includedir}/KDE/KSystemTimeZone
-%{_includedir}/KDE/KSystemTimeZoneSource
 %{_includedir}/KDE/KSystemTimeZones
+%{_includedir}/KDE/KSystemTimeZoneSource
 %{_includedir}/KDE/KSystemTrayIcon
 %{_includedir}/KDE/KTabBar
 %{_includedir}/KDE/KTabWidget
@@ -1003,9 +1031,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KTimeComboBox
 %{_includedir}/KDE/KTimeZone
 %{_includedir}/KDE/KTimeZoneData
+%{_includedir}/KDE/KTimeZones
 %{_includedir}/KDE/KTimeZoneSource
 %{_includedir}/KDE/KTimeZoneWidget
-%{_includedir}/KDE/KTimeZones
 %{_includedir}/KDE/KTipDatabase
 %{_includedir}/KDE/KTipDialog
 %{_includedir}/KDE/KTitleWidget
@@ -1044,36 +1072,36 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/KUserGroup
 %{_includedir}/KDE/KVBox
 %{_includedir}/KDE/KViewStateMaintainer
+%{_includedir}/KDE/KViewStateSaver
 %{_includedir}/KDE/KWallet
 %{_includedir}/KDE/KWebPage
 %{_includedir}/KDE/KWebPluginFactory
-%{_includedir}/KDE/KWebWallet
 %{_includedir}/KDE/KWebView
+%{_includedir}/KDE/KWebWallet
 %{_includedir}/KDE/KWidgetItemDelegate
+%{_includedir}/KDE/KWidgetJobTracker
 %{_includedir}/KDE/KWindowInfo
 %{_includedir}/KDE/KWindowSystem
 %{_includedir}/KDE/KWordMacroExpander
 %{_includedir}/KDE/KWordWrap
 %{_includedir}/KDE/KXBELBookmarkImporterImpl
 %{_includedir}/KDE/KXErrorHandler
+%{_includedir}/KDE/KXMessages
 %{_includedir}/KDE/KXMLGUIBuilder
 %{_includedir}/KDE/KXMLGUIClient
 %{_includedir}/KDE/KXMLGUIFactory
-%{_includedir}/KDE/KXMessages
-%{_includedir}/KDE/KXYSelector
 %{_includedir}/KDE/KXmlGuiWindow
+%{_includedir}/KDE/KXYSelector
 %{_includedir}/KDE/KZip
 %{_includedir}/KDE/KZipFileEntry
 %{_includedir}/KDE/KZoneAllocator
-%{_includedir}/KDE/KonqBookmarkMenu
-%{_includedir}/KDE/KonqBookmarkOwner
-%{_includedir}/KDE/Kross
+%{_includedir}/KDE/Nepomuk
 %{_includedir}/KDE/NET
 %{_includedir}/KDE/NETRootInfo
 %{_includedir}/KDE/NETWinInfo
-%{_includedir}/KDE/Nepomuk
 %{_includedir}/KDE/OrgKdeKDirNotifyInterface
 %{_includedir}/KDE/OrgKdeKLauncherInterface
+%{_includedir}/KDE/Plasma
 %{_includedir}/KDE/PtyProcess
 %{_includedir}/KDE/Solid
 %{_includedir}/KDE/Sonnet
@@ -1082,10 +1110,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/SuProcess
 %{_includedir}/KDE/ThreadWeaver
 %{_includedir}/KDE/ThumbCreator
-%{_includedir}/KDE/kdbgstream
-%{_includedir}/KDE/khtml
-%{_includedir}/KDE/kndbgstream
-%{_includedir}/KDE/Plasma
 %dir %{_includedir}/plasma
 %{_includedir}/plasma/*
 %dir %{_includedir}/dnssd

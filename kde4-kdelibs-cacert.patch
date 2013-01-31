@@ -10,16 +10,15 @@
  
      if (qsl.isEmpty()) {
          errors << KSSLCertificate::NoCARoot;
-@@ -671,7 +672,7 @@
+@@ -672,7 +672,7 @@
  
      for (QStringList::ConstIterator j = qsl.begin(); j != qsl.end(); ++j) {
          KDE_struct_stat sb;
 -        QString _j = (*j) + "ca-bundle.crt";
 +        QString _j = (*j) + "ca-certificates.crt";
-         if (-1 == KDE_stat(_j.toAscii().constData(), &sb)) {
+         if (-1 == KDE_stat(_j.toLatin1().constData(), &sb)) {
              continue;
          }
-
 --- kdecore/network/ksslcertificatemanager.cpp~	2011-01-19 23:10:03.000000000 +0100
 +++ kdecore/network/ksslcertificatemanager.cpp	2011-01-23 00:17:42.071601281 +0100
 @@ -224,6 +224,7 @@

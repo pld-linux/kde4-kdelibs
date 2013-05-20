@@ -1,0 +1,241 @@
+From: Kai Uwe Broulik <kde@privat.broulik.de>
+Date: Mon, 13 May 2013 15:34:27 +0000
+Subject: Add support for the Power Supply property of UPower which indicates if a battery
+X-Git-Url: http://quickgit.kde.org/?p=kdelibs.git&a=commitdiff&h=b86adffd69a972f612e0fb00f8c4e8154142c730
+---
+Add support for the Power Supply property of UPower which indicates if a battery
+is actually powering the machine (ie. laptop battery) or just reported by one
+of your peripherals (eg. mouse, keyboard).
+This will eventually allow other parties such as the battery notifier to disregard
+them when calculating overall battery percentage or PowerDevil to notify about
+
+REVIEW: 110384
+CCBUG: 300787
+---
+
+
+--- a/solid/solid/backends/fakehw/fakebattery.cpp
++++ b/solid/solid/backends/fakehw/fakebattery.cpp
+@@ -90,6 +90,11 @@
+     return fakeDevice()->property("isRechargeable").toBool();
+ }
+ 
++bool FakeBattery::isPowerSupply() const
++{
++    return fakeDevice()->property("isPowerSupply").toBool();
++}
++
+ Solid::Battery::ChargeState FakeBattery::chargeState() const
+ {
+     QString state = fakeDevice()->property("chargeState").toString();
+
+--- a/solid/solid/backends/fakehw/fakebattery.h
++++ b/solid/solid/backends/fakehw/fakebattery.h
+@@ -46,6 +46,7 @@
+     virtual int chargePercent() const;
+ 
+     virtual bool isRechargeable() const;
++    virtual bool isPowerSupply() const;
+     virtual Solid::Battery::ChargeState chargeState() const;
+ 
+     void setChargeState(Solid::Battery::ChargeState newState);
+
+--- a/solid/solid/backends/fakehw/fakecomputer.xml
++++ b/solid/solid/backends/fakehw/fakecomputer.xml
+@@ -32,9 +32,22 @@
+             <property key="voltageUnit">mV</property>
+             <property key="voltage">11999</property>
+             <property key="isRechargeable">true</property>
++            <property key="isPowerSupply">true</property>
+             <property key="chargeState">discharging</property>
+         </device>
+-
++        <device udi="/org/kde/solid/fakehw/acpi_BAT1">
++            <property key="name">Miraculous Mouse</property>
++            <property key="vendor">Orange Inc.</property>
++            <property key="interfaces">Battery</property>
++            <property key="parent">/org/kde/solid/fakehw/computer</property>
++            <property key="isPluged">false</property>
++            <property key="batteryType">mouse</property>
++            <!-- Battery properties beyond charge percentage are only reported by UPower
++                 for primary batteries, not for other batteries like this mouse -->
++            <property key="isRechargeable">true</property>
++            <property key="isPowerSupply">true</property>
++            <property key="chargeState">discharging</property>
++        </device>
+ 
+ 
+         <!-- So that it looks like a laptop,
+
+--- a/solid/solid/backends/hal/halbattery.cpp
++++ b/solid/solid/backends/hal/halbattery.cpp
+@@ -88,6 +88,17 @@
+     return m_device->prop("battery.is_rechargeable").toBool();
+ }
+ 
++bool Battery::isPowerSupply() const
++{
++    // NOTE Hal doesn't support the is power supply property, so we're assuming that primary
++    // and UPS batteries are power supply and all the others are not
++    if (type() == Solid::Battery::PrimaryBattery || type() == Solid::Battery::UpsBattery) {
++      return true;
++    }
++
++    return false;
++}
++
+ Solid::Battery::ChargeState Battery::chargeState() const
+ {
+     bool charging = m_device->prop("battery.rechargeable.is_charging").toBool();
+
+--- a/solid/solid/backends/hal/halbattery.h
++++ b/solid/solid/backends/hal/halbattery.h
+@@ -45,12 +45,14 @@
+     virtual int chargePercent() const;
+ 
+     virtual bool isRechargeable() const;
++    virtual bool isPowerSupply() const;
+     virtual Solid::Battery::ChargeState chargeState() const;
+ 
+ Q_SIGNALS:
+     void chargePercentChanged(int value, const QString &udi);
+     void chargeStateChanged(int newState, const QString &udi);
+     void plugStateChanged(bool newState, const QString &udi);
++    void powerSupplyStateChanged(bool newState, const QString &udi); // dummy
+ 
+ private Q_SLOTS:
+     void slotPropertyChanged(const QMap<QString,int> &changes);
+
+--- a/solid/solid/backends/upower/upowerbattery.cpp
++++ b/solid/solid/backends/upower/upowerbattery.cpp
+@@ -83,6 +83,11 @@
+     return m_device.data()->prop("IsRechargeable").toBool();
+ }
+ 
++bool Battery::isPowerSupply() const
++{
++    return m_device.data()->prop("PowerSupply").toBool();
++}
++
+ Solid::Battery::ChargeState Battery::chargeState() const
+ {
+     Solid::Battery::ChargeState result = Solid::Battery::NoCharge;
+@@ -116,6 +121,7 @@
+         const bool old_isPlugged = m_isPlugged;
+         const int old_chargePercent = m_chargePercent;
+         const Solid::Battery::ChargeState old_chargeState = m_chargeState;
++        const bool old_isPowerSupply = m_isPowerSupply;
+         updateCache();
+ 
+         if (old_chargePercent != m_chargePercent)
+@@ -132,6 +138,11 @@
+         {
+             emit plugStateChanged(m_isPlugged, m_device.data()->udi());
+         }
++
++        if (old_isPowerSupply != m_isPowerSupply)
++        {
++            emit powerSupplyStateChanged(m_isPowerSupply, m_device.data()->udi());
++        }
+     }
+ }
+ 
+@@ -140,6 +151,7 @@
+     m_isPlugged = isPlugged();
+     m_chargePercent = chargePercent();
+     m_chargeState = chargeState();
++    m_isPowerSupply = isPowerSupply();
+ }
+ 
+ #include "backends/upower/upowerbattery.moc"
+
+--- a/solid/solid/backends/upower/upowerbattery.h
++++ b/solid/solid/backends/upower/upowerbattery.h
+@@ -46,6 +46,7 @@
+     virtual int chargePercent() const;
+ 
+     virtual bool isRechargeable() const;
++    virtual bool isPowerSupply() const;
+     virtual Solid::Battery::ChargeState chargeState() const;
+ 
+     // TODO report stuff like capacity, technology, time-to-full, time-to-empty, energy rates, vendor, etc.
+@@ -54,6 +55,7 @@
+     void chargePercentChanged(int value, const QString &udi);
+     void chargeStateChanged(int newState, const QString &udi);
+     void plugStateChanged(bool newState, const QString &udi);
++    void powerSupplyStateChanged(bool newState, const QString &udi);
+ 
+ private Q_SLOTS:
+     void slotChanged();
+@@ -64,6 +66,7 @@
+     bool m_isPlugged;
+     int m_chargePercent;
+     Solid::Battery::ChargeState m_chargeState;
++    bool m_isPowerSupply;
+ };
+ }
+ }
+
+--- a/solid/solid/backends/upower/upowerdevice.cpp
++++ b/solid/solid/backends/upower/upowerdevice.cpp
+@@ -83,7 +83,7 @@
+         case Solid::DeviceInterface::GenericInterface:
+             return true;
+         case Solid::DeviceInterface::Battery:
+-            return (uptype == 2 || uptype == 3 || uptype == 5 || uptype == 6);
++            return (uptype == 2 || uptype == 3 || uptype == 5 || uptype == 6 || uptype == 7 || uptype == 8);
+         case Solid::DeviceInterface::AcAdapter:
+             return (uptype == 1);
+         default:
+
+--- a/solid/solid/battery.cpp
++++ b/solid/solid/battery.cpp
+@@ -48,6 +48,12 @@
+     return_SOLID_CALL(Ifaces::Battery *, d->backendObject(), false, isPlugged());
+ }
+ 
++bool Solid::Battery::isPowerSupply() const
++{
++    Q_D(const Battery);
++    return_SOLID_CALL(Ifaces::Battery *, d->backendObject(), true, isPowerSupply());
++}
++
+ Solid::Battery::BatteryType Solid::Battery::type() const
+ {
+     Q_D(const Battery);
+
+--- a/solid/solid/battery.h
++++ b/solid/solid/battery.h
+@@ -110,6 +110,14 @@
+         bool isPlugged() const;
+ 
+         /**
++         * Indicates if this battery is powering the machine or from an attached deviced.
++         *
++         * @since 4.11
++         * @return true the battery is a powersupply, false otherwise
++         */
++        bool isPowerSupply() const;
++
++        /**
+          * Retrieves the type of device holding this battery.
+          *
+          * @return the type of device holding this battery
+
+--- a/solid/solid/ifaces/battery.h
++++ b/solid/solid/ifaces/battery.h
+@@ -75,6 +75,13 @@
+         virtual bool isRechargeable() const = 0;
+ 
+         /**
++         * Indicates if the battery is powering the machine.
++         *
++         * @return true if the battery is powersupply, false otherwise
++         */
++        virtual bool isPowerSupply() const = 0;
++
++        /**
+          * Retrieves the current charge state of the battery. It can be in a stable
+          * state (no charge), charging or discharging.
+          *
+

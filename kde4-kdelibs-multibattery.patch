@@ -239,3 +239,285 @@ CCBUG: 300787
           * state (no charge), charging or discharging.
           *
 
+From: Kai Uwe Broulik <kde@privat.broulik.de>
+Date: Tue, 04 Jun 2013 13:21:35 +0000
+Subject: Add missing Q_PROPERTY
+X-Git-Url: http://quickgit.kde.org/?p=kdelibs.git&a=commitdiff&h=0a53c75a44e2e7106490b37c2fff6ad247390f2a
+---
+Add missing Q_PROPERTY
+---
+
+
+--- a/solid/solid/battery.h
++++ b/solid/solid/battery.h
+@@ -38,6 +38,7 @@
+         Q_OBJECT
+         Q_ENUMS(BatteryType ChargeState)
+         Q_PROPERTY(bool plugged READ isPlugged)
++        Q_PROPERTY(bool powerSupply READ isPowerSupply)
+         Q_PROPERTY(BatteryType type READ type)
+         Q_PROPERTY(int chargePercent READ chargePercent)
+         Q_PROPERTY(bool rechargeable READ isRechargeable)
+
+From: Kai Uwe Broulik <kde@privat.broulik.de>
+Date: Tue, 04 Jun 2013 13:25:43 +0000
+Subject: Add missing signal connection
+X-Git-Url: http://quickgit.kde.org/?p=kdelibs.git&a=commitdiff&h=076f57e7d38315bd965d139908b8b397d363fd18
+---
+Add missing signal connection
+---
+
+
+--- a/solid/solid/battery.cpp
++++ b/solid/solid/battery.cpp
+@@ -35,6 +35,9 @@
+ 
+     connect(backendObject, SIGNAL(plugStateChanged(bool,QString)),
+              this, SIGNAL(plugStateChanged(bool,QString)));
++
++    connect(backendObject, SIGNAL(powerSupplyStateChanged(bool,QString)),
++             this, SIGNAL(powerSupplyStateChanged(bool,QString)));
+ }
+ 
+ Solid::Battery::~Battery()
+
+From: Kai Uwe Broulik <kde@privat.broulik.de>
+Date: Tue, 04 Jun 2013 13:40:16 +0000
+Subject: Add support for battery capacity
+X-Git-Url: http://quickgit.kde.org/?p=kdelibs.git&a=commitdiff&h=2f674db466ead221afc29da0022e2c7ccf59c36e
+---
+Add support for battery capacity
+
+REVIEW: 110607
+---
+
+
+--- a/solid/solid/backends/fakehw/fakebattery.cpp
++++ b/solid/solid/backends/fakehw/fakebattery.cpp
+@@ -85,6 +85,16 @@
+     return percent;
+ }
+ 
++int FakeBattery::capacity() const
++{
++    int last_full = fakeDevice()->property("lastFullLevel").toInt();
++    int max = fakeDevice()->property("maxLevel").toInt();
++
++    int percent = (100 * last_full) / max;
++
++    return percent;
++}
++
+ bool FakeBattery::isRechargeable() const
+ {
+     return fakeDevice()->property("isRechargeable").toBool();
+
+--- a/solid/solid/backends/fakehw/fakebattery.h
++++ b/solid/solid/backends/fakehw/fakebattery.h
+@@ -44,6 +44,7 @@
+     virtual Solid::Battery::BatteryType type() const;
+ 
+     virtual int chargePercent() const;
++    virtual int capacity() const;
+ 
+     virtual bool isRechargeable() const;
+     virtual bool isPowerSupply() const;
+
+--- a/solid/solid/backends/hal/halbattery.cpp
++++ b/solid/solid/backends/hal/halbattery.cpp
+@@ -83,6 +83,14 @@
+     return m_device->prop("battery.charge_level.percentage").toInt();
+ }
+ 
++int Battery::capacity() const
++{
++    const qreal lastFull = m_device->prop("battery.charge_level.last_full").toDouble();
++    const qreal designFull = m_device->prop("battery.charge_level.design").toDouble();
++
++    return lastFull / designFull;
++}
++
+ bool Battery::isRechargeable() const
+ {
+     return m_device->prop("battery.is_rechargeable").toBool();
+@@ -125,6 +133,12 @@
+         emit chargePercentChanged(chargePercent(), m_device->udi());
+     }
+ 
++    if (changes.contains("battery.charge_level.last_full")
++           || changes.contains("battery.charge_level.design"))
++    {
++        emit capacityChanged(capacity(), m_device->udi());
++    }
++
+     if (changes.contains("battery.rechargeable.is_charging")
+            || changes.contains("battery.rechargeable.is_discharging"))
+     {
+
+--- a/solid/solid/backends/hal/halbattery.h
++++ b/solid/solid/backends/hal/halbattery.h
+@@ -43,6 +43,7 @@
+     virtual Solid::Battery::BatteryType type() const;
+ 
+     virtual int chargePercent() const;
++    virtual int capacity() const;
+ 
+     virtual bool isRechargeable() const;
+     virtual bool isPowerSupply() const;
+@@ -50,6 +51,7 @@
+ 
+ Q_SIGNALS:
+     void chargePercentChanged(int value, const QString &udi);
++    void capacityChanged(int value, const QString &udi);
+     void chargeStateChanged(int newState, const QString &udi);
+     void plugStateChanged(bool newState, const QString &udi);
+     void powerSupplyStateChanged(bool newState, const QString &udi); // dummy
+
+--- a/solid/solid/backends/upower/upowerbattery.cpp
++++ b/solid/solid/backends/upower/upowerbattery.cpp
+@@ -78,6 +78,11 @@
+     return qRound(m_device.data()->prop("Percentage").toDouble());
+ }
+ 
++int Battery::capacity() const
++{
++    return m_device.data()->prop("Capacity").toDouble();
++}
++
+ bool Battery::isRechargeable() const
+ {
+     return m_device.data()->prop("IsRechargeable").toBool();
+@@ -118,15 +123,20 @@
+ void Battery::slotChanged()
+ {
+     if (m_device) {
++        const int old_chargePercent = m_chargePercent;
++        const int old_capacity = m_capacity;
++        const Solid::Battery::ChargeState old_chargeState = m_chargeState;
+         const bool old_isPlugged = m_isPlugged;
+-        const int old_chargePercent = m_chargePercent;
+-        const Solid::Battery::ChargeState old_chargeState = m_chargeState;
+         const bool old_isPowerSupply = m_isPowerSupply;
+         updateCache();
+ 
+         if (old_chargePercent != m_chargePercent)
+         {
+             emit chargePercentChanged(m_chargePercent, m_device.data()->udi());
++        }
++
++        if (old_capacity != m_capacity) {
++            emit capacityChanged(m_capacity, m_device.data()->udi());
+         }
+ 
+         if (old_chargeState != m_chargeState)
+@@ -150,6 +160,7 @@
+ {
+     m_isPlugged = isPlugged();
+     m_chargePercent = chargePercent();
++    m_capacity = capacity();
+     m_chargeState = chargeState();
+     m_isPowerSupply = isPowerSupply();
+ }
+
+--- a/solid/solid/backends/upower/upowerbattery.h
++++ b/solid/solid/backends/upower/upowerbattery.h
+@@ -44,15 +44,18 @@
+     virtual Solid::Battery::BatteryType type() const;
+ 
+     virtual int chargePercent() const;
++    virtual int capacity() const;
+ 
+     virtual bool isRechargeable() const;
+     virtual bool isPowerSupply() const;
++
+     virtual Solid::Battery::ChargeState chargeState() const;
+ 
+-    // TODO report stuff like capacity, technology, time-to-full, time-to-empty, energy rates, vendor, etc.
++    // TODO report stuff like technology, time-to-full, time-to-empty, energy rates, vendor, etc.
+ 
+ Q_SIGNALS:
+     void chargePercentChanged(int value, const QString &udi);
++    void capacityChanged(int value, const QString &udi);
+     void chargeStateChanged(int newState, const QString &udi);
+     void plugStateChanged(bool newState, const QString &udi);
+     void powerSupplyStateChanged(bool newState, const QString &udi);
+@@ -65,6 +68,7 @@
+ 
+     bool m_isPlugged;
+     int m_chargePercent;
++    int m_capacity;
+     Solid::Battery::ChargeState m_chargeState;
+     bool m_isPowerSupply;
+ };
+
+--- a/solid/solid/battery.cpp
++++ b/solid/solid/battery.cpp
+@@ -29,6 +29,9 @@
+ {
+     connect(backendObject, SIGNAL(chargePercentChanged(int,QString)),
+              this, SIGNAL(chargePercentChanged(int,QString)));
++
++    connect(backendObject, SIGNAL(capacityChanged(int,QString)),
++             this, SIGNAL(capacityChanged(int,QString)));
+ 
+     connect(backendObject, SIGNAL(chargeStateChanged(int,QString)),
+              this, SIGNAL(chargeStateChanged(int,QString)));
+@@ -69,6 +72,12 @@
+     return_SOLID_CALL(Ifaces::Battery *, d->backendObject(), 0, chargePercent());
+ }
+ 
++int Solid::Battery::capacity() const
++{
++    Q_D(const Battery);
++    return_SOLID_CALL(Ifaces::Battery *, d->backendObject(), 100, capacity());
++}
++
+ bool Solid::Battery::isRechargeable() const
+ {
+     Q_D(const Battery);
+
+--- a/solid/solid/battery.h
++++ b/solid/solid/battery.h
+@@ -41,6 +41,7 @@
+         Q_PROPERTY(bool powerSupply READ isPowerSupply)
+         Q_PROPERTY(BatteryType type READ type)
+         Q_PROPERTY(int chargePercent READ chargePercent)
++        Q_PROPERTY(int capacity READ capacity)
+         Q_PROPERTY(bool rechargeable READ isRechargeable)
+         Q_PROPERTY(ChargeState chargeState READ chargeState)
+         Q_DECLARE_PRIVATE(Battery)
+@@ -136,6 +137,14 @@
+          */
+         int chargePercent() const;
+ 
++        /**
++         * Retrieves the battery capacity normalised to percent,
++         * meaning how much energy can it hold compared to what it is designed to.
++         *
++         * @since 4.11
++         * @return the battery capacity normalised to percent
++         */
++        int capacity() const;
+ 
+ 
+         /**
+
+--- a/solid/solid/ifaces/battery.h
++++ b/solid/solid/ifaces/battery.h
+@@ -66,6 +66,15 @@
+          */
+         virtual int chargePercent() const = 0;
+ 
++        /**
++         * Retrieves the battery capacity normalised to percent,
++         * meaning how much energy can it hold compared to what it is designed to.
++         *
++         * @since 4.11
++         * @return the battery capacity normalised to percent
++         */
++        virtual int capacity() const = 0;
++
+ 
+         /**
+          * Indicates if the battery is rechargeable.
+

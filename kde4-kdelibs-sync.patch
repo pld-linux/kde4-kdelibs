@@ -1,0 +1,68 @@
+diff -ruN kdelibs-4.10.5.org/kde3support/kdecore/k3tempfile.cpp kdelibs-4.10.5/kde3support/kdecore/k3tempfile.cpp
+--- kdelibs-4.10.5.org/kde3support/kdecore/k3tempfile.cpp	2013-06-28 19:03:40.834334863 +0200
++++ kdelibs-4.10.5/kde3support/kdecore/k3tempfile.cpp	2013-07-12 08:30:01.608605762 +0200
+@@ -258,7 +258,7 @@
+ 
+    if (mFd >= 0)
+    {
+-      if( qgetenv( "KDE_EXTRA_FSYNC" ) == "1" )
++      if( !(qgetenv( "KDE_EXTRA_FSYNC" ) == "0") )
+       {
+          result = FDATASYNC(mFd);
+          if (result)
+diff -ruN kdelibs-4.10.5.org/kdecore/config/kconfigini.cpp kdelibs-4.10.5/kdecore/config/kconfigini.cpp
+--- kdelibs-4.10.5.org/kdecore/config/kconfigini.cpp	2013-06-28 19:03:40.859337527 +0200
++++ kdelibs-4.10.5/kdecore/config/kconfigini.cpp	2013-07-12 08:27:38.527009696 +0200
+@@ -37,6 +37,14 @@
+ #include <qdebug.h>
+ #include <qmetaobject.h>
+ #include <qregexp.h>
++#include <stdlib.h>
++#include <errno.h>
++
++#ifdef HAVE_FDATASYNC
++#  define FDATASYNC fdatasync
++#else
++#  define FDATASYNC fsync
++#endif
+ 
+ extern bool kde_kiosk_exception;
+ 
+@@ -441,7 +449,12 @@
+         file.setTextModeEnabled(true); // to get eol translation
+         writeEntries(locale, file, writeMap);
+ 
+-        if (!file.flush()) {
++        if (file.flush()) {
++            forever {
++                if (!FDATASYNC(file.handle()))
++                    break;
++           }
++       } else {
+             // Couldn't write. Disk full?
+             kWarning() << "Couldn't write" << filePath() << ". Disk full?";
+             file.abort();
+diff -ruN kdelibs-4.10.5.org/kdecore/io/ksavefile.cpp kdelibs-4.10.5/kdecore/io/ksavefile.cpp
+--- kdelibs-4.10.5.org/kdecore/io/ksavefile.cpp	2013-06-28 19:03:40.874339125 +0200
++++ kdelibs-4.10.5/kdecore/io/ksavefile.cpp	2013-07-12 08:33:57.773404699 +0200
+@@ -38,6 +38,7 @@
+ #include <kconfiggroup.h>
+ 
+ #include <stdlib.h>
++#include <string.h>
+ #include <errno.h>
+ 
+ class KSaveFile::Private
+@@ -225,8 +226,10 @@
+     bool success = false;
+ #ifdef Q_OS_UNIX
+     static int extraSync = -1;
+-    if (extraSync < 0)
+-        extraSync = getenv("KDE_EXTRA_FSYNC") != 0 ? 1 : 0;
++    if (extraSync < 0) {
++        char *kef = getenv("KDE_EXTRA_FSYNC");
++        extraSync = (kef && strncmp(kef, "0", 1) == 0) ? 0 : 1;
++    }
+     if (extraSync) {
+         if (flush()) {
+             forever {

@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.10.5
-Release:	3
+Release:	4
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
@@ -85,7 +85,7 @@ BuildRequires:	libxslt-devel >= 1.0.7
 BuildRequires:	lua50-devel
 BuildRequires:	media-player-info
 BuildRequires:	mdns-bonjour-devel
-BuildRequires:	openmotif-devel
+BuildRequires:	motif-devel
 BuildRequires:	openssl-devel >= 0.9.7d
 BuildRequires:	pcre-devel >= 3.5
 BuildRequires:	phonon-devel >= %{phononver}

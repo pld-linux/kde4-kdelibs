@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.11.3
-Release:	2
+Version:	4.11.4
+Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	766f3ed50e07794c298c3597e70d0817
+# Source0-md5:	34dd483a0060294bac67fb35307df292
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -334,7 +334,7 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/makekdewidgets
 %{_kdedocdir}/en/sonnet
 %{_mandir}/man1/kde4-config.1*
-%{_mandir}/man1/kdecmake.1*
+#%{_mandir}/man1/kdecmake.1*
 %{_mandir}/man1/kjs.1*
 %{_mandir}/man1/kjscmd.1*
 %{_mandir}/man1/kross.1*

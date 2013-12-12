@@ -3,10 +3,10 @@
 #
 %define		_state		stable
 %define		orgname		kdelibs
-%define		qtver		4.8.0
-%define		sopranover	2.7.0
-%define		phononver	4.5.1
-%define		atticaver	0.2.0
+%define		qtver		4.8.5
+%define		sopranover	2.9.0
+%define		phononver	4.6.0
+%define		atticaver	0.4.2
 
 Summary:	K Desktop Environment - libraries
 Summary(es.UTF-8):	K Desktop Environment - bibliotecas
@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.11.4
+Version:	4.12.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	34dd483a0060294bac67fb35307df292
+# Source0-md5:	24006d7ad63ec6b3e7004f08305aad55
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -69,7 +69,7 @@ BuildRequires:	hspell-devel
 BuildRequires:	issue
 BuildRequires:	jasper-devel >= 1.600
 BuildRequires:	libart_lgpl-devel
-BuildRequires:	libdbusmenu-qt-devel >= 0.6.0
+BuildRequires:	libdbusmenu-qt-devel >= 0.8.1
 BuildRequires:	libidn-devel
 BuildRequires:	libjpeg-devel
 BuildRequires:	libmad-devel
@@ -96,7 +96,7 @@ BuildRequires:	qt4-build >= %{qtver}
 BuildRequires:	qt4-qmake >= %{qtver}
 BuildRequires:	rpmbuild(macros) >= 1.600
 BuildRequires:	shared-desktop-ontologies-devel >= 0.10.0
-BuildRequires:	shared-mime-info >= 0.18
+BuildRequires:	shared-mime-info >= 0.60
 BuildRequires:	soprano-devel >= %{sopranover}
 BuildRequires:	strigi-devel >= 0.7.0
 BuildRequires:	sysstat

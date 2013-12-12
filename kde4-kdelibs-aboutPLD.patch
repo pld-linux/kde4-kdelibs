@@ -27,8 +27,8 @@ diff -Nru kdelibs-4.5.5/kdecore/util/kdeversion.h.cmake kdelibs-4.5.5.new//kdeco
 @@ -45,6 +45,7 @@
   * (Fictional) example: "4.0.90 (>=20070101)"
   */
- #cmakedefine KDE_VERSION_STRING "@KDE_VERSION_STRING@"
-+#cmakedefine PLD_VERSION_STRING "@PLD_VERSION_STRING@"
+ #define KDE_VERSION_STRING "${KDE_VERSION_STRING}"
++#define PLD_VERSION_STRING "${PLD_VERSION_STRING}"
  
  /**
   * @def KDE_VERSION_MAJOR

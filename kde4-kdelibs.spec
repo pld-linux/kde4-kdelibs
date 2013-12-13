@@ -21,7 +21,7 @@ Release:	1
 License:	LGPL
 Group:		X11/Libraries
 Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	24006d7ad63ec6b3e7004f08305aad55
+# Source0-md5:	1faff09ea887fea6caa15e36b219c558
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch

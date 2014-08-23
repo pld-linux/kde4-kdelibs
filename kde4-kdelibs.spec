@@ -20,7 +20,7 @@ Version:	4.14.0
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	ftp://ftp.kde.org/pub/kde/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
+Source0:	http://download.kde.org/%{_state}/%{version}/src/%{orgname}-%{version}.tar.xz
 # Source0-md5:	f246fc5485b085b36843e954b5b56922
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff

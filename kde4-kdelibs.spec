@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.14.9
+Version:	4.14.10
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	http://download.kde.org/%{_state}/applications/15.04.2/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	e528a57861308f1389a9efd61ec8492d
+Source0:	http://download.kde.org/%{_state}/applications/15.04.3/src/%{orgname}-%{version}.tar.xz
+# Source0-md5:	68cb7191d8f7ac383cc30bfe69a016bc
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch

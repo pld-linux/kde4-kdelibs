@@ -1,0 +1,15 @@
+--- kdelibs-4.14.18/kio/kio/kfilemetainfo.cpp~	2016-03-11 00:50:17.000000000 +0100
++++ kdelibs-4.14.18/kio/kio/kfilemetainfo.cpp	2016-03-21 14:00:39.213763857 +0100
+@@ -162,6 +162,12 @@
+         }
+     }
+     void addValue(const Strigi::AnalysisResult* idx, const Strigi::RegisteredField* field,
++            int64_t value) {
++        if (idx->writerData()) {
++            addValue(idx, field, QVariant((qint64)value));
++        }
++    }
++    void addValue(const Strigi::AnalysisResult* idx, const Strigi::RegisteredField* field,
+             double value) {
+         if (idx->writerData()) {
+             addValue(idx, field, QVariant(value));

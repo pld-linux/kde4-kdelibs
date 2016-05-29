@@ -17,7 +17,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.14.20
-Release:	1
+Release:	2
 License:	LGPL
 Group:		X11/Libraries
 Source0:	http://download.kde.org/%{_state}/applications/16.04.1/src/%{orgname}-%{version}.tar.xz
@@ -32,6 +32,7 @@ Patch4:		%{name}-devicemanager_remove.patch
 Patch5:		kde4-kdelibs-sync.patch
 Patch6:		kde4-kdelibs-pld-flags.patch
 Patch7:		strigi-64bit.patch
+Patch8:		findhunspell-1.4.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -248,6 +249,7 @@ KDE.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
+%patch8 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp

@@ -16,12 +16,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.14.25
+Version:	4.14.26
 Release:	1
 License:	LGPL
 Group:		X11/Libraries
-Source0:	http://download.kde.org/%{_state}/applications/16.08.2/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	bdfc8b5f89be3bfddde957c58cd79a9f
+Source0:	http://download.kde.org/%{_state}/applications/16.08.3/src/%{orgname}-%{version}.tar.xz
+# Source0-md5:	bc0cc65e051270cc381b4b61a3aad89d
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -32,7 +32,6 @@ Patch4:		%{name}-devicemanager_remove.patch
 Patch5:		kde4-kdelibs-sync.patch
 Patch6:		kde4-kdelibs-pld-flags.patch
 Patch7:		strigi-64bit.patch
-Patch8:		findhunspell-1.4.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -249,7 +248,6 @@ KDE.
 %patch5 -p1
 %patch6 -p1
 %patch7 -p1
-%patch8 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp

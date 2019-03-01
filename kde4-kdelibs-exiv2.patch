@@ -1,0 +1,15 @@
+diff -ruNp kdelibs-4.14.37.orig/cmake/modules/FindExiv2.cmake kdelibs-4.14.37/cmake/modules/FindExiv2.cmake
+--- kdelibs-4.14.37.orig/cmake/modules/FindExiv2.cmake	2017-10-08 04:44:24.000000000 +0200
++++ kdelibs-4.14.37/cmake/modules/FindExiv2.cmake	2019-03-01 12:53:02.325928576 +0100
+@@ -55,9 +55,9 @@ find_library(EXIV2_LIBRARY NAMES exiv2 l
+             )
+ 
+ 
+-# Get the version number from exiv2/version.hpp and store it in the cache:
++# Get the version number from exiv2/exv_conf.h and store it in the cache:
+ if(EXIV2_INCLUDE_DIR  AND NOT  EXIV2_VERSION)
+-  file(READ ${EXIV2_INCLUDE_DIR}/exiv2/version.hpp EXIV2_VERSION_CONTENT)
++  file(READ ${EXIV2_INCLUDE_DIR}/exiv2/exv_conf.h EXIV2_VERSION_CONTENT)
+   string(REGEX MATCH "#define EXIV2_MAJOR_VERSION +\\( *([0-9]+) *\\)"  _dummy "${EXIV2_VERSION_CONTENT}")
+   set(EXIV2_VERSION_MAJOR "${CMAKE_MATCH_1}")
+ 

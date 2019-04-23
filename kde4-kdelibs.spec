@@ -13,12 +13,12 @@ Summary(pt_BR.UTF-8):	Bibliotecas de fundação do KDE
 Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
-Version:	4.14.37
-Release:	3
-License:	LGPL
+Version:	4.14.38
+Release:	1
+License:	LGPL v2.1 or LGPL v3
 Group:		X11/Libraries
-Source0:	http://download.kde.org/%{_state}/applications/17.08.2/src/%{orgname}-%{version}.tar.xz
-# Source0-md5:	c97d252d7a899ea551fd518c0a89dcfe
+Source0:	https://download.kde.org/Attic/%{_state}/applications/17.08.3/src/%{orgname}-%{version}.tar.xz
+# Source0-md5:	275b06929e194b80ebdc061ea59497ff
 Source1:	%{name}-pld_box.png
 Patch100:	%{name}-branch.diff
 Patch0:		%{name}-branding.patch
@@ -31,6 +31,7 @@ Patch6:		kde4-kdelibs-pld-flags.patch
 Patch7:		strigi-64bit.patch
 Patch8:		%{name}-exiv2.patch
 Patch9:		%{name}-hunspell.patch
+Patch10:	%{name}-openssl-1.1.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -249,6 +250,7 @@ KDE.
 %patch7 -p1
 %patch8 -p1
 %patch9 -p1
+%patch10 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -260,17 +262,16 @@ sed -i -e 's#PLDLINUX_VERSION#PLD/3.0 (Th)#g' kio/kio/kprotocolmanager.cpp
 %build
 install -d build
 cd build
-%cmake \
+%cmake .. \
 	-DASPELL_EXECUTABLE="%{_bindir}/aspell" \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \
 	-DDATA_INSTALL_DIR=%{_datadir}/apps \
+	-DHTML_INSTALL_DIR=%{_kdedocdir} \
 	-DKCFG_INSTALL_DIR=%{_datadir}/config.kcfg \
 	-DMIME_INSTALL_DIR=/nogo \
 	-DTEMPLATES_INSTALL_DIR=%{_datadir}/templates \
-	-DHTML_INSTALL_DIR=%{_kdedocdir} \
 	-DKDE_DISTRIBUTION_TEXT="PLD-Linux" \
-	-DKDE4_ENABLE_FINAL=OFF \
-	../
+	-DKDE4_ENABLE_FINAL=OFF
 
 %{__make}
 
@@ -311,10 +312,8 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(644,root,root,755)
-%dir %{_docdir}/kde
 %dir %{_datadir}/ontology/kde
-# DO NOT PACKAGE THIS FILE vvvv - use applnk
-#%{_sysconfdir}/xdg/menus/applications.menu
+%attr(755,root,root) %{_bindir}/checkXML
 %attr(755,root,root) %{_bindir}/kjs
 %attr(755,root,root) %{_bindir}/kbuildsycoca4
 %attr(755,root,root) %{_bindir}/kcookiejar4
@@ -329,17 +328,16 @@ rm -rf $RPM_BUILD_ROOT
 %attr(755,root,root) %{_bindir}/kross
 %attr(755,root,root) %{_bindir}/kshell4
 %attr(755,root,root) %{_bindir}/ktelnetservice
+%attr(755,root,root) %{_bindir}/kunittestmodrunner
 %attr(755,root,root) %{_bindir}/kwrapper4
+%attr(755,root,root) %{_bindir}/makekdewidgets
 %attr(755,root,root) %{_bindir}/meinproc4
 %attr(755,root,root) %{_bindir}/meinproc4_simple
 %attr(755,root,root) %{_bindir}/nepomuk-rcgen
 %attr(755,root,root) %{_bindir}/preparetips
-%attr(755,root,root) %{_bindir}/checkXML
-%attr(755,root,root) %{_bindir}/kunittestmodrunner
-%attr(755,root,root) %{_bindir}/makekdewidgets
 %{_kdedocdir}/en/sonnet
+%{_mandir}/man1/checkXML.1*
 %{_mandir}/man1/kde4-config.1*
-#%{_mandir}/man1/kdecmake.1*
 %{_mandir}/man1/kjs.1*
 %{_mandir}/man1/kjscmd.1*
 %{_mandir}/man1/kross.1*
@@ -353,9 +351,15 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man8/kcookiejar4.8*
 %{_mandir}/man8/meinproc4.8*
 
-%attr(755,root,root) %{_datadir}/apps/kconf_update/*.pl
-%{_datadir}/apps/kconf_update/*.upd
-%{_datadir}/apps/kconf_update/*.upd.sh
+%attr(755,root,root) %{_datadir}/apps/kconf_update/kcookiescfg.pl
+%attr(755,root,root) %{_datadir}/apps/kconf_update/proxytype.pl
+%attr(755,root,root) %{_datadir}/apps/kconf_update/useragent.pl
+%{_datadir}/apps/kconf_update/kcookiescfg.upd
+%{_datadir}/apps/kconf_update/kded.upd
+%{_datadir}/apps/kconf_update/kio_help.upd
+%{_datadir}/apps/kconf_update/kioslave.upd
+%{_datadir}/apps/kconf_update/ksslcertificatemanager.upd
+%{_datadir}/apps/kconf_update/ksslcertificatemanager.upd.sh
 %{_datadir}/apps/kconf_update/move_kio_help_cache.sh
 %{_datadir}/apps/LICENSES
 %{_datadir}/apps/khtml/css/presentational.css
@@ -369,7 +373,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/apps/kcharselect
 %{_datadir}/apps/knewstuff
 
-%{_iconsdir}/hicolor/*x*/actions/*.png
+%{_iconsdir}/hicolor/*x*/actions/presence_*.png
 
 %dir %{_datadir}/applnk
 %dir %{_datadir}/applnk/.hidden
@@ -380,14 +384,14 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/colors
 %{_datadir}/config/ksslcalist
 %{_datadir}/config/magic
-%{_datadir}/mime/packages/*
+%{_datadir}/mime/packages/kde.xml
 %{_datadir}/kde4/servicetypes
 %{_datadir}/kde4/services/*.desktop
 %{_datadir}/kde4/services/*.protocol
 %dir %{_datadir}/kde4/services/kded
-%{_datadir}/kde4/services/kded/*
+%{_datadir}/kde4/services/kded/*.desktop
 %dir %{_datadir}/kde4/services/qimageioplugins
-%{_datadir}/kde4/services/qimageioplugins/*
+%{_datadir}/kde4/services/qimageioplugins/*.desktop
 %dir %{_datadir}/kde4/services/ServiceMenus
 
 %{_datadir}/dbus-1/interfaces/org.freedesktop.PowerManagement.Inhibit.xml
@@ -415,7 +419,8 @@ rm -rf $RPM_BUILD_ROOT
 
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
-%{_desktopdir}/kde4/*.desktop
+%{_desktopdir}/kde4/kmailservice.desktop
+%{_desktopdir}/kde4/ktelnetservice.desktop
 
 # kauth
 %{_datadir}/apps/kauth
@@ -449,7 +454,6 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/config/plasmoids.knsrc
 %{_datadir}/locale/all_languages
 %{_datadir}/locale/en_US/entry.desktop
-%{_mandir}/man1/checkXML.1*
 %lang(en) %{_kdedocdir}/en/common
 %lang(en) %{_kdedocdir}/en/kioslave
 

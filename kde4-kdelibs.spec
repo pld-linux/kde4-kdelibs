@@ -1,6 +1,3 @@
-#
-# Conditional build:
-#
 %define		_state		stable
 %define		orgname		kdelibs
 %define		qtver		4.8.5
@@ -17,7 +14,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.14.37
-Release:	2
+Release:	3
 License:	LGPL
 Group:		X11/Libraries
 Source0:	http://download.kde.org/%{_state}/applications/17.08.2/src/%{orgname}-%{version}.tar.xz
@@ -33,6 +30,7 @@ Patch5:		kde4-kdelibs-sync.patch
 Patch6:		kde4-kdelibs-pld-flags.patch
 Patch7:		strigi-64bit.patch
 Patch8:		%{name}-exiv2.patch
+Patch9:		%{name}-hunspell.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -250,6 +248,7 @@ KDE.
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%patch9 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -296,13 +295,13 @@ install -d \
 	$RPM_BUILD_ROOT%{_desktopdir}/kde4 \
 	$RPM_BUILD_ROOT%{_datadir}/kde4/services/ServiceMenus \
 
-install %{SOURCE1} $RPM_BUILD_ROOT/%{_datadir}/apps/kdeui/pics/pld_box.png
+install %{SOURCE1} $RPM_BUILD_ROOT%{_datadir}/apps/kdeui/pics/pld_box.png
 
 # DO NOT PACKAGE THIS FILE vvvv - use applnk
-rm -f $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu
+%{__rm} $RPM_BUILD_ROOT%{_sysconfdir}/xdg/menus/applications.menu
 
 # USE ca-certificates
-rm -f $RPM_BUILD_ROOT%{_datadir}/apps/kssl/ca-bundle.crt
+%{__rm} $RPM_BUILD_ROOT%{_datadir}/apps/kssl/ca-bundle.crt
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -391,7 +390,28 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/kde4/services/qimageioplugins/*
 %dir %{_datadir}/kde4/services/ServiceMenus
 
-%{_datadir}/dbus-1/interfaces/*.xml
+%{_datadir}/dbus-1/interfaces/org.freedesktop.PowerManagement.Inhibit.xml
+%{_datadir}/dbus-1/interfaces/org.freedesktop.PowerManagement.xml
+%{_datadir}/dbus-1/interfaces/org.kde.JobView.xml
+%{_datadir}/dbus-1/interfaces/org.kde.JobViewServer.xml
+%{_datadir}/dbus-1/interfaces/org.kde.JobViewV2.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KCookieServer.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KDirNotify.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KGlobalAccel.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KHTMLPart.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KIMIface.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KLauncher.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KMediaPlayer.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KPasswdServer.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KSpeech.xml
+%{_datadir}/dbus-1/interfaces/org.kde.KWallet.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Solid.Networking.Client.xml
+%{_datadir}/dbus-1/interfaces/org.kde.Solid.PowerManagement.PolicyAgent.xml
+%{_datadir}/dbus-1/interfaces/org.kde.StatusNotifierItem.xml
+%{_datadir}/dbus-1/interfaces/org.kde.StatusNotifierWatcher.xml
+%{_datadir}/dbus-1/interfaces/org.kde.kded.xml
+%{_datadir}/dbus-1/interfaces/org.kde.kglobalaccel.Component.xml
+%{_datadir}/dbus-1/interfaces/org.kde.kio.FileUndoManager.xml
 
 # from kde4-kdebase.spec - old common subpackage
 %dir %{_desktopdir}/kde4
@@ -1120,44 +1140,37 @@ rm -rf $RPM_BUILD_ROOT
 %{_includedir}/KDE/SuProcess
 %{_includedir}/KDE/ThreadWeaver
 %{_includedir}/KDE/ThumbCreator
-%dir %{_includedir}/plasma
-%{_includedir}/plasma/*
-%dir %{_includedir}/dnssd
-%{_includedir}/dnssd/*
-%dir %{_includedir}/dom
-%{_includedir}/dom/*
-%dir %{_includedir}/kdesu
-%{_includedir}/kdesu/*
-%dir %{_includedir}/khexedit
-%{_includedir}/khexedit/*
-%dir %{_includedir}/kio
-%{_includedir}/kio/*
-%dir %{_includedir}/kjs
-%{_includedir}/kjs/*
-%dir %{_includedir}/kmediaplayer
-%{_includedir}/kmediaplayer/*
+%{_includedir}/plasma
+%{_includedir}/dnssd
+%{_includedir}/dom
+%{_includedir}/kdesu
+%{_includedir}/khexedit
+%{_includedir}/kio
+%{_includedir}/kjs
+%{_includedir}/kmediaplayer
 %{_includedir}/knewstuff2
 %{_includedir}/knewstuff3
-%dir %{_includedir}/kparts
-%{_includedir}/kparts/*
+%{_includedir}/kparts
 %{_includedir}/kross
-%dir %{_includedir}/ktexteditor
-%{_includedir}/ktexteditor/*
-%dir %{_includedir}/nepomuk
-%{_includedir}/nepomuk/*
-%dir %{_includedir}/solid
-%{_includedir}/solid/*
-%dir %{_includedir}/sonnet
-%{_includedir}/sonnet/*
-%dir %{_includedir}/threadweaver
-%{_includedir}/threadweaver/*
-%{_includedir}/*.tcc
-%dir %{_includedir}/ksettings
-%{_includedir}/ksettings/*
-%dir %{_includedir}/kunitconversion
-%{_includedir}/kunitconversion/*
-%dir %{_includedir}/kunittest
-%{_includedir}/kunittest/*
-%{_includedir}/*.h
+%{_includedir}/ktexteditor
+%{_includedir}/nepomuk
+%{_includedir}/solid
+%{_includedir}/sonnet
+%{_includedir}/threadweaver
+%{_includedir}/ksettings
+%{_includedir}/kunitconversion
+%{_includedir}/kunittest
+%{_includedir}/config-nepomuk.h
+%{_includedir}/conversion_check.h
+%{_includedir}/dockmainwindow3.h
+%{_includedir}/fixx11h.h
+%{_includedir}/k*.h
+%{_includedir}/netwm.h
+%{_includedir}/netwm_def.h
+%{_includedir}/passdlg.h
+%{_includedir}/predicateproperties.h
+%{_includedir}/qtest_kde.h
+%{_includedir}/skipdlg.h
+%{_includedir}/kgenericfactory.tcc
 
 %{_mandir}/man1/kconfig_compiler.1*

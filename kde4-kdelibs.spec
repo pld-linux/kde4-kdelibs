@@ -14,7 +14,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.14.38
-Release:	2
+Release:	3
 License:	LGPL v2.1 or LGPL v3
 Group:		X11/Libraries
 Source0:	https://download.kde.org/Attic/%{_state}/applications/17.08.3/src/%{orgname}-%{version}.tar.xz

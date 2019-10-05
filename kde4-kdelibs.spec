@@ -14,7 +14,7 @@ Summary(ru.UTF-8):	K Desktop Environment - Библиотеки
 Summary(uk.UTF-8):	K Desktop Environment - Бібліотеки
 Name:		kde4-kdelibs
 Version:	4.14.38
-Release:	4
+Release:	5
 License:	LGPL v2.1 or LGPL v3
 Group:		X11/Libraries
 Source0:	https://download.kde.org/Attic/%{_state}/applications/17.08.3/src/%{orgname}-%{version}.tar.xz
@@ -32,6 +32,7 @@ Patch7:		strigi-64bit.patch
 Patch8:		%{name}-exiv2.patch
 Patch9:		%{name}-hunspell.patch
 Patch10:	%{name}-openssl-1.1.patch
+Patch11:	cmake-py.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -251,6 +252,7 @@ KDE.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp

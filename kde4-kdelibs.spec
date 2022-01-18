@@ -32,6 +32,7 @@ Patch7:		strigi-64bit.patch
 Patch8:		%{name}-exiv2.patch
 Patch9:		%{name}-hunspell.patch
 Patch10:	%{name}-openssl-1.1.patch
+Patch11:	build.patch
 URL:		http://www.kde.org/
 BuildRequires:	OpenEXR-devel >= 1.2.2
 BuildRequires:	Qt3Support-devel >= %{qtver}
@@ -250,6 +251,7 @@ KDE.
 %patch8 -p1
 %patch9 -p1
 %patch10 -p1
+%patch11 -p1
 
 %if "%{pld_release}" == "ti"
 sed -i -e 's#PLDLINUX_VERSION#PLD/Titanium#g' kio/kio/kprotocolmanager.cpp
@@ -261,6 +263,7 @@ sed -i -e 's#PLDLINUX_VERSION#PLD/3.0 (Th)#g' kio/kio/kprotocolmanager.cpp
 %build
 install -d build
 cd build
+export CXXFLAGS="%{rpmcppflags} %{rpmcxxflags} -std=c++14"
 %cmake .. \
 	-DASPELL_EXECUTABLE="%{_bindir}/aspell" \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \

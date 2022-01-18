@@ -1,0 +1,68 @@
+--- kdelibs-4.14.38/kdecore/localization/klocale_kde.cpp.orig	2017-11-05 02:51:22.000000000 +0100
++++ kdelibs-4.14.38/kdecore/localization/klocale_kde.cpp	2022-01-18 13:24:06.290688517 +0100
+@@ -2438,12 +2438,8 @@
+ 
+ bool KLocalePrivate::use12Clock() const
+ {
+-    if ((timeFormat().contains(QString::fromLatin1("%I")) > 0) ||
+-        (timeFormat().contains(QString::fromLatin1("%l")) > 0)) {
+-        return true;
+-    } else {
+-        return false;
+-    }
++    return timeFormat().contains(QString::fromLatin1("%I")) ||
++        timeFormat().contains(QString::fromLatin1("%l"));
+ }
+ 
+ void KLocalePrivate::setDayPeriods(const QList<KDayPeriod> &dayPeriods)
+--- kdelibs-4.14.38/kimgio/jp2.cpp.orig	2017-11-05 02:51:22.000000000 +0100
++++ kdelibs-4.14.38/kimgio/jp2.cpp	2022-01-18 13:25:01.453554790 +0100
+@@ -103,13 +103,13 @@
+         stream->bufmode_ |= bufmode & JAS_STREAM_BUFMODEMASK;
+ }
+ 
+-static int qiodevice_read(jas_stream_obj_t *obj, char *buf, int cnt)
++static int qiodevice_read(jas_stream_obj_t *obj, char *buf, unsigned int cnt)
+ {
+         QIODevice *io = (QIODevice*) obj;
+         return io->read(buf, cnt);
+ }
+ 
+-static int qiodevice_write(jas_stream_obj_t *obj, char *buf, int cnt)
++static int qiodevice_write(jas_stream_obj_t *obj, const char *buf, unsigned int cnt)
+ {
+         QIODevice *io = (QIODevice*) obj;
+         return io->write(buf, cnt);
+--- kdelibs-4.14.38/dnssd/servicemodel.cpp.orig	2017-11-05 02:51:22.000000000 +0100
++++ kdelibs-4.14.38/dnssd/servicemodel.cpp	2022-01-18 14:28:11.023786338 +0100
+@@ -87,7 +87,7 @@
+ 		case Host: return srv[index.row()]->hostName();
+ 		case Port: return srv[index.row()]->port();
+ 	    }
+-	case ServicePtrRole: QVariant ret;
++	case (int) ServicePtrRole: QVariant ret;
+ 			     ret.setValue(srv[index.row()]);
+ 			    return ret;
+     }
+--- kdelibs-4.14.38/kio/kfile/kpropertiesdialog.cpp.orig	2017-11-05 02:51:22.000000000 +0100
++++ kdelibs-4.14.38/kio/kfile/kpropertiesdialog.cpp	2022-01-18 15:40:04.590904703 +0100
+@@ -3306,7 +3306,7 @@
+ 
+     if (preferredTerminal == "konsole")
+     {
+-        terminalCloseBool = (d->m_terminalOptionStr.contains( "--noclose" ) > 0);
++        terminalCloseBool = d->m_terminalOptionStr.contains( "--noclose" );
+         w.terminalCloseCheck->setChecked(terminalCloseBool);
+         d->m_terminalOptionStr.remove( "--noclose");
+     }
+--- kdelibs-4.14.38/kio/kfile/kopenwithdialog.cpp.orig	2017-11-05 02:51:22.000000000 +0100
++++ kdelibs-4.14.38/kio/kfile/kopenwithdialog.cpp	2022-01-18 15:42:08.510645262 +0100
+@@ -713,7 +713,7 @@
+         // ### indicate that default value was restored
+         d->terminal->setChecked(d->curService->terminal());
+         QString terminalOptions = d->curService->terminalOptions();
+-        d->nocloseonexit->setChecked((terminalOptions.contains(QLatin1String("--noclose")) > 0));
++        d->nocloseonexit->setChecked(terminalOptions.contains(QLatin1String("--noclose")));
+         d->m_terminaldirty = false; // slotTerminalToggled changed it
+     }
+ }

@@ -223,7 +223,7 @@ diff -Nru kdelibs-4.5.5/kdeui/widgets/khelpmenu.cpp kdelibs-4.5.5.new//kdeui/wid
      KSwitchLanguageDialog *mSwitchApplicationLanguage;
  
 @@ -95,7 +99,7 @@
-     bool mShowWhatsThis;
+     bool mActionsCreated;
  
      KAction *mHandBookAction, *mWhatsThisAction;
 -    QAction *mReportBugAction, *mSwitchApplicationLanguageAction, *mAboutAppAction, *mAboutKDEAction;
@@ -241,8 +241,8 @@ diff -Nru kdelibs-4.5.5/kdeui/widgets/khelpmenu.cpp kdelibs-4.5.5.new//kdeui/wid
  }
  
 @@ -198,6 +203,11 @@
-     {
-       d->mAboutKDEAction = d->mMenu->addAction( KIcon("kde"), i18n( "About &KDE" ), this, SLOT( aboutKDE() ) );
+     if (d->mAboutKDEAction) {
+       d->mMenu->addAction(d->mAboutKDEAction);
      }
 +    
 +    if (KAuthorized::authorizeKAction("help_about_pld"))

@@ -83,7 +83,6 @@ BuildRequires:	libwmf-devel >= 2:0.2.0
 BuildRequires:	libxml2-devel >= 2.4.9
 BuildRequires:	libxml2-progs
 BuildRequires:	libxslt-devel >= 1.0.7
-BuildRequires:	lua50-devel
 BuildRequires:	media-player-info
 BuildRequires:	mdns-bonjour-devel
 BuildRequires:	motif-devel

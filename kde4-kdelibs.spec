@@ -266,7 +266,7 @@ cd build
 export CXXFLAGS="%{rpmcppflags} %{rpmcxxflags} -std=c++14"
 %cmake .. \
 %ifarch %{ix86}
-	BUILD_doc=OFF \
+	-DBUILD_doc=OFF \
 %endif
 	-DASPELL_EXECUTABLE="%{_bindir}/aspell" \
 	-DCONFIG_INSTALL_DIR=%{_datadir}/config \

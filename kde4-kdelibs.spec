@@ -239,7 +239,7 @@ KDE.
 
 %prep
 %setup -q -n %{orgname}-%{version}
-#%patch100 -p1
+#%%patch100 -p1
 %patch -P0 -p1
 %patch -P1 -p0
 %patch -P2 -p0
